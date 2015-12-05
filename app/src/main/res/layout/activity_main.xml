@@ -27,9 +27,11 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/editText"
-                android:text="@string/editText"
                 android:imeOptions="actionNext"
-                android:inputType="text" />
+                android:inputType="text"
+                android:contextClickable="false"
+                android:capitalize="sentences"
+                android:hint="@string/editText" />
 
         </LinearLayout>
     </ScrollView>

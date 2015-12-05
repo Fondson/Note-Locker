@@ -27,16 +27,17 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         startService(new Intent(this, UpdateService.class));
         ScrollView sv = (ScrollView)findViewById((R.id.sv));
-        final LinearLayout ll= (LinearLayout)findViewById(R.id.llMain);
+        final LinearLayout ll = (LinearLayout)findViewById(R.id.llMain);
         ll.setOrientation(LinearLayout.VERTICAL);
-        final EditText etInput=(EditText)findViewById(R.id.editText);
+        final EditText etInput = (EditText) findViewById(R.id.editText);
         etInput.setOnEditorActionListener(new EditText.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView arg0, int arg1, KeyEvent event) {
-                if(arg1 == EditorInfo.IME_ACTION_NEXT){
-                    CheckBox cb =new CheckBox(MainActivity.this);
-                    cb.setText(etInput.getText());
+                if (arg1 == EditorInfo.IME_ACTION_NEXT && !(etInput.getText().toString().trim().matches(""))) {
+                    CheckBox cb = new CheckBox(MainActivity.this);
+                    cb.setText(etInput.getText().toString().trim());
                     ll.addView(cb);
+                    etInput.setText("");
                     return true;
                 }
                 return false;
