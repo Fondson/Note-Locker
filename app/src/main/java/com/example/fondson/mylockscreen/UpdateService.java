@@ -41,7 +41,7 @@ public class UpdateService extends Service{
                 .setContentTitle(getResources().getString(R.string.app_name))
                 .setTicker(getResources().getString(R.string.app_name))
                 .setContentText("Running")
-                .setSmallIcon(R.drawable.ic_launcher)
+                .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentIntent(null)
                 .setOngoing(true)
                 .build();
