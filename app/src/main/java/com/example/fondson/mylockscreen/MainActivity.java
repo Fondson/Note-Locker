@@ -17,9 +17,11 @@ import android.widget.EditText;
 import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.os.Handler;
 
 import com.example.fondson.mylockscreen.AutoStart;
 import com.example.fondson.mylockscreen.UpdateService;
+
 
 
 public class MainActivity extends AppCompatActivity {
@@ -44,26 +46,36 @@ public class MainActivity extends AppCompatActivity {
                     ll.addView(cb);
                     etInput.setText("");
                     cb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-
                         @Override
                         public void onCheckedChanged(CompoundButton arg0, boolean isChecked) {
-                            if (isChecked) {
-                                ll.removeView(arg0);
-                                Toast.makeText(MainActivity.this, cb.getText()+" removed.", Toast.LENGTH_SHORT).show();
-                            }
+                                    if (isChecked) {
+                                        Handler handler = new Handler();
+                                        handler.postDelayed(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                        ll.removeView(cb);
+                                        Toast.makeText(MainActivity.this, cb.getText() + " removed.", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                            , 500);
+                            }}
+
                         }
 
-                    });
-                    return true;
+                        );
+                        return true;
+                    }
+                    return false;
+
                 }
-                return false;
+            }
 
-        }});
+            );
 
-    }
+        }
 
-    // Don't finish Activity on Back press
-    @Override
+                // Don't finish Activity on Back press
+        @Override
     public void onBackPressed() {
         return;
     }
