@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
                         public void onCheckedChanged(CompoundButton arg0, boolean isChecked) {
                             if (isChecked) {
                                 ll.removeView(arg0);
-                                //Toast.makeText(MainActivity.this, cb.getText(), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(MainActivity.this, cb.getText()+" removed.", Toast.LENGTH_SHORT).show();
                             }
                         }
 

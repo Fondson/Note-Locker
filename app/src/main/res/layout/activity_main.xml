@@ -9,31 +9,50 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.fondson.mylockscreen.MainActivity">
 
-    <ScrollView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/sv"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" >
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingTop="20dp">
 
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
+        <TextClock
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/llMain">
+            android:id="@+id/textClock"
+            android:layout_gravity="center_horizontal"
+            android:textSize="75sp"
+            android:paddingBottom="20dp" />
 
-            <EditText
-                android:layout_width="fill_parent"
+        <EditText
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/editText"
+            android:imeOptions="actionNext"
+            android:inputType="text"
+            android:contextClickable="false"
+            android:capitalize="sentences"
+            android:hint="@string/editText"
+            android:theme="@android:style/Widget.Material.Light.EditText"
+            android:background="#4efdfdfd"
+            android:padding="10dp" />
+
+        <ScrollView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/sv"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:paddingTop="15dp">
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/editText"
-                android:imeOptions="actionNext"
-                android:inputType="text"
-                android:contextClickable="false"
-                android:capitalize="sentences"
-                android:hint="@string/editText" />
+                android:id="@+id/llMain">
 
-        </LinearLayout>
-    </ScrollView>
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
 
 </RelativeLayout>
