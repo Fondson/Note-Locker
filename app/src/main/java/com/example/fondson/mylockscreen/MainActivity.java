@@ -30,8 +30,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
-        HomeKeyLocker homeKeyLocker = new HomeKeyLocker();
-        homeKeyLocker.lock(this);
+        //final HomeKeyLocker homeKeyLocker = new HomeKeyLocker();
+        //homeKeyLocker.lock(this);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
 
-                if (seekBar.getProgress() > 95) {
+                if (seekBar.getProgress() > 80) {
 
                 } else {
 
@@ -89,7 +89,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress,
                                           boolean fromUser) {
-                if (progress > 95) {
+                if (progress > 80) {
+                    //homeKeyLocker.unlock();
                     moveTaskToBack(true);
                 }
 
@@ -110,8 +111,6 @@ public class MainActivity extends AppCompatActivity {
     }
     protected void onPause() {
         hideKeyboard();
-        HomeKeyLocker homeKeyLocker = new HomeKeyLocker();
-        homeKeyLocker.unlock();
         startService(new Intent(this, UpdateService.class));
         super.onPause();
     }
