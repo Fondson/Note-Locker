@@ -32,7 +32,7 @@ public class UpdateService extends Service{
         IntentFilter screenStateFilter = new IntentFilter();
         screenStateFilter.addAction(Intent.ACTION_SCREEN_OFF);
         registerReceiver(mReceiver, screenStateFilter);
-        startForeground();
+        //startForeground();
         return START_STICKY;
     }
     // Run service in foreground so it is less likely to be killed by system

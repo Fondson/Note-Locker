@@ -12,47 +12,78 @@
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingTop="20dp">
+        android:layout_height="match_parent">
 
-        <TextClock
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/textClock"
-            android:layout_gravity="center_horizontal"
-            android:textSize="75sp"
-            android:paddingBottom="20dp" />
+            android:paddingTop="10dp"
+            android:layout_weight="1">
 
-        <EditText
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/editText"
-            android:imeOptions="actionNext"
-            android:inputType="text|textCapSentences"
-            android:contextClickable="false"
-            android:capitalize="sentences"
-            android:hint="@string/editText"
-            android:theme="@android:style/Widget.Material.Light.EditText"
-            android:background="#4efdfdfd"
-            android:padding="10dp" />
-
-        <ScrollView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/sv"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:paddingTop="15dp">
-
-            <LinearLayout
-                android:orientation="horizontal"
-                android:layout_width="match_parent"
+            <TextClock
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:id="@+id/llMain">
+                android:id="@+id/textClock"
+                android:layout_gravity="center_horizontal"
+                android:textSize="95sp"
+                android:paddingBottom="20dp"
+                android:format12Hour="h:mm"
+                android:format24Hour="k:mm"
+                android:typeface="normal" />
 
-            </LinearLayout>
-        </ScrollView>
+            <EditText
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/editText"
+                android:imeOptions="actionNext"
+                android:inputType="text|textCapSentences"
+                android:contextClickable="false"
+                android:capitalize="sentences"
+                android:hint="@string/editText"
+                android:theme="@android:style/Widget.Material.Light.EditText"
+                android:background="#4efdfdfd"
+                android:padding="10dp" />
+
+            <ScrollView
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:id="@+id/sv"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:paddingTop="17dp">
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/llMain">
+
+                </LinearLayout>
+            </ScrollView>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:weightSum="2"
+            android:gravity="right"
+            android:paddingTop="10dp">
+
+            <SeekBar
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/seekBar"
+                android:thumb="@mipmap/ic_launcher"
+                android:layout_weight="1"
+                android:clickable="false"
+                android:paddingStart="25dp"
+                android:paddingEnd="25dp" />
+        </LinearLayout>
+
     </LinearLayout>
 
 </RelativeLayout>
