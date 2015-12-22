@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
                                                      // cb.setText(etInput.getText().toString().trim());
                                                      // cb.setTextSize(17);
                                                      // ll.addView(cb, 0);
-                                                     itemArr.add(new Item(etInput.getText().toString().trim(),false));
+                                                     itemArr.add(0,new Item(etInput.getText().toString().trim(),false));
                                                      adapter.notifyDataSetChanged();
                                                      etInput.setText("");
                                                      // cb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
