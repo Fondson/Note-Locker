@@ -15,6 +15,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.EditText;
@@ -26,7 +27,9 @@ import android.os.Handler;
 import com.example.fondson.mylockscreen.AutoStart;
 import com.example.fondson.mylockscreen.UpdateService;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import io.github.homelocker.lib.HomeKeyLocker;
@@ -34,6 +37,9 @@ import io.github.homelocker.lib.HomeKeyLocker;
 public class MainActivity extends AppCompatActivity {
 
     final HomeKeyLocker homeKeyLocker = new HomeKeyLocker();
+    private ListView lv;
+    private ArrayList<Item> itemArr;
+    private CustomAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,37 +49,45 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         startService(new Intent(this, UpdateService.class));
-        final LinearLayout ll = (LinearLayout)findViewById(R.id.llItems);
-        ll.setOrientation(LinearLayout.VERTICAL);
+        //final LinearLayout ll = (LinearLayout)findViewById(R.id.llItems);
+        //ll.setOrientation(LinearLayout.VERTICAL);
         //disableCheck();
+        lv = (ListView)findViewById(R.id.listView);
+        itemArr = new ArrayList<Item>();
+        adapter=new CustomAdapter(this,itemArr);
+        lv.setAdapter(adapter);
         final EditText etInput = (EditText) findViewById(R.id.editText);
         etInput.setOnEditorActionListener(new EditText.OnEditorActionListener() {
                                               @Override
                                               public boolean onEditorAction(TextView arg0, int arg1, KeyEvent event) {
                                                   if (arg1 == EditorInfo.IME_ACTION_NEXT && !(etInput.getText().toString().trim().matches(""))) {
-                                                      final CheckBox cb = new CheckBox(MainActivity.this);
-                                                      cb.setText(etInput.getText().toString().trim());
-                                                      cb.setTextSize(17);
-                                                      ll.addView(cb, 0);
-                                                      etInput.setText("");
-                                                      cb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                                                          @Override
-                                                          public void onCheckedChanged(CompoundButton arg0, boolean isChecked) {
-                                                              if (isChecked) {
-                                                                  Handler handler = new Handler();
-                                                                  handler.postDelayed(new Runnable() {
-                                                                      @Override
-                                                                      public void run() {
-                                                                          ll.removeView(cb);
-                                                                          Toast.makeText(MainActivity.this, cb.getText() + " removed.", Toast.LENGTH_SHORT).show();
-                                                                      }
-                                                                  }, 220);
-                                                              }
-                                                          }
-                                                      });
+                                                     // final CheckBox cb = new CheckBox(MainActivity.this);
+                                                     // cb.setText(etInput.getText().toString().trim());
+                                                     // cb.setTextSize(17);
+                                                     // ll.addView(cb, 0);
+                                                     itemArr.add(new Item(etInput.getText().toString().trim(),false));
+                                                     adapter.notifyDataSetChanged();
+                                                     etInput.setText("");
+                                                     // cb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                                                     //     @Override
+                                                     //     public void onCheckedChanged(CompoundButton arg0, boolean isChecked) {
+                                                     //         if (isChecked) {
+                                                     //             Handler handler = new Handler();
+                                                     //             handler.postDelayed(new Runnable() {
+                                                     //                 @Override
+                                                     //                 public void run() {
+                                                     //                     ll.removeView(cb);
+                                                     //                     Toast.makeText(MainActivity.this, cb.getText() + " removed.", Toast.LENGTH_SHORT).show();
+                                                     //                 }
+                                                     //             }, 220);
+                                                     //         }
+                                                     //     }
+                                                     // });
                                                       return true;
                                                   }
-                                                  return false;
+                                                  else{
+                                                      return true;
+                                                  }
                                               }
                                           }
         );
@@ -133,23 +147,6 @@ public class MainActivity extends AppCompatActivity {
         sb.setProgress(0);
         //disableCheck();
         super.onResume();
-    }
-
-    public void disableCheck() {
-        LinearLayout myLayout = (LinearLayout) findViewById(R.id.llItems);
-        for ( int i = 0; i < myLayout.getChildCount();  i++ ){
-            View view = myLayout.getChildAt(i);
-            view.setEnabled(false);
-            view.setClickable(false);
-        }
-    }
-    public void enableCheck(){
-        LinearLayout myLayout = (LinearLayout) findViewById(R.id.llItems);
-        for ( int i = 0; i < myLayout.getChildCount();  i++ ){
-            View view = myLayout.getChildAt(i);
-            view.setEnabled(true);
-            view.setClickable(true);
-        }
     }
     public void hideKeyboard(){
         View view = this.getCurrentFocus();
