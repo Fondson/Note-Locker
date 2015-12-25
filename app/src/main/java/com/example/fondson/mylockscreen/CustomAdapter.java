@@ -13,7 +13,19 @@ import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Set;
 
 /**
  * Created by Fondson on 2015-12-21.
@@ -33,10 +45,10 @@ public class CustomAdapter extends ArrayAdapter<Item>{
         CheckBox selected;
     }
 
+    public ViewHolder holder = null;
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
 
-        ViewHolder holder = null;
         final Item item = itemList.get(position);
 
         if (convertView == null) {
@@ -58,11 +70,15 @@ public class CustomAdapter extends ArrayAdapter<Item>{
                     handler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
+                            //MainActivity.itemArrString.remove(item.getName());
+                            //MainActivity.prefEdit.putStringSet("item", MainActivity.itemArrString);
+                            //MainActivity.prefEdit.commit();
+                            removeFile(item.getName());
                             itemList.remove(position);
-                            Toast.makeText(context, item.getName() + " removed.", Toast.LENGTH_SHORT).show();
                             notifyDataSetChanged();
+                            //Toast.makeText(context, item.getName() + " removed.", Toast.LENGTH_SHORT).show();
                         }
-                    }, 220);
+                    }, 200);
                 }
             }
         });
@@ -73,6 +89,42 @@ public class CustomAdapter extends ArrayAdapter<Item>{
 
         return convertView;
 
+    }
+    public void removeFile(String item){
+        try{
+            //File inputFile = new File(MainActivity.fileName);
+            //File tempFile = new File("myTempFile.txt");
+
+            //BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+            //BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile,true));
+            FileOutputStream fileOutputStream=context.openFileOutput("myTempFile.txt", context.MODE_APPEND);
+            OutputStreamWriter outputStreamWriter=new OutputStreamWriter(fileOutputStream);
+            BufferedWriter writer=new BufferedWriter(outputStreamWriter);
+
+            FileInputStream fileInputStream=context.openFileInput(MainActivity.fileName);
+            InputStreamReader inputStreamReader=new InputStreamReader(fileInputStream);
+            BufferedReader reader=new BufferedReader(inputStreamReader);
+
+            String lineToRemove = item;
+            String currentLine;
+
+            while((currentLine = reader.readLine()) != null) {
+                // trim newline when comparing with lineToRemove
+                String trimmedLine = currentLine.trim();
+                if(trimmedLine.equals(lineToRemove)) continue;
+                writer.write(currentLine);
+                writer.newLine();
+            }
+            writer.close();
+            reader.close();
+            (new File(context.getFilesDir()+"/"+MainActivity.fileName)).delete();
+            File file = new File(context.getFilesDir()+"/"+"myTempFile.txt");
+            file.renameTo(new File(context.getFilesDir()+"/"+MainActivity.fileName));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
     @Override
     public void notifyDataSetChanged() {

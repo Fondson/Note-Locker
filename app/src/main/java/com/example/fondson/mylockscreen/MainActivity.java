@@ -27,8 +27,17 @@ import android.os.Handler;
 import com.example.fondson.mylockscreen.AutoStart;
 import com.example.fondson.mylockscreen.UpdateService;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -40,6 +49,10 @@ public class MainActivity extends AppCompatActivity {
     private ListView lv;
     private ArrayList<Item> itemArr;
     private CustomAdapter adapter;
+    public static String fileName="items.txt";
+    //public static SharedPreferences prefSet;
+    //public static SharedPreferences.Editor prefEdit;
+    //public static Set<String> itemArrString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,10 +65,20 @@ public class MainActivity extends AppCompatActivity {
         //final LinearLayout ll = (LinearLayout)findViewById(R.id.llItems);
         //ll.setOrientation(LinearLayout.VERTICAL);
         //disableCheck();
-        lv = (ListView)findViewById(R.id.listView);
         itemArr = new ArrayList<Item>();
         adapter=new CustomAdapter(this,itemArr);
+        lv = (ListView)findViewById(R.id.listView);
         lv.setAdapter(adapter);
+        //prefSet=getPreferences(0);
+        //prefEdit=prefSet.edit();
+        //itemArrString=prefSet.getStringSet("items", new LinkedHashSet<String>());
+        //if (!itemArrString.isEmpty()){
+        //    for (String item:itemArrString){
+        //        itemArr.add(0, new Item(item, false));
+        //    }
+        //}
+        repopulateList();
+        adapter.notifyDataSetChanged();
         final EditText etInput = (EditText) findViewById(R.id.editText);
         etInput.setOnEditorActionListener(new EditText.OnEditorActionListener() {
                                               @Override
@@ -65,7 +88,11 @@ public class MainActivity extends AppCompatActivity {
                                                      // cb.setText(etInput.getText().toString().trim());
                                                      // cb.setTextSize(17);
                                                      // ll.addView(cb, 0);
-                                                     itemArr.add(0,new Item(etInput.getText().toString().trim(),false));
+                                                     //itemArrString.add(etInput.getText().toString().trim());
+                                                     //prefEdit.putStringSet("item", itemArrString);
+                                                     //prefEdit.commit();
+                                                      writeFile(etInput.getText().toString().trim());
+                                                     itemArr.add(0, new Item(etInput.getText().toString().trim(), false));
                                                      adapter.notifyDataSetChanged();
                                                      etInput.setText("");
                                                      // cb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -129,6 +156,37 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+    public void writeFile(String item){
+        try{
+            FileOutputStream fileOutputStream=openFileOutput(fileName, MODE_APPEND);
+            OutputStreamWriter outputStreamWriter=new OutputStreamWriter(fileOutputStream);
+            BufferedWriter bufferedWriter=new BufferedWriter(outputStreamWriter);
+            bufferedWriter.write(item);
+            bufferedWriter.newLine();
+            bufferedWriter.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    public void repopulateList(){
+        try{
+            String item;
+            FileInputStream fileInputStream=openFileInput(fileName);
+            InputStreamReader inputStreamReader=new InputStreamReader(fileInputStream);
+            BufferedReader bufferedReader=new BufferedReader(inputStreamReader);
+            StringBuffer stringBuffer=new StringBuffer();
+            while((item=bufferedReader.readLine())!=null){
+                itemArr.add(0,new Item(item,false));
+            }
+            fileInputStream.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
     // Don't finish Activity on Back press
     @Override
