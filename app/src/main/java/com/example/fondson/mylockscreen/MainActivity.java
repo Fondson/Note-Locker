@@ -1,15 +1,23 @@
 package com.example.fondson.mylockscreen;
 
+import android.app.WallpaperManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -47,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
 
     final HomeKeyLocker homeKeyLocker = new HomeKeyLocker();
     private ListView lv;
+    private RelativeLayout rl;
     private ArrayList<Item> itemArr;
     private CustomAdapter adapter;
     public static String fileName="items.txt";
@@ -56,11 +65,19 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //Window window = this.getWindow();
+        //window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        //window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+        //window.setStatusBarColor(this.getResources().getColor(R.color.colorPrimary));
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        WallpaperManager wallpaperManager = WallpaperManager.getInstance(this);
+        Drawable wallpaperDrawable = wallpaperManager.getDrawable();
+        rl = (RelativeLayout) findViewById(R.id.rl);
+        rl.setBackground(wallpaperDrawable);
         startService(new Intent(this, UpdateService.class));
         //final LinearLayout ll = (LinearLayout)findViewById(R.id.llItems);
         //ll.setOrientation(LinearLayout.VERTICAL);
