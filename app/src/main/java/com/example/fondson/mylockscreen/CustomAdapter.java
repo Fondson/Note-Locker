@@ -76,7 +76,7 @@ public class CustomAdapter extends ArrayAdapter<Item>{
                             removeFile(item.getName());
                             itemList.remove(position);
                             notifyDataSetChanged();
-                            //Toast.makeText(context, item.getName() + " removed.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(context, item.getName() + " removed.", Toast.LENGTH_SHORT).show();
                         }
                     }, 200);
                 }
