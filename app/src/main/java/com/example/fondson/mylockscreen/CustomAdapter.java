@@ -1,15 +1,24 @@
 package com.example.fondson.mylockscreen;
 
+import android.app.Service;
 import android.content.Context;
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.os.Handler;
+import android.support.v7.app.AlertDialog;
+import android.text.InputType;
+import android.text.method.KeyListener;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,6 +42,7 @@ import java.util.Set;
 public class CustomAdapter extends ArrayAdapter<Item>{
     private ArrayList<Item> itemList;
     Context context;
+
     public CustomAdapter(Context context,
                            ArrayList<Item> itemList) {
         super(context, R.layout.row, itemList);
@@ -40,7 +50,7 @@ public class CustomAdapter extends ArrayAdapter<Item>{
         this.itemList = itemList;
     }
 
-    private class ViewHolder {
+    public class ViewHolder {
         TextView name;
         CheckBox selected;
     }
@@ -55,13 +65,30 @@ public class CustomAdapter extends ArrayAdapter<Item>{
             LayoutInflater vi = ((Activity)context).getLayoutInflater();
             convertView = vi.inflate(R.layout.row, parent, false);
             holder = new ViewHolder();
-            holder.name = (TextView) convertView.findViewById(R.id.textView1);
+            holder.name = (TextView) convertView.findViewById(R.id.editText1);
             holder.selected = (CheckBox) convertView.findViewById(R.id.checkBox1);
             convertView.setTag(holder);
             }
         else {
             holder = (ViewHolder) convertView.getTag();
         }
+        //holder.name.setOnLongClickListener(new View.OnLongClickListener() {
+        //    @Override
+        //    public boolean onLongClick(View v) {
+        //        MainActivity.homeKeyLocker.unlock();
+        //        holder.name.setFocusable(true);
+        //        holder.name.setFocusableInTouchMode( true );
+        //        holder.name.requestFocus();
+
+        //        InputMethodManager imm = (InputMethodManager) context.getSystemService(Service.INPUT_METHOD_SERVICE);
+        //       imm.showSoftInput(holder.name, InputMethodManager.SHOW_FORCED);
+        //        listener = holder.name.getKeyListener();
+        //        holder.name.setKeyListener(listener);
+        //        notifyDataSetChanged();
+        //        Toast.makeText(context, item.getName() + " longclicked.", Toast.LENGTH_SHORT).show();
+        //       return false;
+        //   }
+        //});
         holder.selected.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton arg0, boolean isChecked) {
@@ -82,10 +109,10 @@ public class CustomAdapter extends ArrayAdapter<Item>{
                 }
             }
         });
+        holder.name.setKeyListener(null);
         holder.name.setText(item.getName());
         holder.selected.setChecked(item.isSelected());
         holder.name.setTag(item);
-
 
         return convertView;
 

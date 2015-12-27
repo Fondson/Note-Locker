@@ -5,13 +5,13 @@
     android:layout_height="match_parent"
     tools:context="com.example.fondson.mylockscreen.MainActivity"
     android:focusableInTouchMode="false"
-    android:clickable="false"
+    android:clickable="true"
     android:id="@+id/rl">
 
     <ImageView
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:id="@+id/imageView"
+        android:id="@+id/ivDarkTint"
         android:background="#58000000" />
 
     <LinearLayout
@@ -21,7 +21,7 @@
         android:paddingBottom="@dimen/activity_vertical_margin"
         android:paddingLeft="@dimen/activity_horizontal_margin"
         android:paddingRight="@dimen/activity_horizontal_margin"
-        android:paddingTop="28dp"
+        android:paddingTop="@dimen/activity_vertical_margin"
         android:id="@+id/llMain">
 
         <TextClock
@@ -34,8 +34,8 @@
             android:format24Hour="k:mm"
             android:typeface="normal"
             android:enabled="true"
-            android:paddingTop="15dp"
-            android:paddingBottom="10dp" />
+            android:paddingBottom="10dp"
+            android:paddingTop="15dp" />
 
         <LinearLayout
             android:orientation="vertical"
@@ -58,10 +58,11 @@
                 android:hint="@string/editText"
                 android:theme="@android:style/Widget.Material.Light.EditText"
                 android:background="#6afdfdfd"
-                android:padding="10dp" />
+                android:padding="10dp"
+                android:editable="false" />
 
             <ListView
-                android:layout_width="wrap_content"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/listView"
                 android:paddingTop="10dp" />
