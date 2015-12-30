@@ -72,23 +72,6 @@ public class CustomAdapter extends ArrayAdapter<Item>{
         else {
             holder = (ViewHolder) convertView.getTag();
         }
-        //holder.name.setOnLongClickListener(new View.OnLongClickListener() {
-        //    @Override
-        //    public boolean onLongClick(View v) {
-        //        MainActivity.homeKeyLocker.unlock();
-        //        holder.name.setFocusable(true);
-        //        holder.name.setFocusableInTouchMode( true );
-        //        holder.name.requestFocus();
-
-        //        InputMethodManager imm = (InputMethodManager) context.getSystemService(Service.INPUT_METHOD_SERVICE);
-        //       imm.showSoftInput(holder.name, InputMethodManager.SHOW_FORCED);
-        //        listener = holder.name.getKeyListener();
-        //        holder.name.setKeyListener(listener);
-        //        notifyDataSetChanged();
-        //        Toast.makeText(context, item.getName() + " longclicked.", Toast.LENGTH_SHORT).show();
-        //       return false;
-        //   }
-        //});
         holder.selected.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton arg0, boolean isChecked) {
@@ -97,9 +80,6 @@ public class CustomAdapter extends ArrayAdapter<Item>{
                     handler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            //MainActivity.itemArrString.remove(item.getName());
-                            //MainActivity.prefEdit.putStringSet("item", MainActivity.itemArrString);
-                            //MainActivity.prefEdit.commit();
                             removeFile(item.getName());
                             itemList.remove(position);
                             notifyDataSetChanged();
@@ -119,11 +99,6 @@ public class CustomAdapter extends ArrayAdapter<Item>{
     }
     public void removeFile(String item){
         try{
-            //File inputFile = new File(MainActivity.fileName);
-            //File tempFile = new File("myTempFile.txt");
-
-            //BufferedReader reader = new BufferedReader(new FileReader(inputFile));
-            //BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile,true));
             FileOutputStream fileOutputStream=context.openFileOutput("myTempFile.txt", context.MODE_APPEND);
             OutputStreamWriter outputStreamWriter=new OutputStreamWriter(fileOutputStream);
             BufferedWriter writer=new BufferedWriter(outputStreamWriter);
@@ -136,7 +111,6 @@ public class CustomAdapter extends ArrayAdapter<Item>{
             String currentLine;
 
             while((currentLine = reader.readLine()) != null) {
-                // trim newline when comparing with lineToRemove
                 String trimmedLine = currentLine.trim();
                 if(trimmedLine.equals(lineToRemove)) continue;
                 writer.write(currentLine);

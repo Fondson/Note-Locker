@@ -4,40 +4,29 @@ import android.app.Service;
 import android.app.WallpaperManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.KeyListener;
-import android.util.DisplayMetrics;
 import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
-import android.widget.CompoundButton;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
-import android.widget.ScrollView;
 import android.widget.EditText;
-import android.widget.CheckBox;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.os.Handler;
-import com.example.fondson.mylockscreen.AutoStart;
-import com.example.fondson.mylockscreen.UpdateService;
+
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -49,10 +38,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
 
 import io.github.homelocker.lib.HomeKeyLocker;
 
@@ -64,21 +49,18 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout ll;
     private ArrayList<Item> itemArr;
     private CustomAdapter adapter;
-    public static String fileName="items.txt";
+    public static String fileName = "items.txt";
     private KeyListener listener;
-    //public static SharedPreferences prefSet;
-    //public static SharedPreferences.Editor prefEdit;
-    //public static Set<String> itemArrString;
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    private GoogleApiClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        //Window window = this.getWindow();
-        //window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-        //window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-        //window.setStatusBarColor(this.getResources().getColor(R.color.colorPrimary));
-
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
-                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED|WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -93,26 +75,15 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
-        ll=(LinearLayout)findViewById(R.id.llMain);
+        ll = (LinearLayout) findViewById(R.id.llMain);
         float scale = getResources().getDisplayMetrics().density;
         int dpAsPixels = (int) (16 * scale + 0.5f); //standard padding by Android Design Guidelines
-        ll.setPadding(dpAsPixels,dpAsPixels+getStatusBarHeight(),dpAsPixels,dpAsPixels);
+        ll.setPadding(dpAsPixels, dpAsPixels + getStatusBarHeight(), dpAsPixels, dpAsPixels);
         startService(new Intent(this, UpdateService.class));
-        //final LinearLayout ll = (LinearLayout)findViewById(R.id.llItems);
-        //ll.setOrientation(LinearLayout.VERTICAL);
-        //disableCheck();
         itemArr = new ArrayList<Item>();
-        adapter=new CustomAdapter(this,itemArr);
-        lv = (ListView)findViewById(R.id.listView);
+        adapter = new CustomAdapter(this, itemArr);
+        lv = (ListView) findViewById(R.id.listView);
         lv.setAdapter(adapter);
-        //prefSet=getPreferences(0);
-        //prefEdit=prefSet.edit();
-        //itemArrString=prefSet.getStringSet("items", new LinkedHashSet<String>());
-        //if (!itemArrString.isEmpty()){
-        //    for (String item:itemArrString){
-        //        itemArr.add(0, new Item(item, false));
-        //    }
-        //}
         repopulateList();
         adapter.notifyDataSetChanged();
         final EditText etInput = (EditText) findViewById(R.id.editText);
@@ -120,32 +91,10 @@ public class MainActivity extends AppCompatActivity {
                                               @Override
                                               public boolean onEditorAction(TextView arg0, int arg1, KeyEvent event) {
                                                   if (arg1 == EditorInfo.IME_ACTION_NEXT && !(etInput.getText().toString().trim().matches(""))) {
-                                                     // final CheckBox cb = new CheckBox(MainActivity.this);
-                                                     // cb.setText(etInput.getText().toString().trim());
-                                                     // cb.setTextSize(17);
-                                                     // ll.addView(cb, 0);
-                                                     //itemArrString.add(etInput.getText().toString().trim());
-                                                     //prefEdit.putStringSet("item", itemArrString);
-                                                     //prefEdit.commit();
                                                       writeFile(etInput.getText().toString().trim());
-                                                     itemArr.add(0, new Item(etInput.getText().toString().trim(), false));
-                                                     adapter.notifyDataSetChanged();
-                                                     etInput.setText("");
-                                                     // cb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                                                     //     @Override
-                                                     //     public void onCheckedChanged(CompoundButton arg0, boolean isChecked) {
-                                                     //         if (isChecked) {
-                                                     //             Handler handler = new Handler();
-                                                     //             handler.postDelayed(new Runnable() {
-                                                     //                 @Override
-                                                     //                 public void run() {
-                                                     //                     ll.removeView(cb);
-                                                     //                     Toast.makeText(MainActivity.this, cb.getText() + " removed.", Toast.LENGTH_SHORT).show();
-                                                     //                 }
-                                                     //             }, 220);
-                                                     //         }
-                                                     //     }
-                                                     // });
+                                                      itemArr.add(0, new Item(etInput.getText().toString().trim(), false));
+                                                      adapter.notifyDataSetChanged();
+                                                      etInput.setText("");
                                                   }
                                                   return true;
 
@@ -155,30 +104,21 @@ public class MainActivity extends AppCompatActivity {
         etInput.setOnClickListener(new EditText.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //enableCheck();
                 homeKeyLocker.unlock();
                 InputMethodManager imm = (InputMethodManager) MainActivity.this.getSystemService(Service.INPUT_METHOD_SERVICE);
                 imm.showSoftInput(etInput, InputMethodManager.SHOW_FORCED);
             }
         });
-        //ScrollView sv = (ScrollView)findViewById(R.id.sv);
-        //sv.setOnTouchListener(new View.OnTouchListener() {
-        //    long down;
 
-        //    @Override
-        //    public boolean onTouch(View v, MotionEvent event) {
-
-        //    }
-        //});
-        listener=etInput.getKeyListener();
+        listener = etInput.getKeyListener();
         lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
                                            final int pos, long id) {
                 // TODO Auto-generated method stub
                 homeKeyLocker.unlock();
-                final Item item=(Item)arg0.getItemAtPosition(pos);
-                final EditText editText =(EditText)arg1;
+                final Item item = (Item) arg0.getItemAtPosition(pos);
+                final EditText editText = (EditText) arg1;
                 editText.setKeyListener(listener);
                 editText.requestFocus();
                 editText.setSelection(editText.getText().length());
@@ -193,21 +133,6 @@ public class MainActivity extends AppCompatActivity {
                                                                String pastName = item.getName();
                                                                item.setName(editText.getText().toString().trim());
                                                                //Toast.makeText(MainActivity.this, pastName + " changed to " + item.getName(), Toast.LENGTH_SHORT).show();
-                                                               // cb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                                                               //     @Override
-                                                               //     public void onCheckedChanged(CompoundButton arg0, boolean isChecked) {
-                                                               //         if (isChecked) {
-                                                               //             Handler handler = new Handler();
-                                                               //             handler.postDelayed(new Runnable() {
-                                                               //                 @Override
-                                                               //                 public void run() {
-                                                               //                     ll.removeView(cb);
-                                                               //                     Toast.makeText(MainActivity.this, cb.getText() + " removed.", Toast.LENGTH_SHORT).show();
-                                                               //                 }
-                                                               //             }, 220);
-                                                               //         }
-                                                               //     }
-                                                               // });
                                                            }
                                                            editText.setKeyListener(null);
                                                            hideKeyboard();
@@ -242,12 +167,16 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
-    public void writeFile(String item){
-        try{
-            FileOutputStream fileOutputStream=openFileOutput(fileName, MODE_APPEND);
-            OutputStreamWriter outputStreamWriter=new OutputStreamWriter(fileOutputStream);
-            BufferedWriter bufferedWriter=new BufferedWriter(outputStreamWriter);
+
+    public void writeFile(String item) {
+        try {
+            FileOutputStream fileOutputStream = openFileOutput(fileName, MODE_APPEND);
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream);
+            BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter);
             bufferedWriter.write(item);
             bufferedWriter.newLine();
             bufferedWriter.close();
@@ -257,15 +186,16 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
-    public void repopulateList(){
-        try{
+
+    public void repopulateList() {
+        try {
             String item;
-            FileInputStream fileInputStream=openFileInput(fileName);
-            InputStreamReader inputStreamReader=new InputStreamReader(fileInputStream);
-            BufferedReader bufferedReader=new BufferedReader(inputStreamReader);
-            StringBuffer stringBuffer=new StringBuffer();
-            while((item=bufferedReader.readLine())!=null){
-                itemArr.add(0,new Item(item,false));
+            FileInputStream fileInputStream = openFileInput(fileName);
+            InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+            StringBuffer stringBuffer = new StringBuffer();
+            while ((item = bufferedReader.readLine()) != null) {
+                itemArr.add(0, new Item(item, false));
             }
             fileInputStream.close();
         } catch (FileNotFoundException e) {
@@ -274,33 +204,37 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+
     // Don't finish Activity on Back press
     @Override
     public void onBackPressed() {
         return;
     }
+
     protected void onPause() {
         hideKeyboard();
         homeKeyLocker.unlock();
         startService(new Intent(this, UpdateService.class));
         super.onPause();
     }
+
     protected void onResume() {
         //homeKeyLocker.lock(this);
-        ((EditText)findViewById(R.id.editText)).setText("");
+        ((EditText) findViewById(R.id.editText)).setText("");
         adapter.notifyDataSetChanged();
         final SeekBar sb = (SeekBar) findViewById(R.id.seekBar);
         sb.setProgress(0);
-        //disableCheck();
         super.onResume();
     }
-    public void hideKeyboard(){
+
+    public void hideKeyboard() {
         View view = this.getCurrentFocus();
         if (view != null) {
-            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
     }
+
     // A method to find height of the status bar
     public int getStatusBarHeight() {
         int result = 0;
@@ -310,23 +244,24 @@ public class MainActivity extends AppCompatActivity {
         }
         return result;
     }
-    public void replaceFile(String item,String itemReplace){
-        try{
+
+    public void replaceFile(String item, String itemReplace) {
+        try {
             FileOutputStream fileOutputStream = this.openFileOutput("myTempFile.txt", this.MODE_APPEND);
-            OutputStreamWriter outputStreamWriter=new OutputStreamWriter(fileOutputStream);
-            BufferedWriter writer=new BufferedWriter(outputStreamWriter);
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream);
+            BufferedWriter writer = new BufferedWriter(outputStreamWriter);
 
             FileInputStream fileInputStream = this.openFileInput(MainActivity.fileName);
-            InputStreamReader inputStreamReader=new InputStreamReader(fileInputStream);
-            BufferedReader reader=new BufferedReader(inputStreamReader);
+            InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
+            BufferedReader reader = new BufferedReader(inputStreamReader);
 
             String lineToReplace = item;
             String currentLine;
 
-            while((currentLine = reader.readLine()) != null) {
+            while ((currentLine = reader.readLine()) != null) {
                 // trim newline when comparing with lineToRemove
                 String trimmedLine = currentLine.trim();
-                if(trimmedLine.equals(lineToReplace)) {
+                if (trimmedLine.equals(lineToReplace)) {
                     writer.write(itemReplace);
                     writer.newLine();
                     continue;
@@ -336,13 +271,53 @@ public class MainActivity extends AppCompatActivity {
             }
             writer.close();
             reader.close();
-            (new File(this.getFilesDir()+"/"+MainActivity.fileName)).delete();
-            File file = new File(this.getFilesDir()+"/"+"myTempFile.txt");
-            file.renameTo(new File(this.getFilesDir()+"/"+MainActivity.fileName));
+            (new File(this.getFilesDir() + "/" + MainActivity.fileName)).delete();
+            File file = new File(this.getFilesDir() + "/" + "myTempFile.txt");
+            file.renameTo(new File(this.getFilesDir() + "/" + MainActivity.fileName));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client.connect();
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "Main Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://host/path"),
+                // TODO: Make sure this auto-generated app deep link URI is correct.
+                Uri.parse("android-app://com.example.fondson.mylockscreen/http/host/path")
+        );
+        AppIndex.AppIndexApi.start(client, viewAction);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "Main Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://host/path"),
+                // TODO: Make sure this auto-generated app deep link URI is correct.
+                Uri.parse("android-app://com.example.fondson.mylockscreen/http/host/path")
+        );
+        AppIndex.AppIndexApi.end(client, viewAction);
+        client.disconnect();
     }
 }
