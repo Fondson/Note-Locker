@@ -146,11 +146,9 @@ public class MainActivity extends AppCompatActivity {
                                                      //         }
                                                      //     }
                                                      // });
-                                                      return true;
                                                   }
-                                                  else{
-                                                      return true;
-                                                  }
+                                                  return true;
+
                                               }
                                           }
         );
@@ -194,7 +192,7 @@ public class MainActivity extends AppCompatActivity {
                                                                replaceFile(item.getName(), editText.getText().toString().trim());
                                                                String pastName = item.getName();
                                                                item.setName(editText.getText().toString().trim());
-                                                               Toast.makeText(MainActivity.this, pastName + " changed to " + item.getName(), Toast.LENGTH_SHORT).show();
+                                                               //Toast.makeText(MainActivity.this, pastName + " changed to " + item.getName(), Toast.LENGTH_SHORT).show();
                                                                // cb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                                                                //     @Override
                                                                //     public void onCheckedChanged(CompoundButton arg0, boolean isChecked) {
@@ -210,7 +208,6 @@ public class MainActivity extends AppCompatActivity {
                                                                //         }
                                                                //     }
                                                                // });
-                                                           } else {
                                                            }
                                                            editText.setKeyListener(null);
                                                            hideKeyboard();
@@ -290,6 +287,7 @@ public class MainActivity extends AppCompatActivity {
     }
     protected void onResume() {
         //homeKeyLocker.lock(this);
+        ((EditText)findViewById(R.id.editText)).setText("");
         adapter.notifyDataSetChanged();
         final SeekBar sb = (SeekBar) findViewById(R.id.seekBar);
         sb.setProgress(0);
