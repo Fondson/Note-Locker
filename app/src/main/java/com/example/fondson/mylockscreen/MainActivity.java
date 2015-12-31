@@ -144,7 +144,17 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
-        final SeekBar sb = (SeekBar) findViewById(R.id.seekBar);
+        // Retrieve layout elements
+        UnlockBar unlock = (UnlockBar) findViewById(R.id.unlock);
+
+        // Attach listener
+        unlock.setOnUnlockListener(new UnlockBar.OnUnlockListener() {
+            @Override
+            public void onUnlock() {
+                moveTaskToBack(true);
+            }
+        });
+        /*final SeekBar sb = (SeekBar) findViewById(R.id.seekBar);
         sb.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
             @Override
@@ -167,6 +177,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        */
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
@@ -222,8 +233,10 @@ public class MainActivity extends AppCompatActivity {
         //homeKeyLocker.lock(this);
         ((EditText) findViewById(R.id.editText)).setText("");
         adapter.notifyDataSetChanged();
-        final SeekBar sb = (SeekBar) findViewById(R.id.seekBar);
-        sb.setProgress(0);
+        UnlockBar unlock = (UnlockBar) findViewById(R.id.unlock);
+        unlock.reset();
+        //final SeekBar sb = (SeekBar) findViewById(R.id.seekBar);
+        //sb.setProgress(0);
         super.onResume();
     }
 

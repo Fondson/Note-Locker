@@ -68,26 +68,19 @@
                 android:paddingTop="10dp" />
 
         </LinearLayout>
-
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:weightSum="2"
             android:gravity="right"
-            android:paddingTop="10dp">
-
-            <SeekBar
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:id="@+id/seekBar"
-                android:thumb="@mipmap/ic_launcher"
-                android:layout_weight="1"
-                android:clickable="false"
-                android:paddingStart="25dp"
-                android:paddingEnd="25dp" />
-
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp">
+            <com.example.fondson.mylockscreen.UnlockBar
+                android:id="@+id/unlock"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
         </LinearLayout>
+
 
     </LinearLayout>
 
