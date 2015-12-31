@@ -60,7 +60,7 @@ public class UnlockBar extends RelativeLayout
 		});
 		animator.setDuration(300);
 		animator.start();
-		text_label.setAlpha(1f);
+		text_label.setAlpha(0.8f);
 	}
 
 	private void init(Context context, AttributeSet attrs)
@@ -73,7 +73,7 @@ public class UnlockBar extends RelativeLayout
 		img_thumb = (ImageView) findViewById(R.id.img_thumb);
 		
 		// Get padding
-		thumbWidth = dpToPx(80); // 60dp + 2*10dp
+		thumbWidth = dpToPx(100);
 	}
 	
 	@Override
@@ -117,7 +117,7 @@ public class UnlockBar extends RelativeLayout
 			{
 				int max = (int) (getMeasuredWidth() - thumbWidth);
 				int progress = (int) (sliderPosition * 100 / (max * 1.0f));
-				text_label.setAlpha(1f - progress * 0.02f);
+				text_label.setAlpha(0.8f - progress * 0.015f);
 			}
 			setMarginLeft(sliderPosition);
 		}
