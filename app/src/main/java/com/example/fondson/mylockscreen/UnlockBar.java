@@ -61,6 +61,8 @@ public class UnlockBar extends RelativeLayout
 		animator.setDuration(300);
 		animator.start();
 		text_label.setAlpha(0.8f);
+        sliding = false;
+        sliderPosition = 0;
 	}
 
 	private void init(Context context, AttributeSet attrs)
@@ -99,8 +101,6 @@ public class UnlockBar extends RelativeLayout
 			}
 			else
 			{
-				sliding = false;
-				sliderPosition = 0;
 				reset();
 			}
 		}
