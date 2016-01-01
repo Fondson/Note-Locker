@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">MyLockscreen</string>
+    <string name="app_name">Note Locker</string>
     <string name="editText">Add an item...</string>
 </resources>
