@@ -47,19 +47,41 @@
             android:clickable="false"
             android:weightSum="1">
 
-            <EditText
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/editText"
-                android:imeOptions="actionNext"
-                android:inputType="text|textCapSentences"
-                android:contextClickable="false"
-                android:capitalize="sentences"
-                android:hint="@string/editText"
-                android:theme="@android:style/Widget.Material.Light.EditText"
-                android:background="#6afdfdfd"
-                android:padding="10dp"
-                android:editable="false" />
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:id="@+id/llAddAndSettings"
+                android:longClickable="false">
+
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="fill_parent"
+                    android:id="@+id/editText"
+                    android:imeOptions="actionNext"
+                    android:inputType="text|textCapSentences"
+                    android:contextClickable="false"
+                    android:capitalize="sentences"
+                    android:hint="@string/editText"
+                    android:theme="@android:style/Widget.Material.Light.EditText"
+                    android:background="#6afdfdfd"
+                    android:padding="10dp"
+                    android:editable="false"
+                    android:layout_weight=".25" />
+
+                <ImageButton
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:id="@+id/btnSettings"
+                    android:src="@drawable/settings"
+                    android:visibility="visible"
+                    android:cropToPadding="false"
+                    android:background="#6afdfdfd"
+                    android:layout_weight="2"
+                    android:scaleType="fitXY"
+                    android:tint="#535353" />
+
+            </LinearLayout>
 
             <ListView
                 android:layout_width="fill_parent"
@@ -68,6 +90,7 @@
                 android:paddingTop="10dp" />
 
         </LinearLayout>
+
         <LinearLayout
             android:orientation="horizontal"
             android:layout_width="fill_parent"
