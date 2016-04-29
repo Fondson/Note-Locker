@@ -61,15 +61,15 @@ import io.github.homelocker.lib.HomeKeyLocker;
 public class MainActivity extends AppCompatActivity {
 
     //public static final HomeKeyLocker homeKeyLocker = new HomeKeyLocker();
+    private String WALLPAPER_PATH;
     private ListView lv;
     private RelativeLayout rl;
     private LinearLayout ll;
     private ArrayList<Item> itemArr;
     private CustomAdapter adapter;
-    public static String fileName = "items.txt";
+    public static final String fileName = "items.txt";
     private KeyListener listener;
     private String[] perms={"android.permission.READ_EXTERNAL_STORAGE","android.permission.WRITE_EXTERNAL_STORAGE"};
-    private Uri selectedImageUri;
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -91,9 +91,10 @@ public class MainActivity extends AppCompatActivity {
         rl = (RelativeLayout) findViewById(R.id.rl);
 
         //set initial wallpaper
-        File wallpaperFile= new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/.notelocker/wallpaper.jpg");
+        WALLPAPER_PATH=Environment.getExternalStorageDirectory().getAbsolutePath()+"/.notelocker/wallpaper.jpg";
+        File wallpaperFile= new File(WALLPAPER_PATH);
         if(wallpaperFile.exists()) {
-            Drawable wallpaper=Drawable.createFromPath(Environment.getExternalStorageDirectory().getAbsolutePath()+"/.notelocker/wallpaper.jpg");
+            Drawable wallpaper=Drawable.createFromPath(WALLPAPER_PATH);
             rl.setBackground(wallpaper);
         }
         else{
@@ -191,7 +192,10 @@ public class MainActivity extends AppCompatActivity {
         btnSettings.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v){
                 //requests permissions needed for users to select background image
-                requestPermissions(perms, 200);
+                if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.M){
+                    requestPermissions(perms, 200);
+                }
+                else{launchGalleryPicker();}
             }
         });
         /*final SeekBar sb = (SeekBar) findViewById(R.id.seekBar);
@@ -223,6 +227,14 @@ public class MainActivity extends AppCompatActivity {
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
+    private void launchGalleryPicker(){
+        Intent photoPickerIntent = new Intent(Intent.ACTION_PICK,
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        photoPickerIntent.setType("image/*");
+        photoPickerIntent.putExtra("crop", "true");
+        photoPickerIntent.putExtra("output", Uri.fromFile(new File(WALLPAPER_PATH)));
+        startActivityForResult(photoPickerIntent, 1);
+    }
     public void writeFile(String item) {
         try {
             FileOutputStream fileOutputStream = openFileOutput(fileName, MODE_APPEND);
@@ -271,11 +283,7 @@ public class MainActivity extends AppCompatActivity {
 //                startActivityForResult(
 //                        Intent.createChooser(intent, "Select File"),
 //                        1);
-                Intent photoPickerIntent = new Intent(Intent.ACTION_PICK,
-                        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                photoPickerIntent.setType("image/*");
-                photoPickerIntent.putExtra("crop", "true");
-                startActivityForResult(photoPickerIntent, 1);
+                launchGalleryPicker();
                 break;
         }
     }
@@ -295,19 +303,25 @@ public class MainActivity extends AppCompatActivity {
 //        Drawable d = Drawable.createFromPath(selectedImagePath);
 //        rl.setBackground(d);
         if (data!=null) {
-            selectedImageUri = data.getData();
-            try {
-                InputStream imageStream = getContentResolver().openInputStream(selectedImageUri);
-                Bitmap selectedBitmap = BitmapFactory.decodeStream(imageStream);
-//                Bundle extras = data.getExtras();
-//                Bitmap selectedBitmap = extras.getParcelable("data");
-                Drawable d = new BitmapDrawable(getResources(), selectedBitmap);
-                rl.setBackground(d);
-                moveFile(selectedImageUri.getPath(),"wallpaper.jpg",Environment.getExternalStorageDirectory().getAbsolutePath()+"/.notelocker/");
-                //deleteFileFromMediaStore(getContentResolver(), new File(selectedImageUri.getPath()));
-                imageStream.close();
+            if (requestCode==1){
+                rl.setBackground(Drawable.createFromPath(WALLPAPER_PATH));
             }
-            catch (Exception e){}
+//            try {
+//                InputStream imageStream = getContentResolver().openInputStream(selectedImageUri);
+//
+//                Bitmap selectedBitmap = BitmapFactory.decodeStream(imageStream);
+////                Bundle extras = data.getExtras();
+////                Bitmap selectedBitmap = extras.getParcelable("data");
+//                Drawable d = new BitmapDrawable(getResources(), selectedBitmap);
+
+//                Toast.makeText(this,selectedImageUri.getPath(),
+//                    Toast.LENGTH_LONG).show();
+//                //moveFile(selectedImageUri.getPath(),"wallpaper.jpg",Environment.getExternalStorageDirectory().getAbsolutePath()+"/.notelocker/");
+//                //deleteFileFromMediaStore(getContentResolver(), new File(selectedImageUri.getPath()));
+//                imageStream.close();
+//            }
+//            catch (Exception e){Toast.makeText(this,"i throw stuff",
+//                    Toast.LENGTH_LONG).show();}
 //            try {
 //                FileOutputStream fileOutputStream = openFileOutput("wallpaper.txt",MODE_PRIVATE);
 //                OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream);
@@ -317,6 +331,10 @@ public class MainActivity extends AppCompatActivity {
 //            }
 //            catch(Exception e){}
         }
+//        else{
+//            Toast.makeText(this,"null",
+//                Toast.LENGTH_LONG).show();}
+
     }
 
     private void moveFile(String inputPath, String inputFile,String outputPath) {
