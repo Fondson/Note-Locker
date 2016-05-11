@@ -150,7 +150,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
                                            final int pos, long id) {
-                // TODO Auto-generated method stub
                 //homeKeyLocker.unlock();
                 final Item item = (Item) arg0.getItemAtPosition(pos);
                 final EditText editText = (EditText) arg1;
@@ -165,7 +164,6 @@ public class MainActivity extends AppCompatActivity {
                                                        public boolean onEditorAction(TextView arg0, int arg1, KeyEvent event) {
                                                            if (!(editText.getText().toString().trim().matches(item.getName())) && !(editText.getText().toString().trim().matches(""))) {
                                                                replaceFile(item.getName(), editText.getText().toString().trim());
-                                                               //String pastName = item.getName();
                                                                item.setName(editText.getText().toString().trim());
                                                                //Toast.makeText(MainActivity.this, pastName + " changed to " + item.getName(), Toast.LENGTH_SHORT).show();
                                                            }
