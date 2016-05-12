@@ -61,6 +61,7 @@ import io.github.homelocker.lib.HomeKeyLocker;
 public class MainActivity extends AppCompatActivity {
 
     //public static final HomeKeyLocker homeKeyLocker = new HomeKeyLocker();
+    public static DBAdapter db;
     private String WALLPAPER_PATH;
     private ListView lv;
     private RelativeLayout rl;
@@ -70,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String fileName = "items.txt";
     private KeyListener listener;
     private String[] perms={"android.permission.READ_EXTERNAL_STORAGE","android.permission.WRITE_EXTERNAL_STORAGE"};
+
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -90,6 +92,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         rl = (RelativeLayout) findViewById(R.id.rl);
 
+        //open database
+        db=new DBAdapter(this);
+        db.open();
+        (new File(this.getFilesDir() + "/" + MainActivity.fileName)).delete();
         //set initial wallpaper
         WALLPAPER_PATH=Environment.getExternalStorageDirectory().getAbsolutePath()+"/.notelocker/wallpaper.jpg";
         File wallpaperFile= new File(WALLPAPER_PATH);
@@ -116,18 +122,19 @@ public class MainActivity extends AppCompatActivity {
         ll.setPadding(dpAsPixels, dpAsPixels + getStatusBarHeight(), dpAsPixels, dpAsPixels);
         startService(new Intent(this, UpdateService.class));
         itemArr = new ArrayList<Item>();
+        getAllItems(db.getAllRows());
         adapter = new CustomAdapter(this, itemArr);
         lv = (ListView) findViewById(R.id.listView);
         lv.setAdapter(adapter);
-        repopulateList();
         adapter.notifyDataSetChanged();
         final EditText etInput = (EditText) findViewById(R.id.editText);
         etInput.setOnEditorActionListener(new EditText.OnEditorActionListener() {
                                               @Override
                                               public boolean onEditorAction(TextView arg0, int arg1, KeyEvent event) {
-                                                  if (arg1 == EditorInfo.IME_ACTION_NEXT && !(etInput.getText().toString().trim().matches(""))) {
-                                                      writeFile(etInput.getText().toString().trim());
-                                                      itemArr.add(0, new Item(etInput.getText().toString().trim(), false));
+                                                  if (!(etInput.getText().toString().trim().matches(""))) {
+                                                      Long newId=db.insertRow(etInput.getText().toString().trim());
+                                                      //writeFile(etInput.getText().toString().trim());
+                                                      itemArr.add(0, new Item(newId, etInput.getText().toString().trim(), false));
                                                       adapter.notifyDataSetChanged();
                                                       etInput.setText("");
                                                   }
@@ -150,7 +157,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
                                            final int pos, long id) {
-                // TODO Auto-generated method stub
                 //homeKeyLocker.unlock();
                 final Item item = (Item) arg0.getItemAtPosition(pos);
                 final EditText editText = (EditText) arg1;
@@ -164,9 +170,10 @@ public class MainActivity extends AppCompatActivity {
                                                        @Override
                                                        public boolean onEditorAction(TextView arg0, int arg1, KeyEvent event) {
                                                            if (!(editText.getText().toString().trim().matches(item.getName())) && !(editText.getText().toString().trim().matches(""))) {
-                                                               replaceFile(item.getName(), editText.getText().toString().trim());
-                                                               //String pastName = item.getName();
-                                                               item.setName(editText.getText().toString().trim());
+                                                               //replaceFile(item.getName(), editText.getText().toString().trim());
+                                                               String newItemName=editText.getText().toString().trim();
+                                                               db.updateRow(item.getId(),newItemName);
+                                                               item.setName(newItemName);
                                                                //Toast.makeText(MainActivity.this, pastName + " changed to " + item.getName(), Toast.LENGTH_SHORT).show();
                                                            }
                                                            editText.setKeyListener(null);
@@ -188,10 +195,12 @@ public class MainActivity extends AppCompatActivity {
                 moveTaskToBack(true);
             }
         });
+
+        //settings button
         ImageButton btnSettings=(ImageButton) findViewById(R.id.btnSettings);
         btnSettings.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v){
-                //requests permissions needed for users to select background image
+                //requests permissions needed for users to select background image on M or above
                 if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.M){
                     requestPermissions(perms, 200);
                 }
@@ -235,40 +244,52 @@ public class MainActivity extends AppCompatActivity {
         photoPickerIntent.putExtra("output", Uri.fromFile(new File(WALLPAPER_PATH)));
         startActivityForResult(photoPickerIntent, 1);
     }
-    public void writeFile(String item) {
-        try {
-            FileOutputStream fileOutputStream = openFileOutput(fileName, MODE_APPEND);
-            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream);
-            BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter);
-            bufferedWriter.write(item);
-            bufferedWriter.newLine();
-            bufferedWriter.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+
+//    public void writeFile(String item) {
+//        try {
+//            FileOutputStream fileOutputStream = openFileOutput(fileName, MODE_APPEND);
+//            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream);
+//            BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter);
+//            bufferedWriter.write(item);
+//            bufferedWriter.newLine();
+//            bufferedWriter.close();
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
+
+    private void getAllItems(Cursor cursor){;
+        // Reset cursor to start, checking to see if there's data:
+        if (cursor.moveToFirst()) {
+            do {
+                // Process the data:
+                int id = cursor.getInt(DBAdapter.COL_ROWID);
+                String item = cursor.getString(DBAdapter.COL_ITEM);
+
+                itemArr.add(0,new Item(id,item,false));
+            } while(cursor.moveToNext());
         }
     }
 
-    public void repopulateList() {
-        try {
-            String item;
-            FileInputStream fileInputStream = openFileInput(fileName);
-            InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-            StringBuffer stringBuffer = new StringBuffer();
-            while ((item = bufferedReader.readLine()) != null) {
-                itemArr.add(0, new Item(item, false));
-            }
-            fileInputStream.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-
-    }
+//    public void repopulateList() {
+//        try {
+//            String item;
+//            FileInputStream fileInputStream = openFileInput(fileName);
+//            InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
+//            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+//            StringBuffer stringBuffer = new StringBuffer();
+//            while ((item = bufferedReader.readLine()) != null) {
+//                itemArr.add(0, new Item(item, false));
+//            }
+//            fileInputStream.close();
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//}
 
     //handles permission requests
     @Override
@@ -276,13 +297,6 @@ public class MainActivity extends AppCompatActivity {
         switch (permsRequestCode){
             //launches intent for user to select image from gallery
             case 200:
-//                Intent intent = new Intent(
-//                        Intent.ACTION_PICK,
-//                        android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-//                intent.setType("image/*");
-//                startActivityForResult(
-//                        Intent.createChooser(intent, "Select File"),
-//                        1);
                 launchGalleryPicker();
                 break;
         }
@@ -292,121 +306,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-//        Uri selectedImageUri = data.getData();
-//        String[] projection = { MediaStore.MediaColumns.DATA};
-//        CursorLoader cursorLoader = new CursorLoader(this,selectedImageUri, projection, null, null,
-//                null);
-//        Cursor cursor =cursorLoader.loadInBackground();
-//        int column_index = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA);
-//        cursor.moveToFirst();
-//        String selectedImagePath = cursor.getString(column_index);
-//        Drawable d = Drawable.createFromPath(selectedImagePath);
-//        rl.setBackground(d);
         if (data!=null) {
             if (requestCode==1){
                 rl.setBackground(Drawable.createFromPath(WALLPAPER_PATH));
-            }
-//            try {
-//                InputStream imageStream = getContentResolver().openInputStream(selectedImageUri);
-//
-//                Bitmap selectedBitmap = BitmapFactory.decodeStream(imageStream);
-////                Bundle extras = data.getExtras();
-////                Bitmap selectedBitmap = extras.getParcelable("data");
-//                Drawable d = new BitmapDrawable(getResources(), selectedBitmap);
-
-//                Toast.makeText(this,selectedImageUri.getPath(),
-//                    Toast.LENGTH_LONG).show();
-//                //moveFile(selectedImageUri.getPath(),"wallpaper.jpg",Environment.getExternalStorageDirectory().getAbsolutePath()+"/.notelocker/");
-//                //deleteFileFromMediaStore(getContentResolver(), new File(selectedImageUri.getPath()));
-//                imageStream.close();
-//            }
-//            catch (Exception e){Toast.makeText(this,"i throw stuff",
-//                    Toast.LENGTH_LONG).show();}
-//            try {
-//                FileOutputStream fileOutputStream = openFileOutput("wallpaper.txt",MODE_PRIVATE);
-//                OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream);
-//                BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter);
-//                bufferedWriter.write(selectedImageUri.getPath());
-//                bufferedWriter.close();
-//            }
-//            catch(Exception e){}
-        }
-//        else{
-//            Toast.makeText(this,"null",
-//                Toast.LENGTH_LONG).show();}
-
-    }
-
-    private void moveFile(String inputPath, String inputFile,String outputPath) {
-//        try {
-//
-//            File from = new File(inputPath);
-//            File to = new File(Environment.getExternalStorageDirectory().getAbsolutePath()+"/.notelocker/"+inputFile);
-//            from.renameTo(to);
-//            Toast.makeText(this, "hi i moved",
-//                    Toast.LENGTH_LONG).show();
-//
-//        }
-//        catch (Exception e) {
-//            Toast.makeText(this, "hi i throw exceptions",
-//                    Toast.LENGTH_LONG).show();
-//        }
-        InputStream in = null;
-        OutputStream out = null;
-        try {
-
-            //create output directory if it doesn't exist
-            File dir = new File (outputPath);
-            if (!dir.exists())
-            {
-                dir.mkdirs();
-            }
-
-
-            in = new FileInputStream(inputPath);
-            out = new FileOutputStream(outputPath + inputFile);
-
-            byte[] buffer = new byte[1024];
-            int read;
-            while ((read = in.read(buffer)) != -1) {
-                out.write(buffer, 0, read);
-            }
-            in.close();
-            in = null;
-
-            // write the output file (You have now copied the file)
-            out.flush();
-            out.close();
-            out = null;
-
-            // delete the original file
-            new File(inputPath).delete();
-            deleteFileFromMediaStore(getContentResolver(),new File(inputPath));
-
-        }  catch (FileNotFoundException fnfe1) {
-            Log.e("tag", fnfe1.getMessage());
-        }
-        catch (Exception e) {
-            Log.e("tag", e.getMessage());
-        }
-
-    }
-
-    public static void deleteFileFromMediaStore(final ContentResolver contentResolver, final File file) {
-        String canonicalPath;
-        try {
-            canonicalPath = file.getCanonicalPath();
-        } catch (IOException e) {
-            canonicalPath = file.getAbsolutePath();
-        }
-        final Uri uri = MediaStore.Files.getContentUri("external");
-        final int result = contentResolver.delete(uri,
-                MediaStore.Files.FileColumns.DATA + "=?", new String[]{canonicalPath});
-        if (result == 0) {
-            final String absolutePath = file.getAbsolutePath();
-            if (!absolutePath.equals(canonicalPath)) {
-                contentResolver.delete(uri,
-                        MediaStore.Files.FileColumns.DATA + "=?", new String[]{absolutePath});
             }
         }
     }
@@ -453,41 +355,41 @@ public class MainActivity extends AppCompatActivity {
         return result;
     }
 
-    public void replaceFile(String item, String itemReplace) {
-        try {
-            FileOutputStream fileOutputStream = this.openFileOutput("myTempFile.txt", this.MODE_APPEND);
-            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream);
-            BufferedWriter writer = new BufferedWriter(outputStreamWriter);
-
-            FileInputStream fileInputStream = this.openFileInput(MainActivity.fileName);
-            InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
-            BufferedReader reader = new BufferedReader(inputStreamReader);
-
-            String lineToReplace = item;
-            String currentLine;
-
-            while ((currentLine = reader.readLine()) != null) {
-                // trim newline when comparing with lineToRemove
-                String trimmedLine = currentLine.trim();
-                if (trimmedLine.equals(lineToReplace)) {
-                    writer.write(itemReplace);
-                    writer.newLine();
-                    continue;
-                }
-                writer.write(currentLine);
-                writer.newLine();
-            }
-            writer.close();
-            reader.close();
-            (new File(this.getFilesDir() + "/" + MainActivity.fileName)).delete();
-            File file = new File(this.getFilesDir() + "/" + "myTempFile.txt");
-            file.renameTo(new File(this.getFilesDir() + "/" + MainActivity.fileName));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+//    public void replaceFile(String item, String itemReplace) {
+//        try {
+//            FileOutputStream fileOutputStream = this.openFileOutput("myTempFile.txt", this.MODE_APPEND);
+//            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream);
+//            BufferedWriter writer = new BufferedWriter(outputStreamWriter);
+//
+//            FileInputStream fileInputStream = this.openFileInput(MainActivity.fileName);
+//            InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
+//            BufferedReader reader = new BufferedReader(inputStreamReader);
+//
+//            String lineToReplace = item;
+//            String currentLine;
+//
+//            while ((currentLine = reader.readLine()) != null) {
+//                // trim newline when comparing with lineToRemove
+//                String trimmedLine = currentLine.trim();
+//                if (trimmedLine.equals(lineToReplace)) {
+//                    writer.write(itemReplace);
+//                    writer.newLine();
+//                    continue;
+//                }
+//                writer.write(currentLine);
+//                writer.newLine();
+//            }
+//            writer.close();
+//            reader.close();
+//            (new File(this.getFilesDir() + "/" + MainActivity.fileName)).delete();
+//            File file = new File(this.getFilesDir() + "/" + "myTempFile.txt");
+//            file.renameTo(new File(this.getFilesDir() + "/" + MainActivity.fileName));
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     @Override
     public void onStart() {
@@ -527,5 +429,12 @@ public class MainActivity extends AppCompatActivity {
         );
         AppIndex.AppIndexApi.end(client, viewAction);
         client.disconnect();
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        db.close();
     }
 }

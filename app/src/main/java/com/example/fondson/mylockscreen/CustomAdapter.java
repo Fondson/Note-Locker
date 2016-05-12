@@ -80,7 +80,8 @@ public class CustomAdapter extends ArrayAdapter<Item>{
                     handler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            removeFile(item.getName());
+//                            removeFile(item.getName());
+                            MainActivity.db.deleteRow(item.getId());
                             itemList.remove(position);
                             notifyDataSetChanged();
                             //Toast.makeText(context, item.getName() + " removed.", Toast.LENGTH_SHORT).show();

@@ -15,6 +15,7 @@
         android:textSize="16sp"
         android:longClickable="true"
         android:focusable="true"
+        android:imeOptions="actionNext"
         android:background="@android:color/transparent"
         android:paddingBottom="2.5dp"
         android:paddingTop="2.5dp"/>
