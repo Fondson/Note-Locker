@@ -3,6 +3,7 @@ package com.example.fondson.mylockscreen;
 import android.Manifest;
 import android.app.Service;
 import android.app.WallpaperManager;
+import android.content.ClipData;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.CursorLoader;
@@ -30,6 +31,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
+import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -186,6 +188,7 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+
         // Retrieve layout elements
         UnlockBar unlock = (UnlockBar) findViewById(R.id.unlock);
         // Attach listener

@@ -19,6 +19,7 @@ import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -52,12 +53,13 @@ public class CustomAdapter extends ArrayAdapter<Item>{
 
     public class ViewHolder {
         TextView name;
-        CheckBox selected;
+        CheckBox checkBox;
+        //LinearLayout linearLayout;
     }
 
     public ViewHolder holder = null;
     @Override
-    public View getView(final int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, final ViewGroup parent) {
 
         final Item item = itemList.get(position);
 
@@ -65,17 +67,23 @@ public class CustomAdapter extends ArrayAdapter<Item>{
             LayoutInflater vi = ((Activity)context).getLayoutInflater();
             convertView = vi.inflate(R.layout.row, parent, false);
             holder = new ViewHolder();
-            holder.name = (TextView) convertView.findViewById(R.id.editText1);
-            holder.selected = (CheckBox) convertView.findViewById(R.id.checkBox1);
+            holder.name = (EditText) convertView.findViewById(R.id.editText1);
+            holder.checkBox = (CheckBox) convertView.findViewById(R.id.checkBox1);
             convertView.setTag(holder);
             }
         else {
             holder = (ViewHolder) convertView.getTag();
         }
-        holder.selected.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+        final View row=convertView;
+        holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onCheckedChanged(CompoundButton arg0, boolean isChecked) {
+            public void onCheckedChanged(final CompoundButton arg0, boolean isChecked) {
                 if (isChecked) {
+                    //holder.linearLayout.animate().setDuration(200).alpha(0);
+                    arg0.setChecked(false);
+                    row.animate().setDuration(300).alpha(0);
+                    enableDisableViewGroupClickable(parent,false);
                     Handler handler = new Handler();
                     handler.postDelayed(new Runnable() {
                         @Override
@@ -83,16 +91,18 @@ public class CustomAdapter extends ArrayAdapter<Item>{
 //                            removeFile(item.getName());
                             MainActivity.db.deleteRow(item.getId());
                             itemList.remove(position);
+                            enableDisableViewGroupClickable(parent,true);
                             notifyDataSetChanged();
+                            row.setAlpha(1);
                             //Toast.makeText(context, item.getName() + " removed.", Toast.LENGTH_SHORT).show();
                         }
-                    }, 200);
+                    }, 300);
                 }
             }
         });
         holder.name.setKeyListener(null);
         holder.name.setText(item.getName());
-        holder.selected.setChecked(item.isSelected());
+        holder.checkBox.setChecked(item.isSelected());
         holder.name.setTag(item);
 
         return convertView;
@@ -101,5 +111,17 @@ public class CustomAdapter extends ArrayAdapter<Item>{
     @Override
     public void notifyDataSetChanged() {
         super.notifyDataSetChanged();
+    }
+
+    //enables/disables clickable property for all views in viewGroup
+    public static void enableDisableViewGroupClickable(ViewGroup viewGroup, boolean enabled) {
+        int childCount = viewGroup.getChildCount();
+        for (int i = 0; i < childCount; i++) {
+            View view = viewGroup.getChildAt(i);
+            view.setClickable(enabled);
+            if (view instanceof ViewGroup) {
+                enableDisableViewGroupClickable((ViewGroup) view, enabled);
+            }
+        }
     }
 }
