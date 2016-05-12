@@ -55,6 +55,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 import io.github.homelocker.lib.HomeKeyLocker;
 
@@ -167,7 +168,8 @@ public class MainActivity extends AppCompatActivity {
                 editText.setOnEditorActionListener(new EditText.OnEditorActionListener() {
                                                        @Override
                                                        public boolean onEditorAction(TextView arg0, int arg1, KeyEvent event) {
-                                                           if (!(editText.getText().toString().trim().matches(item.getName())) && !(editText.getText().toString().trim().matches(""))) {
+                                                           //Patter.quote is used to escape special regex characters in item if present
+                                                           if (!(Pattern.quote(editText.getText().toString().trim()).matches(Pattern.quote(item.getName()))) && !(Pattern.quote(editText.getText().toString().trim()).matches(""))) {
                                                                //replaceFile(item.getName(), editText.getText().toString().trim());
                                                                String newItemName=editText.getText().toString().trim();
                                                                db.updateRow(item.getId(),newItemName);
