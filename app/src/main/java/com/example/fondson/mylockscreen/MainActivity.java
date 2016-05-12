@@ -68,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout ll;
     private ArrayList<Item> itemArr;
     private CustomAdapter adapter;
-    public static final String fileName = "items.txt";
     private KeyListener listener;
     private String[] perms={"android.permission.READ_EXTERNAL_STORAGE","android.permission.WRITE_EXTERNAL_STORAGE"};
 
@@ -95,7 +94,6 @@ public class MainActivity extends AppCompatActivity {
         //open database
         db=new DBAdapter(this);
         db.open();
-        (new File(this.getFilesDir() + "/" + MainActivity.fileName)).delete();
         //set initial wallpaper
         WALLPAPER_PATH=Environment.getExternalStorageDirectory().getAbsolutePath()+"/.notelocker/wallpaper.jpg";
         File wallpaperFile= new File(WALLPAPER_PATH);
@@ -245,21 +243,6 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(photoPickerIntent, 1);
     }
 
-//    public void writeFile(String item) {
-//        try {
-//            FileOutputStream fileOutputStream = openFileOutput(fileName, MODE_APPEND);
-//            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream);
-//            BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter);
-//            bufferedWriter.write(item);
-//            bufferedWriter.newLine();
-//            bufferedWriter.close();
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
-
     private void getAllItems(Cursor cursor){;
         // Reset cursor to start, checking to see if there's data:
         if (cursor.moveToFirst()) {
@@ -273,23 +256,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-//    public void repopulateList() {
-//        try {
-//            String item;
-//            FileInputStream fileInputStream = openFileInput(fileName);
-//            InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
-//            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-//            StringBuffer stringBuffer = new StringBuffer();
-//            while ((item = bufferedReader.readLine()) != null) {
-//                itemArr.add(0, new Item(item, false));
-//            }
-//            fileInputStream.close();
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//}
 
     //handles permission requests
     @Override
@@ -355,42 +321,6 @@ public class MainActivity extends AppCompatActivity {
         return result;
     }
 
-//    public void replaceFile(String item, String itemReplace) {
-//        try {
-//            FileOutputStream fileOutputStream = this.openFileOutput("myTempFile.txt", this.MODE_APPEND);
-//            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream);
-//            BufferedWriter writer = new BufferedWriter(outputStreamWriter);
-//
-//            FileInputStream fileInputStream = this.openFileInput(MainActivity.fileName);
-//            InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
-//            BufferedReader reader = new BufferedReader(inputStreamReader);
-//
-//            String lineToReplace = item;
-//            String currentLine;
-//
-//            while ((currentLine = reader.readLine()) != null) {
-//                // trim newline when comparing with lineToRemove
-//                String trimmedLine = currentLine.trim();
-//                if (trimmedLine.equals(lineToReplace)) {
-//                    writer.write(itemReplace);
-//                    writer.newLine();
-//                    continue;
-//                }
-//                writer.write(currentLine);
-//                writer.newLine();
-//            }
-//            writer.close();
-//            reader.close();
-//            (new File(this.getFilesDir() + "/" + MainActivity.fileName)).delete();
-//            File file = new File(this.getFilesDir() + "/" + "myTempFile.txt");
-//            file.renameTo(new File(this.getFilesDir() + "/" + MainActivity.fileName));
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
-
     @Override
     public void onStart() {
         super.onStart();
@@ -430,7 +360,6 @@ public class MainActivity extends AppCompatActivity {
         AppIndex.AppIndexApi.end(client, viewAction);
         client.disconnect();
     }
-
 
     @Override
     protected void onDestroy() {
