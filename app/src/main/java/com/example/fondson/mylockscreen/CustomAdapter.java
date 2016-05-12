@@ -98,36 +98,6 @@ public class CustomAdapter extends ArrayAdapter<Item>{
         return convertView;
 
     }
-    public void removeFile(String item){
-        try{
-            FileOutputStream fileOutputStream=context.openFileOutput("myTempFile.txt", context.MODE_APPEND);
-            OutputStreamWriter outputStreamWriter=new OutputStreamWriter(fileOutputStream);
-            BufferedWriter writer=new BufferedWriter(outputStreamWriter);
-
-            FileInputStream fileInputStream=context.openFileInput(MainActivity.fileName);
-            InputStreamReader inputStreamReader=new InputStreamReader(fileInputStream);
-            BufferedReader reader=new BufferedReader(inputStreamReader);
-
-            String lineToRemove = item;
-            String currentLine;
-
-            while((currentLine = reader.readLine()) != null) {
-                String trimmedLine = currentLine.trim();
-                if(trimmedLine.equals(lineToRemove)) continue;
-                writer.write(currentLine);
-                writer.newLine();
-            }
-            writer.close();
-            reader.close();
-            (new File(context.getFilesDir()+"/"+MainActivity.fileName)).delete();
-            File file = new File(context.getFilesDir()+"/"+"myTempFile.txt");
-            file.renameTo(new File(context.getFilesDir()+"/"+MainActivity.fileName));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
     @Override
     public void notifyDataSetChanged() {
         super.notifyDataSetChanged();
