@@ -13,14 +13,25 @@
 
     <EditText
         android:id="@+id/editText1"
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="16sp"
         android:longClickable="true"
         android:clickable="false"
         android:focusable="true"
+        android:focusableInTouchMode="true"
         android:imeOptions="actionNext"
         android:background="@android:color/transparent"
         android:paddingBottom="2.5dp"
-        android:paddingTop="2.5dp"/>
+        android:paddingTop="2.5dp"
+        android:layout_weight="1" />
+
+
+    <ImageButton
+        android:id="@+id/imageButton1"
+        android:layout_width="wrap_content"
+        android:layout_height="35dp"
+        android:layout_weight="2"
+        android:background="#00ffffff"
+        android:scaleType="fitCenter" />
 </LinearLayout>

@@ -21,23 +21,32 @@ public class DBAdapter {
     public static final int COL_ROWID = 0;
 
     public static final String KEY_ITEM = "item";
-
     public static final int COL_ITEM = 1;
 
+    public static final String KEY_SELECTED = "selected";
+    public static final int COL_SELECTED = 2;
 
-    public static final String[] ALL_KEYS = new String[] {KEY_ROWID, KEY_ITEM};
 
-    // DB info: it's name, and the table we are using (just one).
+    public static final String[] ALL_KEYS = new String[] {KEY_ROWID, KEY_ITEM,KEY_SELECTED};
+
+    // DB info: it's name, and the table we are using.
     public static final String DATABASE_NAME = "NoteLockerDB";
-    public static final String DATABASE_TABLE = "itemTable";
+    private static String DATABASE_TABLE;
+    public final static String DATABASE_TABLE_ITEMS = "itemTable";
+    public final static String DATABASE_TABLE_COMPLETED_ITEMS = "completedItemTable";
 
     public static final int DATABASE_VERSION = 1;
 
-    private static final String DATABASE_CREATE_SQL =
-            "create table " + DATABASE_TABLE
-                    + " (" + KEY_ROWID + " integer primary key autoincrement, "
-                    + KEY_ITEM + " string not null"
-                    + ");";
+    private static String DATABASE_CREATE_ITEM_SQL ="create table " + DATABASE_TABLE_ITEMS
+                                                    + " (" + KEY_ROWID + " integer primary key autoincrement, "
+                                                    + KEY_ITEM + " string not null"
+                                                    + KEY_SELECTED +" integer not null);";
+    private static String DATABASE_CREATE_COMPLETED_ITEM_SQL ="create table " + DATABASE_TABLE_COMPLETED_ITEMS
+                                                            + " (" + KEY_ROWID + " integer primary key autoincrement, "
+                                                            + KEY_ITEM + " string not null"
+                                                            + KEY_SELECTED +" integer not null);";
+
+
 
     // Context of application
     private final Context context;
@@ -54,6 +63,10 @@ public class DBAdapter {
         myDBHelper = new DatabaseHelper(context);
     }
 
+    public void switchTable(String table){
+        DATABASE_TABLE=table;
+    }
+
     // Open the database connection.
     public DBAdapter open() {
         db = myDBHelper.getWritableDatabase();
@@ -67,14 +80,20 @@ public class DBAdapter {
 
     // Add a new set of values to the database.
     public long insertRow(String item) {
-		/*
-		 * CHANGE 3:
-		 */
-        // TODO: Update data in the row with new fields.
-        // TODO: Also change the function's arguments to be what you need!
         // Create row's data:
         ContentValues initialValues = new ContentValues();
         initialValues.put(KEY_ITEM,item);
+
+        // Insert it into the database.
+        return db.insert(DATABASE_TABLE, null, initialValues);
+    }
+
+    // Add a new set of values to the database.
+    public long insertRow(String item,int selected) {
+        // Create row's data:
+        ContentValues initialValues = new ContentValues();
+        initialValues.put(KEY_ITEM,item);
+        initialValues.put(KEY_SELECTED,selected);
 
         // Insert it into the database.
         return db.insert(DATABASE_TABLE, null, initialValues);
@@ -151,6 +170,31 @@ public class DBAdapter {
         return db.update(DATABASE_TABLE, newValues, where, null) != 0;
     }
 
+    // Change an existing row to be equal to new data.
+    public boolean updateRowID(long rowId, String item, long newRowId) {
+        String where = KEY_ROWID + "=" + rowId;
+
+        // Create row's data:
+        ContentValues newValues = new ContentValues();
+        newValues.put(KEY_ITEM,item);
+        newValues.put(KEY_ROWID,newRowId);
+
+        // Insert it into the database.
+        return db.update(DATABASE_TABLE, newValues, where, null) != 0;
+    }
+
+    // Change an existing row to be equal to new data.
+    public boolean updateRowSelected(long rowId, String item, int newSelected) {
+        String where = KEY_ROWID + "=" + rowId;
+
+        // Create row's data:
+        ContentValues newValues = new ContentValues();
+        newValues.put(KEY_ITEM,item);
+        newValues.put(KEY_SELECTED,newSelected);
+
+        // Insert it into the database.
+        return db.update(DATABASE_TABLE, newValues, where, null) != 0;
+    }
 
 
     /////////////////////////////////////////////////////////////////////
@@ -169,7 +213,8 @@ public class DBAdapter {
 
         @Override
         public void onCreate(SQLiteDatabase _db) {
-            _db.execSQL(DATABASE_CREATE_SQL);
+            _db.execSQL(DATABASE_CREATE_ITEM_SQL);
+            _db.execSQL(DATABASE_CREATE_COMPLETED_ITEM_SQL);
         }
 
         @Override
@@ -178,7 +223,8 @@ public class DBAdapter {
                     + " to " + newVersion + ", which will destroy all old data!");
 
             // Destroy old database:
-            _db.execSQL("DROP TABLE IF EXISTS " + DATABASE_TABLE);
+            _db.execSQL("DROP TABLE IF EXISTS " + DATABASE_TABLE_COMPLETED_ITEMS);
+            _db.execSQL("DROP TABLE IF EXISTS " + DATABASE_TABLE_ITEMS);
 
             // Recreate new database:
             onCreate(_db);

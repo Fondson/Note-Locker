@@ -26,12 +26,14 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.CheckBox;
+import android.widget.ExpandableListView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -65,14 +67,17 @@ public class MainActivity extends AppCompatActivity {
 
     //public static final HomeKeyLocker homeKeyLocker = new HomeKeyLocker();
     public static DBAdapter db;
+    public static KeyListener listener;
+    private EditText etInput;
     private String WALLPAPER_PATH;
-    private ListView lv;
     private RelativeLayout rl;
     private LinearLayout ll;
+    private ArrayList<ArrayList<Item>> state;
     private ArrayList<Item> itemArr;
-    private CustomAdapter adapter;
-    private KeyListener listener;
+    private ArrayList<Item> completedItemsArr;
     private String[] perms={"android.permission.READ_EXTERNAL_STORAGE","android.permission.WRITE_EXTERNAL_STORAGE"};
+    private ExpandableListView expandableListView;
+    private ItemsAdapter itemsAdapter;
 
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -94,9 +99,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         rl = (RelativeLayout) findViewById(R.id.rl);
 
-        //open database
+        //open database and create tables
         db=new DBAdapter(this);
         db.open();
+
         //set initial wallpaper
         WALLPAPER_PATH=Environment.getExternalStorageDirectory().getAbsolutePath()+"/.notelocker/wallpaper.jpg";
         File wallpaperFile= new File(WALLPAPER_PATH);
@@ -122,21 +128,35 @@ public class MainActivity extends AppCompatActivity {
         int dpAsPixels = (int) (16 * scale + 0.5f); //standard padding by Android Design Guidelines
         ll.setPadding(dpAsPixels, dpAsPixels + getStatusBarHeight(), dpAsPixels, dpAsPixels);
         startService(new Intent(this, UpdateService.class));
+
+
         itemArr = new ArrayList<Item>();
-        getAllItems(db.getAllRows());
-        adapter = new CustomAdapter(this, itemArr);
-        lv = (ListView) findViewById(R.id.listView);
-        lv.setAdapter(adapter);
-        adapter.notifyDataSetChanged();
-        final EditText etInput = (EditText) findViewById(R.id.editText);
+        completedItemsArr =new ArrayList<Item>();
+        db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
+        getAllItems(db.getAllRows(),itemArr);
+        db.switchTable(DBAdapter.DATABASE_TABLE_COMPLETED_ITEMS);
+        getAllItems(db.getAllRows(),completedItemsArr);
+        state = new ArrayList<ArrayList<Item>>();
+
+        expandableListView=(ExpandableListView) findViewById(R.id.exlvItems);
+        state.add(itemArr);
+        state.add(completedItemsArr);
+        itemsAdapter = new ItemsAdapter(this,state);
+        expandableListView.setAdapter(itemsAdapter);
+        expandableListView.expandGroup(0);
+        itemsAdapter.notifyDataSetChanged();
+
+
+        etInput = (EditText) findViewById(R.id.editText);
         etInput.setOnEditorActionListener(new EditText.OnEditorActionListener() {
                                               @Override
                                               public boolean onEditorAction(TextView arg0, int arg1, KeyEvent event) {
                                                   if (!(etInput.getText().toString().trim().matches(""))) {
+                                                      db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
                                                       Long newId=db.insertRow(etInput.getText().toString().trim());
                                                       //writeFile(etInput.getText().toString().trim());
                                                       itemArr.add(0, new Item(newId, etInput.getText().toString().trim(), false));
-                                                      adapter.notifyDataSetChanged();
+                                                      itemsAdapter.notifyDataSetChanged();
                                                       etInput.setText("");
                                                   }
                                                   return true;
@@ -154,40 +174,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         listener = etInput.getKeyListener();
-        lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
-                                           final int pos, long id) {
-                //homeKeyLocker.unlock();
-                final Item item = (Item) arg0.getItemAtPosition(pos);
-                final EditText editText = (EditText) arg1;
-                editText.setKeyListener(listener);
-                editText.requestFocus();
-                editText.setSelection(editText.getText().length());
-
-                InputMethodManager imm = (InputMethodManager) MainActivity.this.getSystemService(Service.INPUT_METHOD_SERVICE);
-                imm.showSoftInput(editText, InputMethodManager.SHOW_FORCED);
-                editText.setOnEditorActionListener(new EditText.OnEditorActionListener() {
-                                                       @Override
-                                                       public boolean onEditorAction(TextView arg0, int arg1, KeyEvent event) {
-                                                           //Patter.quote is used to escape special regex characters in item if present
-                                                           if (!(Pattern.quote(editText.getText().toString().trim()).matches(Pattern.quote(item.getName()))) && !(Pattern.quote(editText.getText().toString().trim()).matches(""))) {
-                                                               //replaceFile(item.getName(), editText.getText().toString().trim());
-                                                               String newItemName=editText.getText().toString().trim();
-                                                               db.updateRow(item.getId(),newItemName);
-                                                               item.setName(newItemName);
-                                                               //Toast.makeText(MainActivity.this, pastName + " changed to " + item.getName(), Toast.LENGTH_SHORT).show();
-                                                           }
-                                                           editText.setKeyListener(null);
-                                                           hideKeyboard();
-                                                           editText.setText(item.getName());
-                                                           return true;
-                                                       }
-                                                   }
-                );
-                return true;
-            }
-        });
 
         // Retrieve layout elements
         UnlockBar unlock = (UnlockBar) findViewById(R.id.unlock);
@@ -248,15 +234,20 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(photoPickerIntent, 1);
     }
 
-    private void getAllItems(Cursor cursor){;
+    public static void getAllItems(Cursor cursor,ArrayList<Item> arrayList){;
         // Reset cursor to start, checking to see if there's data:
         if (cursor.moveToFirst()) {
             do {
                 // Process the data:
+
                 int id = cursor.getInt(DBAdapter.COL_ROWID);
                 String item = cursor.getString(DBAdapter.COL_ITEM);
+                boolean selected=false;
+                if (cursor.getInt(DBAdapter.COL_SELECTED)==1){
+                    selected=true;
+                }
 
-                itemArr.add(0,new Item(id,item,false));
+                arrayList.add(0,new Item(id,item,selected));
             } while(cursor.moveToNext());
         }
     }
@@ -300,7 +291,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         //homeKeyLocker.lock(this);
         ((EditText) findViewById(R.id.editText)).setText("");
-        adapter.notifyDataSetChanged();
+        itemsAdapter.notifyDataSetChanged();
         UnlockBar unlock = (UnlockBar) findViewById(R.id.unlock);
         unlock.reset();
         //final SeekBar sb = (SeekBar) findViewById(R.id.seekBar);
