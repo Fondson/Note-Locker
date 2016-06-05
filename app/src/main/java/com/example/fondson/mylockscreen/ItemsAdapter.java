@@ -1,8 +1,10 @@
 package com.example.fondson.mylockscreen;
 
+import android.app.Activity;
 import android.app.Service;
 import android.content.Context;
 import android.graphics.Paint;
+import android.os.Build;
 import android.os.Handler;
 import android.speech.tts.TextToSpeech;
 import android.text.method.KeyListener;
@@ -257,6 +259,7 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
                                                                }
                                                                editText.setKeyListener(null);
                                                                hideKeyboard();
+                                                               fullScreencall();
                                                                editText.setText(item.getName());
                                                                return true;
                                                            }
@@ -268,6 +271,17 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
                                                                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
                                                                }
                                                            }
+                                                            public void fullScreencall() {
+                                                                if(Build.VERSION.SDK_INT < 19){ //19 or above api
+                                                                    View v = ((Activity)context).getWindow().getDecorView();
+                                                                    v.setSystemUiVisibility(View.GONE);
+                                                                } else {
+                                                                    //for lower api versions.
+                                                                    View decorView = ((Activity)context).getWindow().getDecorView();
+                                                                    int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+                                                                    decorView.setSystemUiVisibility(uiOptions);
+                                                                }
+                                                            }
                                                        }
                     );
                     return true;

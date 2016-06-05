@@ -39,11 +39,11 @@ public class DBAdapter {
 
     private static String DATABASE_CREATE_ITEM_SQL ="create table " + DATABASE_TABLE_ITEMS
                                                     + " (" + KEY_ROWID + " integer primary key autoincrement, "
-                                                    + KEY_ITEM + " string not null"
+                                                    + KEY_ITEM + " string not null, "
                                                     + KEY_SELECTED +" integer not null);";
     private static String DATABASE_CREATE_COMPLETED_ITEM_SQL ="create table " + DATABASE_TABLE_COMPLETED_ITEMS
                                                             + " (" + KEY_ROWID + " integer primary key autoincrement, "
-                                                            + KEY_ITEM + " string not null"
+                                                            + KEY_ITEM + " string not null, "
                                                             + KEY_SELECTED +" integer not null);";
 
 
