@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
@@ -18,9 +19,10 @@ public class AutoStart extends BroadcastReceiver{
     @Override
     public void onReceive(Context context, Intent intent) {
 
-        if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)
+        if ((intent.getAction().equals(Intent.ACTION_SCREEN_OFF)
                 || intent.getAction().equals(Intent.ACTION_SCREEN_ON)
-                || intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
+                || intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)
+                ) && !PreferenceManager.getDefaultSharedPreferences(context).getBoolean(SettingsActivity.PREF_KEY_OFF,false)) {
             start_lockscreen(context);
         }
 

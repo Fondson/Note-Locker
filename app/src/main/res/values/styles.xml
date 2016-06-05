@@ -8,4 +8,9 @@
         <item name="android:windowTranslucentNavigation">true</item>
     </style>
 
+    <style name="AppCompatSettings" parent="Theme.AppCompat" >
+        <item name="colorPrimary">@color/primary_material_red</item>
+        <item name="android:colorBackground">@color/background_material_light</item>
+    </style>
+
 </resources>

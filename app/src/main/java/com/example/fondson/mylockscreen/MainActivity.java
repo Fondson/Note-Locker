@@ -1,6 +1,7 @@
 package com.example.fondson.mylockscreen;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.Service;
 import android.app.WallpaperManager;
 import android.content.ClipData;
@@ -17,6 +18,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -68,16 +70,18 @@ public class MainActivity extends AppCompatActivity {
     //public static final HomeKeyLocker homeKeyLocker = new HomeKeyLocker();
     public static DBAdapter db;
     public static KeyListener listener;
+    public static final int WALLPAPER_CODE = 10;
+    public static String WALLPAPER_PATH;
+    public static String[] perms={"android.permission.READ_EXTERNAL_STORAGE","android.permission.WRITE_EXTERNAL_STORAGE"};
+    private static RelativeLayout rl;
     private EditText etInput;
-    private String WALLPAPER_PATH;
-    private RelativeLayout rl;
     private LinearLayout ll;
     private ArrayList<ArrayList<Item>> state;
     private ArrayList<Item> itemArr;
     private ArrayList<Item> completedItemsArr;
-    private String[] perms={"android.permission.READ_EXTERNAL_STORAGE","android.permission.WRITE_EXTERNAL_STORAGE"};
     private ExpandableListView expandableListView;
     private ItemsAdapter itemsAdapter;
+    private UnlockBar unlock;
 
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -96,6 +100,7 @@ public class MainActivity extends AppCompatActivity {
                         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
         getWindow().setStatusBarColor(Color.TRANSPARENT);
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
         rl = (RelativeLayout) findViewById(R.id.rl);
 
@@ -143,7 +148,6 @@ public class MainActivity extends AppCompatActivity {
         state.add(completedItemsArr);
         itemsAdapter = new ItemsAdapter(this,state);
         expandableListView.setAdapter(itemsAdapter);
-        expandableListView.expandGroup(0);
         itemsAdapter.notifyDataSetChanged();
 
 
@@ -176,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
         listener = etInput.getKeyListener();
 
         // Retrieve layout elements
-        UnlockBar unlock = (UnlockBar) findViewById(R.id.unlock);
+        unlock = (UnlockBar) findViewById(R.id.unlock);
         // Attach listener
         unlock.setOnUnlockListener(new UnlockBar.OnUnlockListener() {
             @Override
@@ -189,49 +193,13 @@ public class MainActivity extends AppCompatActivity {
         ImageButton btnSettings=(ImageButton) findViewById(R.id.btnSettings);
         btnSettings.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v){
-                //requests permissions needed for users to select background image on M or above
-                if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.M){
-                    requestPermissions(perms, 200);
-                }
-                else{launchGalleryPicker();}
+                Intent intent = new Intent(MainActivity.this,SettingsActivity.class);
+                startActivity(intent);
             }
         });
-        /*final SeekBar sb = (SeekBar) findViewById(R.id.seekBar);
-        sb.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                if (seekBar.getProgress() > 80) {
-                } else {
-                    seekBar.setThumb(getResources().getDrawable(R.mipmap.ic_launcher));
-                }
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
-
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (progress > 80) {
-                    moveTaskToBack(true);
-
-                }
-            }
-        });
-        */
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
-    }
-
-    private void launchGalleryPicker(){
-        Intent photoPickerIntent = new Intent(Intent.ACTION_PICK,
-                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        photoPickerIntent.setType("image/*");
-        photoPickerIntent.putExtra("crop", "true");
-        photoPickerIntent.putExtra("output", Uri.fromFile(new File(WALLPAPER_PATH)));
-        startActivityForResult(photoPickerIntent, 1);
     }
 
     public static void getAllItems(Cursor cursor,ArrayList<Item> arrayList){;
@@ -252,29 +220,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-    //handles permission requests
-    @Override
-    public void onRequestPermissionsResult(int permsRequestCode, String[] permissions,int[] granResults){
-        switch (permsRequestCode){
-            //launches intent for user to select image from gallery
-            case 200:
-                launchGalleryPicker();
-                break;
-        }
-    }
-
-    //handles picture-cropping results
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (data!=null) {
-            if (requestCode==1){
-                rl.setBackground(Drawable.createFromPath(WALLPAPER_PATH));
-            }
-        }
-    }
-
     // Don't finish Activity on Back press
     @Override
     public void onBackPressed() {
@@ -282,23 +227,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     protected void onPause() {
+        super.onPause();
         hideKeyboard();
         //homeKeyLocker.unlock();
         startService(new Intent(this, UpdateService.class));
-        super.onPause();
     }
 
     protected void onResume() {
         //homeKeyLocker.lock(this);
+        unlock.reset();
         ((EditText) findViewById(R.id.editText)).setText("");
         itemsAdapter.notifyDataSetChanged();
-        UnlockBar unlock = (UnlockBar) findViewById(R.id.unlock);
-        unlock.reset();
-        //final SeekBar sb = (SeekBar) findViewById(R.id.seekBar);
-        //sb.setProgress(0);
         super.onResume();
     }
-
+    public static RelativeLayout getBackground(){
+        return rl;
+    }
     public void hideKeyboard() {
         View view = this.getCurrentFocus();
         if (view != null) {

@@ -7,8 +7,9 @@
         android:id="@+id/header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="5dp"
-        android:paddingBottom="5dp"
+        android:paddingTop="7dp"
+        android:paddingBottom="7dp"
         android:textSize="16sp"
-        android:paddingLeft="30dp"/>
+        android:textStyle="bold|italic"
+        android:paddingLeft="25dp"/>
 </LinearLayout>

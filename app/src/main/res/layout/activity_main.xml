@@ -86,9 +86,10 @@
             <ExpandableListView
                 android:layout_width="fill_parent"
                 android:layout_height="match_parent"
+                android:requiresFadingEdge = "vertical"
+                android:groupIndicator="@null"
                 android:id="@+id/exlvItems"
-                android:visibility="visible"
-                android:paddingTop="5dp" />
+                android:visibility="visible" />
 
         </LinearLayout>
 

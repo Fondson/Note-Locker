@@ -86,6 +86,11 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
             convertView = inflater.inflate(R.layout.state,parent,false);
 
         }
+        convertView.setClickable(false);
+        if (groupPosition==NOT_COMPLETED){
+            ((ExpandableListView)parent).expandGroup(NOT_COMPLETED);
+            convertView.setClickable(true); //tip: this makes convertView NOT clickable along with convertView.setClickable(false) above???
+        }
         TextView header= (TextView) convertView.findViewById(R.id.header);
         String headerText = HEADERS[groupPosition] + " (" + getChildrenCount(groupPosition) + ")";
         header.setText(headerText);
