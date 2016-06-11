@@ -8,6 +8,8 @@ be reminded everytime you open your phone.
 #Features
 - Easily add and dismiss items
 - Long-click to edit an item
+- Star important items
+- Collapsable completed items list
 - Takes the wallpaper of the current home launcher <b>OR</b> select your own
 - <a href ="https://github.com/y8hamon/Slide-To-Unlock"> Slide to unlock</a>
 
