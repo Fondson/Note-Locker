@@ -12,7 +12,8 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:id="@+id/ivDarkTint"
-        android:background="#58000000" />
+        android:background="#000000"
+        android:alpha=".5" />
 
     <LinearLayout
         android:orientation="vertical"
@@ -98,8 +99,8 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:gravity="right"
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp">
+            android:paddingBottom="10dp"
+            android:paddingTop="10dp">
             <com.example.fondson.mylockscreen.UnlockBar
                 android:id="@+id/unlock"
                 android:layout_width="match_parent"

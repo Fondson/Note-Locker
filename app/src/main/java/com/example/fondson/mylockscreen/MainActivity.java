@@ -37,6 +37,7 @@ import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.ExpandableListView;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
@@ -74,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
     public static String WALLPAPER_PATH;
     public static String[] perms={"android.permission.READ_EXTERNAL_STORAGE","android.permission.WRITE_EXTERNAL_STORAGE"};
     private static RelativeLayout rl;
+    private static ImageView darkTint;
     private EditText etInput;
     private LinearLayout ll;
     private ArrayList<ArrayList<Item>> state;
@@ -121,7 +123,6 @@ public class MainActivity extends AppCompatActivity {
             Drawable wallpaperDrawable = wallpaperManager.getDrawable();
             rl.setBackground(wallpaperDrawable);
         }
-
         rl.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -130,6 +131,8 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+        darkTint=(ImageView)findViewById(R.id.ivDarkTint);
+        ((View)darkTint).setAlpha((float)PreferenceManager.getDefaultSharedPreferences(MainActivity.this).getInt("pref_key_darkTint", 50)/100);
         ll = (LinearLayout) findViewById(R.id.llMain);
         float scale = getResources().getDisplayMetrics().density;
         int dpAsPixels = (int) (16 * scale + 0.5f); //standard padding by Android Design Guidelines
@@ -220,6 +223,10 @@ public class MainActivity extends AppCompatActivity {
                 arrayList.add(0,new Item(id,item,selected));
             } while(cursor.moveToNext());
         }
+    }
+
+    public static ImageView getDarkTint(){
+        return darkTint;
     }
 
     // Don't finish Activity on Back press

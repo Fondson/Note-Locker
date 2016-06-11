@@ -10,7 +10,14 @@
         <PreferenceScreen
             android:key="pref_key_wallpaper"
             android:title = "Change wallpaper"
-            android:id="@+id/wallpaperSetting">
-        </PreferenceScreen>
+            android:id="@+id/wallpaperSetting"/>
+        <com.example.fondson.mylockscreen.SeekBarPreference
+            android:defaultValue="50"
+            android:dialogMessage="Set percentage: "
+            android:key="pref_key_darkTint"
+            android:max="100"
+            android:summary="settings_summary"
+            android:text="%"
+            android:title="Change dark wallpaper tint" />
     </PreferenceCategory>
 </PreferenceScreen>

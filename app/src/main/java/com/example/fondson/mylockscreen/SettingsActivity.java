@@ -2,16 +2,24 @@ package com.example.fondson.mylockscreen;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
+import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.Toast;
 
 import java.io.File;
+
+import com.example.fondson.mylockscreen.SeekBarPreference;
 
 public class SettingsActivity extends AppCompatActivity {
     public static final String PREF_KEY_OFF="pref_key_off";
@@ -27,8 +35,9 @@ public class SettingsActivity extends AppCompatActivity {
 
     }
 
-    public static class SettingsFragment extends PreferenceFragment {
-
+    public static class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
+        private SeekBarPreference darkTintSeekBar;
+        private SharedPreferences sharedPreferences;
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
@@ -37,6 +46,16 @@ public class SettingsActivity extends AppCompatActivity {
             addPreferencesFromResource(R.xml.settings);
 
             Preference myPref = (Preference) findPreference("pref_key_wallpaper");
+            darkTintSeekBar = (SeekBarPreference)findPreference("pref_key_darkTint");
+
+            // Set listener :
+            getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+
+            sharedPreferences=PreferenceManager.getDefaultSharedPreferences(this.getActivity());
+            // Set seekbar summary :
+            int alphaValue = sharedPreferences.getInt("pref_key_darkTint", 50);
+            darkTintSeekBar.setSummary(("$%").replace("$", ""+alphaValue));
+
             myPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 public boolean onPreferenceClick(Preference preference) {
                     //requests permissions needed for users to select background image on M or above
@@ -49,6 +68,21 @@ public class SettingsActivity extends AppCompatActivity {
 
             });
         }
+
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+
+            if (key.equals("pref_key_darkTint")) {
+                // Set seekbar summary :
+                int alphaValue = sharedPreferences.getInt("pref_key_darkTint", 50);
+                darkTintSeekBar.setSummary(("$%").replace("$", "" + alphaValue));
+                ((View)MainActivity.getDarkTint()).setAlpha((float)alphaValue/100);
+//                Toast.makeText(getActivity(), "hi",
+//                        Toast.LENGTH_LONG).show();
+            }
+        }
+
+
         //handles permission requests
         @Override
         public void onRequestPermissionsResult(int permsRequestCode, String[] permissions,int[] granResults){

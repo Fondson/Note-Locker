@@ -221,13 +221,13 @@ public class DBAdapter {
         public void onUpgrade(SQLiteDatabase _db, int oldVersion, int newVersion) {
             Log.w(TAG, "Upgrading application's database from version " + oldVersion
                     + " to " + newVersion + ", which will destroy all old data!");
-
-            // Destroy old database:
-            _db.execSQL("DROP TABLE IF EXISTS " + DATABASE_TABLE_COMPLETED_ITEMS);
-            _db.execSQL("DROP TABLE IF EXISTS " + DATABASE_TABLE_ITEMS);
-
-            // Recreate new database:
-            onCreate(_db);
+//
+//            // Destroy old database:
+//            _db.execSQL("DROP TABLE IF EXISTS " + DATABASE_TABLE_COMPLETED_ITEMS);
+//            _db.execSQL("DROP TABLE IF EXISTS " + DATABASE_TABLE_ITEMS);
+//
+//            // Recreate new database:
+//            onCreate(_db);
         }
     }
 }
