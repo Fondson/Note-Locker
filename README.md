@@ -1,6 +1,8 @@
 # Note Locker
 An Android lockscreen to help users stay organized.
 
+<a href = "https://play.google.com/apps/testing/com.dev.fondson.NoteLocker">Join the beta test!</a>
+
 #Description
 Need to make a quick note? Do it right when you open your phone. Note Locker is designed to keep you reminded of the things that are important to you. Add items to your list and 
 be reminded everytime you open your phone.
