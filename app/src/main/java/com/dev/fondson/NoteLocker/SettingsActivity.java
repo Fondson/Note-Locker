@@ -1,25 +1,19 @@
-package com.example.fondson.mylockscreen;
+package com.dev.fondson.NoteLocker;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
-import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
-import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.ImageView;
-import android.widget.Toast;
 
 import java.io.File;
-
-import com.example.fondson.mylockscreen.SeekBarPreference;
 
 public class SettingsActivity extends AppCompatActivity {
     public static final String PREF_KEY_OFF="pref_key_off";
@@ -85,11 +79,14 @@ public class SettingsActivity extends AppCompatActivity {
 
         //handles permission requests
         @Override
-        public void onRequestPermissionsResult(int permsRequestCode, String[] permissions,int[] granResults){
+        public void onRequestPermissionsResult(int permsRequestCode, String[] permissions,int[] grantResults){
             switch (permsRequestCode){
-                //launches intent for user to select image from gallery
                 case 200:
-                    launchGalleryPicker();
+                    if (grantResults.length>0
+                            && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                            && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+                        launchGalleryPicker();
+                    }
                     break;
             }
         }

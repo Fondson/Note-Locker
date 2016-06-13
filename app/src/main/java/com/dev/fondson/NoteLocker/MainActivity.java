@@ -1,70 +1,38 @@
-package com.example.fondson.mylockscreen;
+package com.dev.fondson.NoteLocker;
 
-import android.Manifest;
-import android.app.Activity;
 import android.app.Service;
 import android.app.WallpaperManager;
-import android.content.ClipData;
-import android.content.ContentResolver;
 import android.content.Context;
-import android.content.CursorLoader;
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.preference.PreferenceManager;
-import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.KeyListener;
-import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
 import android.view.WindowManager;
-import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
-import android.widget.CheckBox;
 import android.widget.ExpandableListView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.EditText;
-import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.regex.Pattern;
-
-import io.github.homelocker.lib.HomeKeyLocker;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -297,7 +265,7 @@ public class MainActivity extends AppCompatActivity {
                 // Otherwise, set the URL to null.
                 Uri.parse("http://host/path"),
                 // TODO: Make sure this auto-generated app deep link URI is correct.
-                Uri.parse("android-app://com.example.fondson.mylockscreen/http/host/path")
+                Uri.parse("android-app://com.dev.fondson.NoteLocker/http/host/path")
         );
         AppIndex.AppIndexApi.start(client, viewAction);
     }
@@ -316,7 +284,7 @@ public class MainActivity extends AppCompatActivity {
                 // Otherwise, set the URL to null.
                 Uri.parse("http://host/path"),
                 // TODO: Make sure this auto-generated app deep link URI is correct.
-                Uri.parse("android-app://com.example.fondson.mylockscreen/http/host/path")
+                Uri.parse("android-app://com.dev.fondson.NoteLocker/http/host/path")
         );
         AppIndex.AppIndexApi.end(client, viewAction);
         client.disconnect();

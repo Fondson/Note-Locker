@@ -8,7 +8,7 @@
  * - handle @string/... values in xml file
  */
 
-package com.example.fondson.mylockscreen;
+package com.dev.fondson.NoteLocker;
 
 import android.app.AlertDialog;
 import android.content.Context;

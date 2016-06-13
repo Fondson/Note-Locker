@@ -1,4 +1,4 @@
-package com.example.fondson.mylockscreen;
+package com.dev.fondson.NoteLocker;
 
 import android.app.Activity;
 import android.app.KeyguardManager;
@@ -9,8 +9,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
 import android.support.v7.app.NotificationCompat;
-
-import java.util.ServiceConfigurationError;
 
 /**
  * Created by Fondson on 2015-12-04.

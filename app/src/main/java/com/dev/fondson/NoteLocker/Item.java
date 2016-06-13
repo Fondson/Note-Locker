@@ -1,4 +1,4 @@
-package com.example.fondson.mylockscreen;
+package com.dev.fondson.NoteLocker;
 
 /**
  * Created by Fondson on 2015-12-21.

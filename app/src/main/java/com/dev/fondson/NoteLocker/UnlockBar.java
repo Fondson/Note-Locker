@@ -1,4 +1,4 @@
-package com.example.fondson.mylockscreen;
+package com.dev.fondson.NoteLocker;
 
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;

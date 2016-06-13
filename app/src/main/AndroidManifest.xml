@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.fondson.mylockscreen">
+    package="com.dev.fondson.NoteLocker">
     <uses-sdk android:minSdkVersion="16" />
 
     <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
@@ -19,7 +19,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true">
         <activity
-            android:name=".MainActivity"
+            android:name="com.dev.fondson.NoteLocker.MainActivity"
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.NoActionBar"
@@ -31,10 +31,10 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".UpdateService"></service>
+        <service android:name="com.dev.fondson.NoteLocker.UpdateService"></service>
 
         <receiver
-            android:name=".AutoStart"
+            android:name="com.dev.fondson.NoteLocker.AutoStart"
             android:enabled="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
@@ -48,7 +48,7 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
-        <activity android:name=".SettingsActivity"
+        <activity android:name="com.dev.fondson.NoteLocker.SettingsActivity"
             android:theme="@style/AppCompatSettings"
             ></activity>
     </application>

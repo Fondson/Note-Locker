@@ -1,4 +1,4 @@
-package com.example.fondson.mylockscreen;
+package com.dev.fondson.NoteLocker;
 
 import android.view.View;
 

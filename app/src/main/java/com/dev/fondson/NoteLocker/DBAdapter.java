@@ -1,4 +1,4 @@
-package com.example.fondson.mylockscreen;
+package com.dev.fondson.NoteLocker;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -31,7 +31,7 @@ public class DBAdapter {
 
     // DB info: it's name, and the table we are using.
     public static final String DATABASE_NAME = "NoteLockerDB";
-    private static String DATABASE_TABLE;
+    private static String DATABASE_TABLE= "itemTable";
     public final static String DATABASE_TABLE_ITEMS = "itemTable";
     public final static String DATABASE_TABLE_COMPLETED_ITEMS = "completedItemTable";
 
@@ -83,6 +83,7 @@ public class DBAdapter {
         // Create row's data:
         ContentValues initialValues = new ContentValues();
         initialValues.put(KEY_ITEM,item);
+        initialValues.put(KEY_SELECTED,0);
 
         // Insert it into the database.
         return db.insert(DATABASE_TABLE, null, initialValues);

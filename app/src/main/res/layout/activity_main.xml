@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.fondson.mylockscreen.MainActivity"
+    tools:context="com.dev.fondson.NoteLocker.MainActivity"
     android:clickable="true"
     android:focusableInTouchMode="false"
     android:id="@+id/rl">
@@ -101,7 +101,7 @@
             android:gravity="right"
             android:paddingBottom="10dp"
             android:paddingTop="10dp">
-            <com.example.fondson.mylockscreen.UnlockBar
+            <com.dev.fondson.NoteLocker.UnlockBar
                 android:id="@+id/unlock"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />

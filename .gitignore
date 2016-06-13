@@ -6,3 +6,6 @@
 .DS_Store
 /build
 /captures
+*.apk
+keystore.properties
+app/android.jks
