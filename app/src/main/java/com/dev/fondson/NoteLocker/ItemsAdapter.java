@@ -1,4 +1,4 @@
-package com.example.fondson.mylockscreen;
+package com.dev.fondson.NoteLocker;
 
 import android.app.Activity;
 import android.app.Service;
@@ -6,14 +6,13 @@ import android.content.Context;
 import android.graphics.Paint;
 import android.os.Build;
 import android.os.Handler;
-import android.speech.tts.TextToSpeech;
-import android.text.method.KeyListener;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -21,9 +20,7 @@ import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import java.security.Key;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
@@ -73,7 +70,7 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
 
     @Override
     public long getChildId(int groupPosition, int childPosition) {
-        return childPosition;
+        return state.get(groupPosition).get(childPosition).getId();
     }
 
     @Override
@@ -119,8 +116,7 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
 
             convertView.setTag(holder);
         }
-        else{
-        holder=(ViewHolder) convertView.getTag();}
+        else{holder=(ViewHolder) convertView.getTag();}
         //final KeyListener editable = name.getKeyListener();
         holder.name.setKeyListener(null);
         holder.name.setText(item.getName());
@@ -139,13 +135,15 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
                 public void onCheckedChanged(final CompoundButton arg0, boolean isChecked) {
                     if (!isChecked) {
                         arg0.setChecked(true);
-                        row.animate().setDuration(300).alpha(0);
                         enableDisableViewGroupClickable(parent, false);
-                        Handler handler = new Handler();
-                        handler.postDelayed(new Runnable() {
+
+                                                
+                        Animation fadeout = new AlphaAnimation(1.f, 0.f);
+                        fadeout.setDuration(300);
+                        row.startAnimation(fadeout);
+                        row.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-//                            removeFile(item.getName());
                                 MainActivity.db.switchTable(DBAdapter.DATABASE_TABLE_COMPLETED_ITEMS);
                                 MainActivity.db.deleteRow(item.getId());
                                 completedItems.remove(childPosition);
@@ -157,7 +155,6 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
                                 notCompletedItems.add(0, new Item(newId, item.getName(), item.isSelected()));
 
                                 notifyDataSetChanged();
-                                //Toast.makeText(context, item.getName() + " removed.", Toast.LENGTH_SHORT).show();
                             }
                         }, 300);
                     }
@@ -166,13 +163,13 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
             holder.imageButton.setOnClickListener(new View.OnClickListener() {
 
                 public void onClick(View button) {
-                    row.animate().setDuration(300).alpha(0);
                     enableDisableViewGroupClickable(parent, false);
-                    Handler handler = new Handler();
-                    handler.postDelayed(new Runnable() {
+                    Animation fadeout = new AlphaAnimation(1.f, 0.f);
+                    fadeout.setDuration(300);
+                    row.startAnimation(fadeout);
+                    row.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-//                            removeFile(item.getName());
                             MainActivity.db.switchTable(DBAdapter.DATABASE_TABLE_COMPLETED_ITEMS);
                             MainActivity.db.deleteRow(item.getId());
                             completedItems.remove(childPosition);
@@ -180,7 +177,6 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
                             enableDisableViewGroupClickable(parent, true);
 
                             notifyDataSetChanged();
-                            //Toast.makeText(context, item.getName() + " removed.", Toast.LENGTH_SHORT).show();
                         }
                     }, 300);
                 }
@@ -207,11 +203,11 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
                         //holder.linearLayout.animate().setDuration(200).alpha(0);
                         arg0.setChecked(false);
                         holder.imageButton.setSelected(false);
-                        holder.imageButton.setSelected(false);
-                        row.animate().setDuration(300).alpha(0);
                         enableDisableViewGroupClickable(parent, false);
-                        Handler handler = new Handler();
-                        handler.postDelayed(new Runnable() {
+                        Animation fadeout = new AlphaAnimation(1.f, 0.f);
+                        fadeout.setDuration(300);
+                        row.startAnimation(fadeout);
+                        row.postDelayed(new Runnable() {
                             @Override
                             public void run() {
                                 MainActivity.db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
