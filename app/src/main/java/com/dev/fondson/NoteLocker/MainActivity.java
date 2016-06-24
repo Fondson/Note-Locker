@@ -26,6 +26,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
@@ -69,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                 );
-        getWindow().setStatusBarColor(Color.TRANSPARENT);
+        //getWindow().setStatusBarColor(Color.TRANSPARENT);
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
@@ -149,7 +150,6 @@ public class MainActivity extends AppCompatActivity {
                 imm.showSoftInput(etInput, InputMethodManager.SHOW_FORCED);
             }
         });
-
         listener = etInput.getKeyListener();
 
         // Retrieve layout elements

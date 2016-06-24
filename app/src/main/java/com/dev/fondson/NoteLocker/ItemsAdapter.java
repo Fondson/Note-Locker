@@ -137,7 +137,7 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
                         arg0.setChecked(true);
                         enableDisableViewGroupClickable(parent, false);
 
-                                                
+
                         Animation fadeout = new AlphaAnimation(1.f, 0.f);
                         fadeout.setDuration(300);
                         row.startAnimation(fadeout);
@@ -147,7 +147,6 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
                                 MainActivity.db.switchTable(DBAdapter.DATABASE_TABLE_COMPLETED_ITEMS);
                                 MainActivity.db.deleteRow(item.getId());
                                 completedItems.remove(childPosition);
-                                row.setAlpha(1);
                                 enableDisableViewGroupClickable(parent, true);
 
                                 MainActivity.db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
@@ -173,7 +172,6 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
                             MainActivity.db.switchTable(DBAdapter.DATABASE_TABLE_COMPLETED_ITEMS);
                             MainActivity.db.deleteRow(item.getId());
                             completedItems.remove(childPosition);
-                            row.setAlpha(1);
                             enableDisableViewGroupClickable(parent, true);
 
                             notifyDataSetChanged();
@@ -213,7 +211,6 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
                                 MainActivity.db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
                                 MainActivity.db.deleteRow(item.getId());
                                 notCompletedItems.remove(childPosition);
-                                row.setAlpha(1);
                                 enableDisableViewGroupClickable(parent, true);
 
                                 MainActivity.db.switchTable(DBAdapter.DATABASE_TABLE_COMPLETED_ITEMS);

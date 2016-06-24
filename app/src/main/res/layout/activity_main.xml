@@ -57,18 +57,19 @@
 
                 <EditText
                     android:layout_width="match_parent"
-                    android:layout_height="fill_parent"
+                    android:layout_height="45dp"
                     android:id="@+id/editText"
                     android:imeOptions="actionNext"
                     android:inputType="text|textCapSentences"
-                    android:contextClickable="false"
-                    android:capitalize="sentences"
                     android:hint="@string/editText"
                     android:theme="@android:style/Widget.Material.Light.EditText"
                     android:background="#6afdfdfd"
                     android:padding="10dp"
                     android:editable="false"
-                    android:layout_weight=".25" />
+                    android:layout_weight=".25"
+                    android:maxLines="1"
+                    android:textIsSelectable="true"
+                    android:layout_gravity="center" />
 
                 <ImageButton
                     android:layout_width="fill_parent"

@@ -24,7 +24,8 @@
         android:background="@android:color/transparent"
         android:paddingBottom="2.5dp"
         android:paddingTop="2.5dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:textIsSelectable="true"/>
 
 
     <ImageButton
