@@ -40,11 +40,19 @@ public class DBAdapter {
     private static String DATABASE_CREATE_ITEM_SQL ="create table " + DATABASE_TABLE_ITEMS
                                                     + " (" + KEY_ROWID + " integer primary key autoincrement, "
                                                     + KEY_ITEM + " string not null, "
-                                                    + KEY_SELECTED +" integer not null);";
+                                                    + KEY_SELECTED +" bit not null);";
     private static String DATABASE_CREATE_COMPLETED_ITEM_SQL ="create table " + DATABASE_TABLE_COMPLETED_ITEMS
                                                             + " (" + KEY_ROWID + " integer primary key autoincrement, "
                                                             + KEY_ITEM + " string not null, "
-                                                            + KEY_SELECTED +" integer not null);";
+                                                            + KEY_SELECTED +" bit not null);";
+    private static String DATABASE_INSERT_INITIAL_VALUES_ITEMS = "insert into " + DATABASE_TABLE_ITEMS
+                                                            + "(" +KEY_ITEM + ", "
+                                                            + KEY_SELECTED + ") "
+                                                            + " values ('Check me to move me to the Completed list.',0);";
+    private static String DATABASE_INSERT_INITIAL_VALUES_COMPLETED_ITEMS = "insert into " + DATABASE_TABLE_COMPLETED_ITEMS
+                                                                            + "(" +KEY_ITEM + ", "
+                                                                            + KEY_SELECTED + ") "
+                                                                            +" values ('Uncheck me to move me to the To do list or press the \"X\" to permanently delete me.',0);";
 
 
 
@@ -216,6 +224,8 @@ public class DBAdapter {
         public void onCreate(SQLiteDatabase _db) {
             _db.execSQL(DATABASE_CREATE_ITEM_SQL);
             _db.execSQL(DATABASE_CREATE_COMPLETED_ITEM_SQL);
+            _db.execSQL(DATABASE_INSERT_INITIAL_VALUES_ITEMS);
+            _db.execSQL(DATABASE_INSERT_INITIAL_VALUES_COMPLETED_ITEMS);
         }
 
         @Override

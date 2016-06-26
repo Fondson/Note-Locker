@@ -39,7 +39,8 @@ public class SettingsActivity extends AppCompatActivity {
             // Load the preferences from an XML resource
             addPreferencesFromResource(R.xml.settings);
 
-            Preference myPref = (Preference) findPreference("pref_key_wallpaper");
+            Preference wallpaperPref = (Preference) findPreference("pref_key_wallpaper");
+            Preference tutorialPref = (Preference) findPreference("pref_tutorial");
             darkTintSeekBar = (SeekBarPreference)findPreference("pref_key_darkTint");
 
             // Set listener :
@@ -50,13 +51,24 @@ public class SettingsActivity extends AppCompatActivity {
             int alphaValue = sharedPreferences.getInt("pref_key_darkTint", 50);
             darkTintSeekBar.setSummary(("$%").replace("$", ""+alphaValue));
 
-            myPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            wallpaperPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 public boolean onPreferenceClick(Preference preference) {
                     //requests permissions needed for users to select background image on M or above
                     if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.M){
                         requestPermissions(MainActivity.perms, 200);
                     }
                     else{launchGalleryPicker();}
+                    return true;
+                }
+
+            });
+
+            tutorialPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                public boolean onPreferenceClick(Preference preference) {
+                    //  Launch app intro
+                    Intent i = new Intent(getActivity(), Intro.class);
+                    startActivity(i);
+
                     return true;
                 }
 

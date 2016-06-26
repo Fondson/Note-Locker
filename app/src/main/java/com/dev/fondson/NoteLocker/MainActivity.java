@@ -2,8 +2,10 @@ package com.dev.fondson.NoteLocker;
 
 import android.app.Service;
 import android.app.WallpaperManager;
+import android.app.backup.BackupManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
@@ -74,11 +76,29 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
-        rl = (RelativeLayout) findViewById(R.id.rl);
 
         //open database and create tables
         db=new DBAdapter(this);
         db.open();
+
+        itemArr = new ArrayList<Item>();
+        completedItemsArr =new ArrayList<Item>();
+        db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
+        getAllItems(db.getAllRows(),itemArr);
+        db.switchTable(DBAdapter.DATABASE_TABLE_COMPLETED_ITEMS);
+        getAllItems(db.getAllRows(),completedItemsArr);
+        state = new ArrayList<ArrayList<Item>>();
+
+        expandableListView=(ExpandableListView) findViewById(R.id.exlvItems);
+        state.add(itemArr);
+        state.add(completedItemsArr);
+        itemsAdapter = new ItemsAdapter(this,state);
+        expandableListView.setAdapter(itemsAdapter);
+        itemsAdapter.notifyDataSetChanged();
+
+        introCheck();
+
+        rl = (RelativeLayout) findViewById(R.id.rl);
 
         //set initial wallpaper
         WALLPAPER_PATH=Environment.getExternalStorageDirectory().getAbsolutePath()+"/.notelocker/wallpaper.jpg";
@@ -108,23 +128,6 @@ public class MainActivity extends AppCompatActivity {
         ll.setPadding(dpAsPixels, dpAsPixels + getStatusBarHeight(), dpAsPixels, dpAsPixels);
         startService(new Intent(this, UpdateService.class));
 
-
-        itemArr = new ArrayList<Item>();
-        completedItemsArr =new ArrayList<Item>();
-        db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
-        getAllItems(db.getAllRows(),itemArr);
-        db.switchTable(DBAdapter.DATABASE_TABLE_COMPLETED_ITEMS);
-        getAllItems(db.getAllRows(),completedItemsArr);
-        state = new ArrayList<ArrayList<Item>>();
-
-        expandableListView=(ExpandableListView) findViewById(R.id.exlvItems);
-        state.add(itemArr);
-        state.add(completedItemsArr);
-        itemsAdapter = new ItemsAdapter(this,state);
-        expandableListView.setAdapter(itemsAdapter);
-        itemsAdapter.notifyDataSetChanged();
-
-
         etInput = (EditText) findViewById(R.id.editText);
         etInput.setOnEditorActionListener(new EditText.OnEditorActionListener() {
                                               @Override
@@ -136,6 +139,7 @@ public class MainActivity extends AppCompatActivity {
                                                       itemArr.add(0, new Item(newId, etInput.getText().toString().trim(), false));
                                                       itemsAdapter.notifyDataSetChanged();
                                                       etInput.setText("");
+                                                      requestBackup(MainActivity.this);
                                                   }
                                                   return true;
 
@@ -174,6 +178,49 @@ public class MainActivity extends AppCompatActivity {
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
+
+    private void introCheck(){
+        //  Declare a new thread to do a preference check
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                //  Initialize SharedPreferences
+                SharedPreferences getPrefs = PreferenceManager
+                        .getDefaultSharedPreferences(getBaseContext());
+
+                //  Create a new boolean and preference and set it to true
+                boolean isFirstStart = getPrefs.getBoolean("firstStart", true);
+
+                //  If the activity has never started before...
+                if (isFirstStart) {
+
+                    //  Launch app intro
+                    Intent i = new Intent(MainActivity.this, Intro.class);
+                    startActivity(i);
+
+                    //  Make a new preferences editor
+                    SharedPreferences.Editor e = getPrefs.edit();
+
+                    //  Edit preference to make it false because we don't want this to run again
+                    e.putBoolean("firstStart", false);
+
+                    //  Apply changes
+                    e.apply();
+
+                    expandableListView.expandGroup(itemsAdapter.COMPLETED);
+                }
+            }
+        });
+
+        // Start the thread
+        t.start();
+    }
+
+    public static void requestBackup(Context context) {
+        BackupManager bm = new BackupManager(context);
+        bm.dataChanged();
+    }
+
 
     public static void getAllItems(Cursor cursor,ArrayList<Item> arrayList){;
         // Reset cursor to start, checking to see if there's data:

@@ -152,6 +152,7 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
                                 MainActivity.db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
                                 Long newId=MainActivity.db.insertRow(item.getName(),(item.isSelected())?1 :0);
                                 notCompletedItems.add(0, new Item(newId, item.getName(), item.isSelected()));
+                                MainActivity.requestBackup(context);
 
                                 notifyDataSetChanged();
                             }
@@ -173,6 +174,7 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
                             MainActivity.db.deleteRow(item.getId());
                             completedItems.remove(childPosition);
                             enableDisableViewGroupClickable(parent, true);
+                            MainActivity.requestBackup(context);
 
                             notifyDataSetChanged();
                         }
@@ -218,6 +220,7 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
                                 //writeFile(etInput.getText().toString().trim());
                                 completedItems.add(0, new Item(newId, item.getName(), item.isSelected()));
                                 notifyDataSetChanged();
+                                MainActivity.requestBackup(context);
                                 //Toast.makeText(context, item.getName() + " removed.", Toast.LENGTH_SHORT).show();
                             }
                         }, 300);
@@ -254,6 +257,7 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
                                                                hideKeyboard();
                                                                fullScreencall();
                                                                editText.setText(item.getName());
+                                                               MainActivity.requestBackup(context);
                                                                return true;
                                                            }
 
@@ -296,12 +300,12 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
 
                     MainActivity.db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
                     MainActivity.db.updateRowSelected(item.getId(),item.getName(),intBool);
+                    MainActivity.requestBackup(context);
 
                 }
 
             });
         }
-
 
         //Toast.makeText(context, "hii", Toast.LENGTH_SHORT).show();
         return convertView;
