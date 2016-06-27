@@ -6,6 +6,7 @@ import android.app.backup.BackupManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -105,10 +106,12 @@ public class MainActivity extends AppCompatActivity {
         rl = (RelativeLayout) findViewById(R.id.rl);
         //set initial wallpaper
         WALLPAPER_PATH = Environment.getExternalStorageDirectory().getAbsolutePath();
-        WALLPAPER_FULL_PATH = Environment.getExternalStorageDirectory().getAbsolutePath()+"/.notelocker/wallpaper.jpg";
+        WALLPAPER_FULL_PATH = WALLPAPER_PATH + "/.notelocker/wallpaper.jpg";
         File wallpaperFile= new File(WALLPAPER_FULL_PATH);
-        if(wallpaperFile.exists()) {
-            Bitmap bitmap = BitmapFactory.decodeFile(WALLPAPER_FULL_PATH);
+
+        if(wallpaperFile.exists()
+                && this.checkCallingOrSelfPermission("android.permission.READ_EXTERNAL_STORAGE")== PackageManager.PERMISSION_GRANTED) {
+            Bitmap bitmap = BitmapFactory.decodeFile(wallpaperFile.getAbsolutePath());
             bitmap =Bitmap.createScaledBitmap(bitmap, 2048, 2048, true);
             Drawable wallpaper=new BitmapDrawable(getResources(), bitmap);
             rl.setBackground(wallpaper);
