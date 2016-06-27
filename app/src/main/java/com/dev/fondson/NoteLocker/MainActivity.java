@@ -7,7 +7,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -100,13 +103,14 @@ public class MainActivity extends AppCompatActivity {
         introCheck();
 
         rl = (RelativeLayout) findViewById(R.id.rl);
-
         //set initial wallpaper
-        WALLPAPER_PATH=Environment.getExternalStorageDirectory().getAbsolutePath();
+        WALLPAPER_PATH = Environment.getExternalStorageDirectory().getAbsolutePath();
         WALLPAPER_FULL_PATH = Environment.getExternalStorageDirectory().getAbsolutePath()+"/.notelocker/wallpaper.jpg";
         File wallpaperFile= new File(WALLPAPER_FULL_PATH);
         if(wallpaperFile.exists()) {
-            Drawable wallpaper=Drawable.createFromPath(WALLPAPER_FULL_PATH);
+            Bitmap bitmap = BitmapFactory.decodeFile(WALLPAPER_FULL_PATH);
+            bitmap =Bitmap.createScaledBitmap(bitmap, 2048, 2048, true);
+            Drawable wallpaper=new BitmapDrawable(getResources(), bitmap);
             rl.setBackground(wallpaper);
         }
         else{

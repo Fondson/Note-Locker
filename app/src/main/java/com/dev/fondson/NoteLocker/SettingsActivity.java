@@ -3,6 +3,9 @@ package com.dev.fondson.NoteLocker;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -130,7 +133,9 @@ public class SettingsActivity extends AppCompatActivity {
                 switch (requestCode) {
                     //handles picture-cropping results
                     case MainActivity.WALLPAPER_CODE:
-                        Drawable wallpaper = Drawable.createFromPath(MainActivity.WALLPAPER_FULL_PATH);
+                        Bitmap bitmap = BitmapFactory.decodeFile(MainActivity.WALLPAPER_FULL_PATH);
+                        bitmap =Bitmap.createScaledBitmap(bitmap, 2048, 2048, true);
+                        Drawable wallpaper=new BitmapDrawable(getResources(), bitmap);
                         MainActivity.getBackground().setBackground(wallpaper);
                         Intent intent = new Intent(getActivity(),MainActivity.class);
                         startActivity(intent);
