@@ -7,13 +7,16 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.Toast;
 
 import java.io.File;
+import java.io.IOException;
 
 public class SettingsActivity extends AppCompatActivity {
     public static final String PREF_KEY_OFF="pref_key_off";
@@ -104,11 +107,19 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         private void launchGalleryPicker(){
+            File wallpaperPath = new File(MainActivity.WALLPAPER_PATH);
+            File wallpaper = new File(MainActivity.WALLPAPER_FULL_PATH);
+            try {
+                wallpaperPath.mkdirs();
+                wallpaper.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             Intent photoPickerIntent = new Intent(Intent.ACTION_PICK,
                     android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             photoPickerIntent.setType("image/*");
             photoPickerIntent.putExtra("crop", "true");
-            photoPickerIntent.putExtra("output", Uri.fromFile(new File(MainActivity.WALLPAPER_PATH)));
+            photoPickerIntent.putExtra("output", Uri.fromFile(wallpaper));
             startActivityForResult(photoPickerIntent,MainActivity.WALLPAPER_CODE);
         }
 
@@ -119,7 +130,8 @@ public class SettingsActivity extends AppCompatActivity {
                 switch (requestCode) {
                     //handles picture-cropping results
                     case MainActivity.WALLPAPER_CODE:
-                        MainActivity.getBackground().setBackground(Drawable.createFromPath(MainActivity.WALLPAPER_PATH));
+                        Drawable wallpaper = Drawable.createFromPath(MainActivity.WALLPAPER_FULL_PATH);
+                        MainActivity.getBackground().setBackground(wallpaper);
                         Intent intent = new Intent(getActivity(),MainActivity.class);
                         startActivity(intent);
                         break;

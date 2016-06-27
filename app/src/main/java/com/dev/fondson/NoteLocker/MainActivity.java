@@ -44,7 +44,8 @@ public class MainActivity extends AppCompatActivity {
     public static KeyListener listener;
     public static final int WALLPAPER_CODE = 10;
     public static String WALLPAPER_PATH;
-    public static String[] perms={"android.permission.READ_EXTERNAL_STORAGE","android.permission.WRITE_EXTERNAL_STORAGE"};
+    public static String WALLPAPER_FULL_PATH;
+    public static String[] perms={"android.permission.READ_EXTERNAL_STORAGE","android.permission.WRITE_EXTERNAL_STORAGE","android.permision.READ_INTERNAL_STORAGE","android.permission.WRITE_INTERNAL_STORAGE"};
     private static RelativeLayout rl;
     private static ImageView darkTint;
     private EditText etInput;
@@ -101,10 +102,11 @@ public class MainActivity extends AppCompatActivity {
         rl = (RelativeLayout) findViewById(R.id.rl);
 
         //set initial wallpaper
-        WALLPAPER_PATH=Environment.getExternalStorageDirectory().getAbsolutePath()+"/.notelocker/wallpaper.jpg";
-        File wallpaperFile= new File(WALLPAPER_PATH);
+        WALLPAPER_PATH=Environment.getExternalStorageDirectory().getAbsolutePath();
+        WALLPAPER_FULL_PATH = Environment.getExternalStorageDirectory().getAbsolutePath()+"/.notelocker/wallpaper.jpg";
+        File wallpaperFile= new File(WALLPAPER_FULL_PATH);
         if(wallpaperFile.exists()) {
-            Drawable wallpaper=Drawable.createFromPath(WALLPAPER_PATH);
+            Drawable wallpaper=Drawable.createFromPath(WALLPAPER_FULL_PATH);
             rl.setBackground(wallpaper);
         }
         else{
