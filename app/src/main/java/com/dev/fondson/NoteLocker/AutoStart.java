@@ -16,7 +16,7 @@ public class AutoStart extends BroadcastReceiver{
         if ((intent.getAction().equals(Intent.ACTION_SCREEN_OFF)
                 || intent.getAction().equals(Intent.ACTION_SCREEN_ON)
                 || intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)
-                ) && !PreferenceManager.getDefaultSharedPreferences(context).getBoolean(SettingsActivity.PREF_KEY_OFF,false)) {
+                ) && PreferenceManager.getDefaultSharedPreferences(context).getBoolean(SettingsActivity.PREF_KEY_OFF,false)) {
             start_lockscreen(context);
         }
 

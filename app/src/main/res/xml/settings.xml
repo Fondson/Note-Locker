@@ -6,7 +6,7 @@
             android:key = "pref_key_off"
             android:title = "Turn off Note Locker"
             android:summary="Stop Note Locker from auto-starting"
-            android:defaultValue ="false"/>
+            android:defaultValue ="true"/>
         <PreferenceScreen
             android:key="pref_key_wallpaper"
             android:title = "Change wallpaper"

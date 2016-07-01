@@ -24,6 +24,8 @@
         android:fullBackupContent="@xml/backupscheme"
         android:backupAgent="TheBackupAgent">
         <meta-data android:name="com.google.android.backup.api_key" android:value="AEdPqrEAAAAItz72IuXEUU7IlwmjC0A2RQ7tGs0UX_F8PaLxgw" />
+        <activity android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
+            android:theme="@style/AppCompatSettings"/>
         <activity
             android:name="com.dev.fondson.NoteLocker.MainActivity"
             android:launchMode="singleTask"

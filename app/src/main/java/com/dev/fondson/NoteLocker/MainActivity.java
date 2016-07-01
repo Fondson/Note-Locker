@@ -105,15 +105,15 @@ public class MainActivity extends AppCompatActivity {
 
         rl = (RelativeLayout) findViewById(R.id.rl);
         //set initial wallpaper
-        WALLPAPER_PATH = Environment.getExternalStorageDirectory().getAbsolutePath();
-        WALLPAPER_FULL_PATH = WALLPAPER_PATH + "/.notelocker/wallpaper.jpg";
+        WALLPAPER_PATH = getFilesDir().getAbsolutePath();
+        WALLPAPER_FULL_PATH = WALLPAPER_PATH + "/wallpaper.jpg";
         File wallpaperFile= new File(WALLPAPER_FULL_PATH);
 
         if(wallpaperFile.exists()
                 && this.checkCallingOrSelfPermission("android.permission.READ_EXTERNAL_STORAGE")== PackageManager.PERMISSION_GRANTED) {
-            Bitmap bitmap = BitmapFactory.decodeFile(wallpaperFile.getAbsolutePath());
-            bitmap =Bitmap.createScaledBitmap(bitmap, 2048, 2048, true);
-            Drawable wallpaper=new BitmapDrawable(getResources(), bitmap);
+//            Bitmap bitmap = BitmapFactory.decodeFile(wallpaperFile.getAbsolutePath());
+//            bitmap =Bitmap.createScaledBitmap(bitmap, 2048, 2048, true);
+            Drawable wallpaper=Drawable.createFromPath(WALLPAPER_FULL_PATH);// BitmapDrawable(getResources(), bitmap);
             rl.setBackground(wallpaper);
         }
         else{
@@ -248,6 +248,7 @@ public class MainActivity extends AppCompatActivity {
             } while(cursor.moveToNext());
         }
     }
+
 
     public static ImageView getDarkTint(){
         return darkTint;

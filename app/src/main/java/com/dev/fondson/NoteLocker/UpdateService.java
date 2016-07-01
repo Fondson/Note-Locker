@@ -22,13 +22,16 @@ public class UpdateService extends Service{
     }
     @Override
     public void onCreate() {
-        ((KeyguardManager)getSystemService(Activity.KEYGUARD_SERVICE)).newKeyguardLock("IN").disableKeyguard();
+        //((KeyguardManager)getSystemService(Activity.KEYGUARD_SERVICE)).newKeyguardLock("IN").disableKeyguard();
         super.onCreate();
     }
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         IntentFilter screenStateFilter = new IntentFilter();
         screenStateFilter.addAction(Intent.ACTION_SCREEN_OFF);
+        screenStateFilter.addAction(Intent.ACTION_SCREEN_ON);
+        screenStateFilter.addAction(Intent.ACTION_BOOT_COMPLETED);
+        screenStateFilter.setPriority(IntentFilter.SYSTEM_HIGH_PRIORITY-1);
         registerReceiver(mReceiver, screenStateFilter);
         //startForeground();
         return START_STICKY;
@@ -50,6 +53,7 @@ public class UpdateService extends Service{
     public void onDestroy() {
         super.onDestroy();
         unregisterReceiver(mReceiver);
+        startService(new Intent(UpdateService.this,UpdateService.class));
     }
 
 
