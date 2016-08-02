@@ -76,8 +76,7 @@ public class SettingsActivity extends AppCompatActivity {
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
-                Intent intent = new Intent(this,MainActivity.class);
-                startActivity(intent);
+                startActivity(new Intent(this,MainActivity.class));
                 break;
             }
         }
@@ -107,13 +106,11 @@ public class SettingsActivity extends AppCompatActivity {
             wallpaperPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 public boolean onPreferenceClick(Preference preference) {
                     //requests permissions needed for users to select background image on M or above
-//                    if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.M
-//                            && getContext().checkCallingOrSelfPermission("android.permission.READ_EXTERNAL_STORAGE")!= PackageManager.PERMISSION_GRANTED
-//                            && getContext().checkCallingOrSelfPermission("android.permission.WRITE_EXTERNAL_STORAGE")!= PackageManager.PERMISSION_GRANTED){
-//                        requestPermissions(MainActivity.perms, 200);
-//                    }
-//                    else{launchGalleryPicker();}
-                    launchGalleryPicker();
+                    if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.M
+                            && getContext().checkCallingOrSelfPermission("android.permission.READ_EXTERNAL_STORAGE")!= PackageManager.PERMISSION_GRANTED){
+                        requestPermissions(MainActivity.perms, 200);
+                    }
+                    else{launchGalleryPicker();}
                     return true;
                 }
 
@@ -146,18 +143,17 @@ public class SettingsActivity extends AppCompatActivity {
 
 
         //handles permission requests
-//        @Override
-//        public void onRequestPermissionsResult(int permsRequestCode, String[] permissions,int[] grantResults){
-//            switch (permsRequestCode){
-//                case 200:
-//                    if (grantResults.length>0
-//                            && grantResults[0] == PackageManager.PERMISSION_GRANTED
-//                            && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-//                        launchGalleryPicker();
-//                    }
-//                    break;
-//            }
-//        }
+        @Override
+        public void onRequestPermissionsResult(int permsRequestCode, String[] permissions,int[] grantResults){
+            switch (permsRequestCode){
+                case 200:
+                    if (grantResults.length>0
+                            && grantResults[0]==PackageManager.PERMISSION_GRANTED) {
+                        launchGalleryPicker();
+                    }
+                    break;
+            }
+        }
 
         private void launchGalleryPicker(){
 //            File wallpaperPath = new File(MainActivity.WALLPAPER_PATH);

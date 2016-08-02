@@ -40,6 +40,7 @@ public class Intro extends AppIntro {
             decorView.setSystemUiVisibility(uiOptions);
         }
 
+        setSeparatorColor(921515);
         showSkipButton(false);
         //skipButton.setEnabled(false);
         //skipButton.setAlpha(0);
