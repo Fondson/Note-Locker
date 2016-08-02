@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
     public static final int WALLPAPER_CODE = 10;
     public static String WALLPAPER_PATH;
     public static String WALLPAPER_FULL_PATH;
-    public static String[] perms={"android.permission.READ_EXTERNAL_STORAGE","android.permission.WRITE_EXTERNAL_STORAGE","android.permision.READ_INTERNAL_STORAGE","android.permission.WRITE_INTERNAL_STORAGE"};
+    public static String[] perms={"android.permission.READ_EXTERNAL_STORAGE"};//,"android.permission.WRITE_EXTERNAL_STORAGE","android.permision.READ_INTERNAL_STORAGE","android.permission.WRITE_INTERNAL_STORAGE"};
     private static RelativeLayout rl;
     private static ImageView darkTint;
     private EditText etInput;
@@ -351,5 +351,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         db.close();
+        startService(new Intent(this, UpdateService.class));
     }
 }
