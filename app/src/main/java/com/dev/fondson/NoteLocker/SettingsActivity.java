@@ -1,10 +1,12 @@
 package com.dev.fondson.NoteLocker;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -16,7 +18,9 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
+import android.util.DisplayMetrics;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.theartofdev.edmodo.cropper.CropImage;
@@ -185,9 +189,15 @@ public class SettingsActivity extends AppCompatActivity {
 //                        } catch (IOException e) {
 //                            e.printStackTrace();
 //                        }
+                        DisplayMetrics widthMetrics = new DisplayMetrics();
+                        ((WindowManager)getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getRealMetrics(widthMetrics);
+                        int width = widthMetrics.widthPixels;
 
+                        DisplayMetrics heightMetrics = new DisplayMetrics();
+                        ((WindowManager)getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getRealMetrics(heightMetrics);
+                        int height = heightMetrics.heightPixels;
 
-                        CropImage.activity(data.getData()).start(getActivity());
+                        CropImage.activity(data.getData()).setAspectRatio(width,height).setFixAspectRatio(true).start(getActivity());
                         //startActivity(intent);x
 
                         break;
