@@ -95,18 +95,28 @@
 
         </LinearLayout>
 
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:gravity="right"
-            android:paddingBottom="10dp"
-            android:paddingTop="10dp">
-            <com.dev.fondson.NoteLocker.UnlockBar
-                android:id="@+id/unlock"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
+        <com.facebook.shimmer.ShimmerFrameLayout
+            android:id="@+id/slide_up_shimmer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/text_label"
+                    android:layout_height="50dp"
+                    android:layout_width="match_parent"
+                    android:layout_centerInParent="true"
+                    android:gravity="center"
+                    android:text="Slide UP to unlock"
+                    android:textColor="@android:color/white"
+                    android:textSize="18sp"
+                    android:textStyle="italic"/>
+
+                    <!--<com.dev.fondson.NoteLocker.UnlockBar
+                    android:id="@+id/unlock"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+                    -->
+
+        </com.facebook.shimmer.ShimmerFrameLayout>
 
 
     </LinearLayout>

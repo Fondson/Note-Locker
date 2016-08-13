@@ -190,11 +190,11 @@ public class SettingsActivity extends AppCompatActivity {
 //                            e.printStackTrace();
 //                        }
                         DisplayMetrics widthMetrics = new DisplayMetrics();
-                        ((WindowManager)getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getRealMetrics(widthMetrics);
+                        ((WindowManager)getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(widthMetrics);
                         int width = widthMetrics.widthPixels;
 
                         DisplayMetrics heightMetrics = new DisplayMetrics();
-                        ((WindowManager)getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getRealMetrics(heightMetrics);
+                        ((WindowManager)getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(heightMetrics);
                         int height = heightMetrics.heightPixels;
 
                         CropImage.activity(data.getData()).setAspectRatio(width,height).setFixAspectRatio(true).start(getActivity());

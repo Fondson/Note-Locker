@@ -34,6 +34,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.dev.fondson.NoteLocker.model.SlidrConfig;
+import com.dev.fondson.NoteLocker.model.SlidrInterface;
+import com.dev.fondson.NoteLocker.model.SlidrListener;
+import com.dev.fondson.NoteLocker.model.SlidrPosition;
+import com.facebook.shimmer.ShimmerFrameLayout;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -53,13 +58,15 @@ public class MainActivity extends AppCompatActivity {
     private static RelativeLayout rl;
     private static ImageView darkTint;
     private EditText etInput;
-    private LinearLayout ll;
+    private static LinearLayout ll;
     private ArrayList<ArrayList<Item>> state;
     private ArrayList<Item> itemArr;
     private ArrayList<Item> completedItemsArr;
     private ExpandableListView expandableListView;
     private ItemsAdapter itemsAdapter;
     private UnlockBar unlock;
+    private SlidrConfig config;
+    private SlidrInterface slidrInterface;
 
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -121,7 +128,16 @@ public class MainActivity extends AppCompatActivity {
             Drawable wallpaperDrawable = wallpaperManager.getDrawable();
             rl.setBackground(wallpaperDrawable);
         }
-        rl.setOnTouchListener(new View.OnTouchListener() {
+//        rl.setOnTouchListener(new View.OnTouchListener() {
+//            @Override
+//            public boolean onTouch(View v, MotionEvent event) {
+//                hideKeyboard();
+//                fullScreencall();
+//                return false;
+//            }
+//        });
+        ll = (LinearLayout) findViewById(R.id.llMain);
+        ll.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 hideKeyboard();
@@ -131,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
         });
         darkTint=(ImageView)findViewById(R.id.ivDarkTint);
         ((View)darkTint).setAlpha((float)PreferenceManager.getDefaultSharedPreferences(MainActivity.this).getInt("pref_key_darkTint", 50)/100);
-        ll = (LinearLayout) findViewById(R.id.llMain);
+
         float scale = getResources().getDisplayMetrics().density;
         int dpAsPixels = (int) (16 * scale + 0.5f); //standard padding by Android Design Guidelines
         ll.setPadding(dpAsPixels, dpAsPixels + getStatusBarHeight(), dpAsPixels, dpAsPixels);
@@ -166,15 +182,15 @@ public class MainActivity extends AppCompatActivity {
         listener = etInput.getKeyListener();
 
         // Retrieve layout elements
-        unlock = (UnlockBar) findViewById(R.id.unlock);
-        // Attach listener
-        unlock.setOnUnlockListener(new UnlockBar.OnUnlockListener() {
-            @Override
-            public void onUnlock() {
-                moveTaskToBack(true);
-            }
-        });
-
+//        unlock = (UnlockBar) findViewById(R.id.unlock);
+//         Attach listener
+//        unlock.setOnUnlockListener(new UnlockBar.OnUnlockListener() {
+//            @Override
+//            public void onUnlock() {
+//                moveTaskToBack(true);
+//            }
+//        });
+//
         //settings button
         ImageButton btnSettings=(ImageButton) findViewById(R.id.btnSettings);
         btnSettings.setOnClickListener(new View.OnClickListener(){
@@ -183,6 +199,25 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        config = new SlidrConfig.Builder()
+                                .position(SlidrPosition.BOTTOM)
+                                .sensitivity(0.75f)
+                                .scrimColor(Color.TRANSPARENT)
+                                .scrimStartAlpha(1f)
+                                .scrimEndAlpha(0f)
+                                .velocityThreshold(2400)
+                                .distanceThreshold(0.25f)
+                                .edge(true)
+                                .edgeSize(0.18f) // The % of the screen that counts as the edge, default 18%
+                                .build();
+
+        slidrInterface=Slidr.attach(this, config);
+
+
+        ShimmerFrameLayout slideUpShimmer = (ShimmerFrameLayout) findViewById(R.id.slide_up_shimmer);
+        slideUpShimmer.setDuration(1500);
+        slideUpShimmer.startShimmerAnimation();
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
@@ -281,7 +316,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         fullScreencall();
         //homeKeyLocker.lock(this);
-        unlock.reset();
+        //unlock.reset();
         ((EditText) findViewById(R.id.editText)).setText("");
         itemsAdapter.notifyDataSetChanged();
         super.onResume();

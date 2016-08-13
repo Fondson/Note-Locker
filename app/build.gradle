@@ -23,8 +23,8 @@ android {
         applicationId "com.dev.fondson.NoteLocker"
         minSdkVersion 16
         targetSdkVersion 23
-        versionCode 17
-        versionName "1.3"
+        versionCode 19
+        versionName "1.4"
     }
     buildTypes {
         release {
@@ -45,5 +45,8 @@ dependencies {
     compile 'com.github.paolorotolo:appintro:4.0.0'
     compile 'com.google.android.gms:play-services-appindexing:8.1.0'
     compile 'com.theartofdev.edmodo:android-image-cropper:2.2.+'
+    compile 'com.r0adkll:slidableactivity:2.0.5'
+    compile 'com.facebook.shimmer:shimmer:0.1.0@aar'
+
 
 }
