@@ -17,12 +17,18 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.support.annotation.MainThread;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.theartofdev.edmodo.cropper.CropImage;
 
 import java.io.BufferedInputStream;
@@ -32,6 +38,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 
 public class SettingsActivity extends AppCompatActivity {
     public static final String PREF_KEY_OFF="pref_key_off";
@@ -42,9 +51,7 @@ public class SettingsActivity extends AppCompatActivity {
         // Display the fragment as the main content.
         getFragmentManager().beginTransaction()
                 .replace(android.R.id.content, new SettingsFragment())
-                .commit();
-
-
+                        .commit();
     }
 
     @Override
@@ -54,40 +61,41 @@ public class SettingsActivity extends AppCompatActivity {
             switch (requestCode) {
                 case CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE:
 
-                CropImage.ActivityResult result = CropImage.getActivityResult(data);
-                InputStream inputStream;
-                File wallpaperFile = new File(MainActivity.WALLPAPER_FULL_PATH);
-                try {
-                    inputStream = this.getContentResolver().openInputStream(result.getUri());
-                    BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
-
-                    Bitmap bitmap = BitmapFactory.decodeStream(bufferedInputStream);
-                    //copyInputStreamToFile(inputStream,wallpaperFile);                        //Bitmap bitmap=data.getExtras().getParcelable("data");
-                    bitmap =Bitmap.createScaledBitmap(bitmap, 2048, 2048, true);
-                    Drawable wallpaper= new BitmapDrawable(getResources(), bitmap);
-                    MainActivity.getBackground().setBackground(wallpaper);
-                    //copyInputStreamToFile(inputStream,wallpaperFile);
-                    if (wallpaperFile.exists())
-                        wallpaperFile.delete();
+                    CropImage.ActivityResult result = CropImage.getActivityResult(data);
+                    InputStream inputStream;
+                    File wallpaperFile = new File(MainActivity.WALLPAPER_FULL_PATH);
                     try {
-                        FileOutputStream out = new FileOutputStream(wallpaperFile);
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
-                        out.flush();
-                        out.close();
-                    } catch (Exception e) {
+                        inputStream = this.getContentResolver().openInputStream(result.getUri());
+                        BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+
+                        Bitmap bitmap = BitmapFactory.decodeStream(bufferedInputStream);
+                        //copyInputStreamToFile(inputStream,wallpaperFile);                        //Bitmap bitmap=data.getExtras().getParcelable("data");
+                        bitmap =Bitmap.createScaledBitmap(bitmap, 2048, 2048, true);
+                        Drawable wallpaper= new BitmapDrawable(getResources(), bitmap);
+                        MainActivity.getBackground().setBackground(wallpaper);
+                        //copyInputStreamToFile(inputStream,wallpaperFile);
+                        if (wallpaperFile.exists())
+                            wallpaperFile.delete();
+                        try {
+                            FileOutputStream out = new FileOutputStream(wallpaperFile);
+                            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
+                            out.flush();
+                            out.close();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     }
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-                startActivity(new Intent(this,MainActivity.class));
-                break;
+                    startActivity(new Intent(this,MainActivity.class));
+                    break;
             }
         }
     }
-    public static class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
+    public static class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener,Preference.OnPreferenceClickListener {
         private SeekBarPreference darkTintSeekBar;
         private SharedPreferences sharedPreferences;
+        private Preference googleAccountPref;
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
@@ -97,7 +105,9 @@ public class SettingsActivity extends AppCompatActivity {
 
             Preference wallpaperPref = (Preference) findPreference("pref_key_wallpaper");
             Preference tutorialPref = (Preference) findPreference("pref_tutorial");
+            googleAccountPref = (Preference) findPreference("pref_key_google_account");
             darkTintSeekBar = (SeekBarPreference)findPreference("pref_key_darkTint");
+
 
             // Set listener :
             getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
@@ -120,6 +130,8 @@ public class SettingsActivity extends AppCompatActivity {
 
             });
 
+            googleAccountPref.setOnPreferenceClickListener(this);
+
             tutorialPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 public boolean onPreferenceClick(Preference preference) {
                     //  Launch app intro
@@ -130,6 +142,26 @@ public class SettingsActivity extends AppCompatActivity {
                 }
 
             });
+        }
+
+        @Override
+        public void onStart() {
+            if (MainActivity.userEmail!=null && MainActivity.mGoogleApiClient.isConnected() ) {
+                googleAccountPref.setSummary(MainActivity.userEmail);
+            }
+            else{
+                googleAccountPref.setSummary("None");
+            }
+            super.onStart();
+        }
+
+        public boolean onPreferenceClick(Preference preference) {
+            if (MainActivity.mGoogleApiClient.isConnected()) {
+                Auth.GoogleSignInApi.signOut(MainActivity.mGoogleApiClient);
+                Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(MainActivity.mGoogleApiClient);
+                startActivityForResult(signInIntent, MainActivity.GOOGLE_ACCOUNT_SIGN_IN_CODE);
+            }
+            return true;
         }
 
         @Override
@@ -190,16 +222,29 @@ public class SettingsActivity extends AppCompatActivity {
 //                            e.printStackTrace();
 //                        }
                         DisplayMetrics widthMetrics = new DisplayMetrics();
-                        ((WindowManager)getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(widthMetrics);
+                        ((WindowManager)getActivity().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(widthMetrics);
                         int width = widthMetrics.widthPixels;
 
                         DisplayMetrics heightMetrics = new DisplayMetrics();
-                        ((WindowManager)getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(heightMetrics);
+                        ((WindowManager)getActivity().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(heightMetrics);
                         int height = heightMetrics.heightPixels;
 
                         CropImage.activity(data.getData()).setAspectRatio(width,height).setFixAspectRatio(true).start(getActivity());
                         //startActivity(intent);x
 
+                        break;
+                    case MainActivity.GOOGLE_ACCOUNT_SIGN_IN_CODE:
+                        GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+                        if (result.isSuccess()) {
+                            // Signed in successfully, show authenticated UI.
+                            GoogleSignInAccount acct = result.getSignInAccount();
+                            MainActivity.userEmail=acct.getEmail();
+                            googleAccountPref.setSummary(MainActivity.userEmail);
+                        }
+                        else{
+                            MainActivity.userEmail=null;
+                            googleAccountPref.setSummary("None");
+                        }
                         break;
                 }
             }

@@ -43,10 +43,12 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.1.1'
     compile 'com.github.paolorotolo:appintro:4.0.0'
-    compile 'com.google.android.gms:play-services-appindexing:8.1.0'
     compile 'com.theartofdev.edmodo:android-image-cropper:2.2.+'
     compile 'com.r0adkll:slidableactivity:2.0.5'
     compile 'com.facebook.shimmer:shimmer:0.1.0@aar'
+    compile 'com.google.android.gms:play-services-auth:9.2.1'
 
 
 }
+
+apply plugin: 'com.google.gms.google-services'

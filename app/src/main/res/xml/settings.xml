@@ -22,6 +22,10 @@
     </PreferenceCategory>
     <PreferenceCategory android:title="Other">
         <PreferenceScreen
+            android:key="pref_key_google_account"
+            android:title = "Signed in as"
+            android:id="@+id/googleAccountSetting"/>
+        <PreferenceScreen
             android:key = "pref_tutorial"
             android:title = "View tutorial"
             android:id="@+id/tutorial"/>

@@ -14,7 +14,7 @@ import com.dev.fondson.NoteLocker.widget.SliderPanel;
 /**
  * This attacher class is used to attach the sliding mechanism to any {@link Activity}
  * that lets the user slide (or swipe) the activity away as a form of back or up action. The action
- * causes {@link Activity#finish()} to be called.
+ * causes {@link Activity#moveTaskToBack(boolean)} to be called.
  *
  *
  * Created by r0adkll on 8/18/14.
@@ -61,8 +61,7 @@ public class Slidr {
 
             @Override
             public void onClosed() {
-                activity.finish();
-                activity.overridePendingTransition(0, 0);
+                activity.moveTaskToBack(true);
             }
 
             @Override
@@ -117,8 +116,7 @@ public class Slidr {
                     config.getListener().onSlideClosed();
                 }
 
-                activity.finish();
-                activity.overridePendingTransition(0, 0);
+                activity.moveTaskToBack(true);
             }
 
             @Override
@@ -156,13 +154,13 @@ public class Slidr {
 		// Hijack the decorview
 		ViewGroup decorView = MainActivity.getBackground();
 //        int i = decorView.getChildCount();
-		View oldScreen = decorView.getChildAt(1);
+        View oldScreen = decorView.getChildAt(1);
 		decorView.removeViewAt(1);
 
 		// Setup the slider panel and attach it to the decor
 		SliderPanel panel = new SliderPanel(activity, oldScreen, config);
-		panel.setId(com.r0adkll.slidr.R.id.slidable_panel);
-		oldScreen.setId(com.r0adkll.slidr.R.id.slidable_content);
+		panel.setId(R.id.slidable_panel);
+		oldScreen.setId(R.id.slidable_content);
 		panel.addView(oldScreen);
 		decorView.addView(panel, 1);
 		return panel;

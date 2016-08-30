@@ -1,5 +1,7 @@
 package com.dev.fondson.NoteLocker;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.Service;
 import android.app.WallpaperManager;
 import android.app.backup.BackupManager;
@@ -20,6 +22,7 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.KeyListener;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -39,8 +42,10 @@ import com.dev.fondson.NoteLocker.model.SlidrInterface;
 import com.dev.fondson.NoteLocker.model.SlidrListener;
 import com.dev.fondson.NoteLocker.model.SlidrPosition;
 import com.facebook.shimmer.ShimmerFrameLayout;
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 
 import java.io.File;
@@ -50,13 +55,16 @@ public class MainActivity extends AppCompatActivity {
 
     //public static final HomeKeyLocker homeKeyLocker = new HomeKeyLocker();
     public static DBAdapter db;
+    public static String userEmail;
     public static KeyListener listener;
     public static final int WALLPAPER_CODE = 10;
+    public static final int GOOGLE_ACCOUNT_SIGN_IN_CODE = 9;
     public static String WALLPAPER_PATH;
     public static String WALLPAPER_FULL_PATH;
     public static String[] perms={"android.permission.READ_EXTERNAL_STORAGE"};//,"android.permission.WRITE_EXTERNAL_STORAGE","android.permision.READ_INTERNAL_STORAGE","android.permission.WRITE_INTERNAL_STORAGE"};
     private static RelativeLayout rl;
     private static ImageView darkTint;
+    public static GoogleApiClient mGoogleApiClient;
     private EditText etInput;
     private static LinearLayout ll;
     private ArrayList<ArrayList<Item>> state;
@@ -68,11 +76,6 @@ public class MainActivity extends AppCompatActivity {
     private SlidrConfig config;
     private SlidrInterface slidrInterface;
 
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
-    private GoogleApiClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -212,15 +215,13 @@ public class MainActivity extends AppCompatActivity {
                                 .edgeSize(0.18f) // The % of the screen that counts as the edge, default 18%
                                 .build();
 
-        slidrInterface=Slidr.attach(this, config);
 
+        slidrInterface=Slidr.attach(this, config);
 
         ShimmerFrameLayout slideUpShimmer = (ShimmerFrameLayout) findViewById(R.id.slide_up_shimmer);
         slideUpShimmer.setDuration(1500);
         slideUpShimmer.startShimmerAnimation();
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+
     }
 
     private void introCheck(){
@@ -255,6 +256,19 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+        // Configure sign-in to request the user's ID, email address, and basic
+        // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .build();
+
+        // Build a GoogleApiClient with access to the Google Sign-In API and the
+        // options specified by gso.
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build();
+        mGoogleApiClient.connect();
 
         // Start the thread
         t.start();
@@ -314,11 +328,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     protected void onResume() {
+
         fullScreencall();
         //homeKeyLocker.lock(this);
         //unlock.reset();
         ((EditText) findViewById(R.id.editText)).setText("");
         itemsAdapter.notifyDataSetChanged();
+
+        ((View)findViewById(R.id.slidable_content)).setAlpha(1f);
         super.onResume();
     }
     public static RelativeLayout getBackground(){
@@ -342,50 +359,40 @@ public class MainActivity extends AppCompatActivity {
         return result;
     }
 
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (data!=null) {
+            switch (requestCode) {
+                case GOOGLE_ACCOUNT_SIGN_IN_CODE:
+                    GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+                    if (result.isSuccess()) {
+                        // Signed in successfully, show authenticated UI.
+                        GoogleSignInAccount acct = result.getSignInAccount();
+                        userEmail=acct.getEmail();
+                    }
+                    break;
+            }
+        }
+    }
     @Override
     public void onStart() {
+        if (userEmail==null) {
+            Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+            startActivityForResult(signInIntent, GOOGLE_ACCOUNT_SIGN_IN_CODE);
+        }
         super.onStart();
-
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client.connect();
-        Action viewAction = Action.newAction(
-                Action.TYPE_VIEW, // TODO: choose an action type.
-                "Main Page", // TODO: Define a title for the content shown.
-                // TODO: If you have web page content that matches this app activity's content,
-                // make sure this auto-generated web page URL is correct.
-                // Otherwise, set the URL to null.
-                Uri.parse("http://host/path"),
-                // TODO: Make sure this auto-generated app deep link URI is correct.
-                Uri.parse("android-app://com.dev.fondson.NoteLocker/http/host/path")
-        );
-        AppIndex.AppIndexApi.start(client, viewAction);
     }
 
     @Override
     public void onStop() {
         super.onStop();
-
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        Action viewAction = Action.newAction(
-                Action.TYPE_VIEW, // TODO: choose an action type.
-                "Main Page", // TODO: Define a title for the content shown.
-                // TODO: If you have web page content that matches this app activity's content,
-                // make sure this auto-generated web page URL is correct.
-                // Otherwise, set the URL to null.
-                Uri.parse("http://host/path"),
-                // TODO: Make sure this auto-generated app deep link URI is correct.
-                Uri.parse("android-app://com.dev.fondson.NoteLocker/http/host/path")
-        );
-        AppIndex.AppIndexApi.end(client, viewAction);
-        client.disconnect();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         db.close();
+        mGoogleApiClient.disconnect();
         startService(new Intent(this, UpdateService.class));
     }
 }

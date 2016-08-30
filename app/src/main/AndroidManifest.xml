@@ -29,7 +29,7 @@
             android:theme="@style/AppCompatSettings"/>
         <activity
             android:name="com.dev.fondson.NoteLocker.MainActivity"
-            android:launchMode="singleTask"
+            android:launchMode="singleInstance"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.NoActionBar"
             android:showOnLockScreen="true"
@@ -53,10 +53,6 @@
             </intent-filter>
         </receiver>
 
-        <!--
-             ATTENTION: This was auto-generated to add Google Play services to your project for
-             App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information.
-        -->
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />

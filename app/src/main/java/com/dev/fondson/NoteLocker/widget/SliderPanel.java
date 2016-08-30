@@ -491,7 +491,7 @@ public class SliderPanel extends FrameLayout {
     };
 
     /**
-     * The drag helper callbacks for dragging the slidr attachment from the bottom of hte screen
+     * The drag helper callbacks for dragging the slidr attachment from the bottom of the screen
      */
     private ViewDragHelper.Callback mBottomCallback = new ViewDragHelper.Callback() {
         @Override
