@@ -10,3 +10,4 @@
 keystore.properties
 app/android.jks
 *.log
+google-services.json
