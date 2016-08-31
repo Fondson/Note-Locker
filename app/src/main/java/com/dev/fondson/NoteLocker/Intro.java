@@ -64,5 +64,6 @@ public class Intro extends AppIntro {
     private void loadMainActivity(){
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
+        this.finish();
     }
 }

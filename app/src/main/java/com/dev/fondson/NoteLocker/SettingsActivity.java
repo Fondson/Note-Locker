@@ -9,6 +9,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -117,31 +119,10 @@ public class SettingsActivity extends AppCompatActivity {
             int alphaValue = sharedPreferences.getInt("pref_key_darkTint", 50);
             darkTintSeekBar.setSummary(("$%").replace("$", ""+alphaValue));
 
-            wallpaperPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                public boolean onPreferenceClick(Preference preference) {
-                    //requests permissions needed for users to select background image on M or above
-                    if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.M
-                            && getContext().checkCallingOrSelfPermission("android.permission.READ_EXTERNAL_STORAGE")!= PackageManager.PERMISSION_GRANTED){
-                        requestPermissions(MainActivity.perms, 200);
-                    }
-                    else{launchGalleryPicker();}
-                    return true;
-                }
-
-            });
-
+            wallpaperPref.setOnPreferenceClickListener(this);
             googleAccountPref.setOnPreferenceClickListener(this);
+            tutorialPref.setOnPreferenceClickListener(this);
 
-            tutorialPref.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                public boolean onPreferenceClick(Preference preference) {
-                    //  Launch app intro
-                    Intent i = new Intent(getActivity(), Intro.class);
-                    startActivity(i);
-
-                    return true;
-                }
-
-            });
         }
 
         @Override
@@ -156,10 +137,27 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         public boolean onPreferenceClick(Preference preference) {
-            if (MainActivity.mGoogleApiClient.isConnected()) {
-                Auth.GoogleSignInApi.signOut(MainActivity.mGoogleApiClient);
-                Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(MainActivity.mGoogleApiClient);
-                startActivityForResult(signInIntent, MainActivity.GOOGLE_ACCOUNT_SIGN_IN_CODE);
+            switch (preference.getKey()) {
+                case "pref_key_google_account":
+                    if (MainActivity.mGoogleApiClient.isConnected() && isOnline()) {
+                        Auth.GoogleSignInApi.signOut(MainActivity.mGoogleApiClient);
+                        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(MainActivity.mGoogleApiClient);
+                        startActivityForResult(signInIntent, MainActivity.GOOGLE_ACCOUNT_SIGN_IN_CODE);
+                    }
+                    break;
+                case "pref_key_wallpaper":
+                    //requests permissions needed for users to select background image on M or above
+                    if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.M
+                            && getContext().checkCallingOrSelfPermission("android.permission.READ_EXTERNAL_STORAGE")!= PackageManager.PERMISSION_GRANTED){
+                        requestPermissions(MainActivity.perms, 200);
+                    }
+                    else{launchGalleryPicker();}
+                    break;
+                case "pref_tutorial":
+                    //  Launch app intro
+                    Intent i = new Intent(getActivity(), Intro.class);
+                    startActivity(i);
+                    break;
             }
             return true;
         }
@@ -249,19 +247,11 @@ public class SettingsActivity extends AppCompatActivity {
                 }
             }
         }
-        private void copyInputStreamToFile( InputStream in, File file ) {
-            try {
-                OutputStream out = new FileOutputStream(file);
-                byte[] buf = new byte[1024];
-                int len;
-                while((len=in.read(buf))>0){
-                    out.write(buf,0,len);
-                }
-                out.close();
-                in.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        public boolean isOnline() {
+            ConnectivityManager cm =
+                    (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo netInfo = cm.getActiveNetworkInfo();
+            return netInfo != null && netInfo.isConnected();
         }
     }
 }

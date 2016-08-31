@@ -15,6 +15,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -221,7 +223,6 @@ public class MainActivity extends AppCompatActivity {
         ShimmerFrameLayout slideUpShimmer = (ShimmerFrameLayout) findViewById(R.id.slide_up_shimmer);
         slideUpShimmer.setDuration(1500);
         slideUpShimmer.startShimmerAnimation();
-
     }
 
     private void introCheck(){
@@ -359,6 +360,13 @@ public class MainActivity extends AppCompatActivity {
         return result;
     }
 
+    public boolean isOnline() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnected();
+    }
+
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (data!=null) {
@@ -376,7 +384,7 @@ public class MainActivity extends AppCompatActivity {
     }
     @Override
     public void onStart() {
-        if (userEmail==null) {
+        if (userEmail==null && isOnline()) {
             Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
             startActivityForResult(signInIntent, GOOGLE_ACCOUNT_SIGN_IN_CODE);
         }
