@@ -3,7 +3,7 @@ package com.dev.fondson.NoteLocker;
 /**
  * Created by Fondson on 2015-12-21.
  */
-public class Item {
+public class Item{
     long id;
     String name = null;
     boolean selected = false;
@@ -13,6 +13,7 @@ public class Item {
         this.name = name;
         this.selected = selected;
     }
+
     public long getId(){return this.id;}
     public void setId(long id){this.id=id;}
     public String getName() {

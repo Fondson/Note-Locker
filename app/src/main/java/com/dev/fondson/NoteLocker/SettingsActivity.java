@@ -149,7 +149,7 @@ public class SettingsActivity extends AppCompatActivity {
                     //requests permissions needed for users to select background image on M or above
                     if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.M
                             && getContext().checkCallingOrSelfPermission("android.permission.READ_EXTERNAL_STORAGE")!= PackageManager.PERMISSION_GRANTED){
-                        requestPermissions(MainActivity.perms, 200);
+                        requestPermissions(MainActivity.wallpaperPerms, 200);
                     }
                     else{launchGalleryPicker();}
                     break;

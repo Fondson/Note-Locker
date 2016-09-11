@@ -28,19 +28,22 @@ import java.util.regex.Pattern;
  * Created by Fondson on 2016-05-16.
  */
 public class ItemsAdapter extends BaseExpandableListAdapter{
-    public static int NOT_COMPLETED = 0;
-    public static int COMPLETED = 1;
-    private static String[] HEADERS = {"To do" ,"Completed"};
+    public static int CALENDAR = 0;
+    public static int NOT_COMPLETED = 1;
+    public static int COMPLETED = 2;
+    private static String[] HEADERS = {"Calendar","To do" ,"Completed"};
     private Context context;
-    private ArrayList<ArrayList<Item>> state;
+    private ArrayList<ArrayList<?>> state;
     private ArrayList<Item> notCompletedItems;
     private ArrayList<Item> completedItems;
+    private ArrayList<Item> calendarItems;
 
-    public ItemsAdapter(Context context, ArrayList<ArrayList<Item>> state){
+    public ItemsAdapter(Context context, ArrayList<ArrayList<?>> state){
         this.context=context;
         this.state=state;
-        notCompletedItems=state.get(0);
-        completedItems=state.get(1);
+        calendarItems=(ArrayList<Item>)state.get(CALENDAR);
+        notCompletedItems=(ArrayList<Item>)state.get(NOT_COMPLETED);
+        completedItems=(ArrayList<Item>)state.get(COMPLETED);
     }
 
     @Override
@@ -59,7 +62,7 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
     }
 
     @Override
-    public Item getChild(int groupPosition, int childPosition) {
+    public Object getChild(int groupPosition, int childPosition) {
         return state.get(groupPosition).get(childPosition);
     }
 
@@ -70,7 +73,10 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
 
     @Override
     public long getChildId(int groupPosition, int childPosition) {
-        return state.get(groupPosition).get(childPosition).getId();
+        if (state.get(groupPosition).get(childPosition) instanceof Item) {
+            return ((Item)state.get(groupPosition).get(childPosition)).getId();
+        }
+        return -1;
     }
 
     @Override
@@ -83,13 +89,12 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
         if (convertView==null){
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = inflater.inflate(R.layout.state,parent,false);
-
         }
-        convertView.setClickable(false);
-        if (groupPosition==NOT_COMPLETED){
-            ((ExpandableListView)parent).expandGroup(NOT_COMPLETED);
-            convertView.setClickable(true); //tip: this makes convertView NOT clickable along with convertView.setClickable(false) above???
-        }
+        //convertView.setClickable(false);
+//        if (groupPosition==NOT_COMPLETED || groupPosition==CALENDAR){
+//            ((ExpandableListView)parent).expandGroup(groupPosition);
+//            convertView.setClickable(true); //tip: this makes convertView NOT clickable along with convertView.setClickable(false) above???
+//        }
         TextView header= (TextView) convertView.findViewById(R.id.header);
         String headerText = HEADERS[groupPosition] + " (" + getChildrenCount(groupPosition) + ")";
         header.setText(headerText);
@@ -103,7 +108,7 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
     }
     @Override
     public View getChildView(final int groupPosition, final int childPosition, boolean isLastChild, View convertView, final ViewGroup parent) {
-        final Item item = getChild(groupPosition,childPosition);
+        final Item item = (Item)getChild(groupPosition,childPosition);
         final ViewHolder holder;
         if(convertView==null){
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -125,6 +130,8 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
         holder.name.setOnLongClickListener(null);
         holder.imageButton.setOnClickListener(null);
 
+        holder.checkBox.setVisibility(View.VISIBLE);
+        holder.imageButton.setVisibility(View.VISIBLE);
         final View row = convertView;
         if (groupPosition==COMPLETED) {
             holder.checkBox.setChecked(true);
@@ -190,12 +197,7 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
             holder.imageButton.setImageDrawable(context.getResources().getDrawable(R.drawable.star_selector));
            // holder.imageButton.setSelected(!holder.imageButton.isSelected());
 
-            if (item.isSelected()){
-                holder.imageButton.setSelected(true);
-            }
-            else{
-                holder.imageButton.setSelected(false);
-            }
+            holder.imageButton.setSelected(item.isSelected());
             holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(final CompoundButton arg0, boolean isChecked) {
@@ -307,7 +309,12 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
             });
         }
 
-        //Toast.makeText(context, "hii", Toast.LENGTH_SHORT).show();
+        else if (groupPosition==CALENDAR) {
+            holder.name.setPaintFlags(holder.name.getPaintFlags() | Paint.FAKE_BOLD_TEXT_FLAG);
+            holder.checkBox.setVisibility(View.GONE);
+            holder.imageButton.setVisibility(View.GONE);
+        }
+
         return convertView;
     }
 
