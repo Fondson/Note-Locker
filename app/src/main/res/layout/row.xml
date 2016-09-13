@@ -1,38 +1,97 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/llItem"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal">
-    <CheckBox
-        android:id="@+id/checkBox1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:clickable="true"
-        android:text=""/>
-
-    <EditText
-        android:id="@+id/editText1"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="16sp"
-        android:longClickable="true"
-        android:clickable="false"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:imeOptions="actionNext"
-        android:background="@android:color/transparent"
-        android:paddingBottom="2.5dp"
-        android:paddingTop="2.5dp"
-        android:layout_weight="1"
-        android:textIsSelectable="true"/>
+        android:layout_height="match_parent">
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/ivCalendarDarkTint"
+            android:background="#000000"
+            android:alpha=".25" />
+        <LinearLayout
+            android:id="@+id/llItem"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+            <CheckBox
+                android:id="@+id/checkBox1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:text=""/>
+            <LinearLayout
+                android:id="@+id/llTime"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:layout_marginLeft="15dp">
+                <TextView
+                    android:id="@+id/txtTimeBegin"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:textSize="16sp"
+                    android:textIsSelectable="true"/>
+                <TextView
+                    android:id="@+id/txtTimeEnd"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:textSize="16sp"
+                    android:textIsSelectable="true"/>
+            </LinearLayout>
+
+            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/llEvent"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_weight="1"
+                android:paddingLeft="15dp"
+                android:layout_margin="5dp">
+                <TextView
+                    android:id="@+id/txtTitle"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textIsSelectable="true"/>
+                <TextView
+                    android:id="@+id/txtLocation"
+                    android:layout_height="wrap_content"
+                    android:layout_width="wrap_content"
+                    android:textSize="16sp"
+                    android:textIsSelectable="true"/>
+            </LinearLayout>
+            <EditText
+                android:id="@+id/editText1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:longClickable="true"
+                android:clickable="false"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:imeOptions="actionNext"
+                android:background="@android:color/transparent"
+                android:paddingBottom="2.5dp"
+                android:paddingTop="2.5dp"
+                android:layout_weight="1"
+                android:textIsSelectable="true"/>
 
 
-    <ImageButton
-        android:id="@+id/imageButton1"
-        android:layout_width="wrap_content"
-        android:layout_height="35dp"
-        android:layout_weight="2"
-        android:background="#00ffffff"
-        android:scaleType="fitCenter" />
+            <ImageButton
+                android:id="@+id/imageButton1"
+                android:layout_width="wrap_content"
+                android:layout_height="35dp"
+                android:layout_weight="2"
+                android:background="#00ffffff"
+                android:scaleType="fitCenter" />
+        </LinearLayout>
+    </RelativeLayout>
 </LinearLayout>

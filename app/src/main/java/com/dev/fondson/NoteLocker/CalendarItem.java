@@ -5,12 +5,14 @@ package com.dev.fondson.NoteLocker;
  */
 public class CalendarItem {
     public String date;
-    public String time;
+    public String timeBegin;
+    public String timeEnd;
     public String event;
     public String location;
-    public CalendarItem(String date, String time, String event, String location){
+    public CalendarItem(String date, String timeBegin, String timeEnd, String event, String location){
         this.date=date;
-        this.time=time;
+        this.timeBegin=timeBegin;
+        this.timeEnd=timeEnd;
         this.event=event;
         this.location=location;
     }

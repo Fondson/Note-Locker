@@ -19,6 +19,11 @@
             android:summary="settings_summary"
             android:text="%"
             android:title="Change wallpaper dark tint filter" />
+        <SwitchPreference
+            android:key = "pref_key_calendar"
+            android:title = "Enable Calendar"
+            android:summary="Receive events from Google Calendar"
+            android:defaultValue ="true"/>
     </PreferenceCategory>
     <PreferenceCategory android:title="Other">
         <PreferenceScreen

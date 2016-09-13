@@ -46,6 +46,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 
 public class SettingsActivity extends AppCompatActivity {
     public static final String PREF_KEY_OFF="pref_key_off";
+    public static final String PREF_KEY_CALENDAR="pref_key_calendar";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

@@ -3,12 +3,12 @@ package com.dev.fondson.NoteLocker;
 /**
  * Created by Fondson on 2015-12-21.
  */
-public class Item{
+public class UserItem {
     long id;
     String name = null;
     boolean selected = false;
 
-    public Item(long id, String name, boolean selected) {
+    public UserItem(long id, String name, boolean selected) {
         this.id=id;
         this.name = name;
         this.selected = selected;

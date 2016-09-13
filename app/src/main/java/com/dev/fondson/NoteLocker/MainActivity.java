@@ -79,9 +79,9 @@ public class MainActivity extends AppCompatActivity {
     public static GoogleApiClient mGoogleApiClient;
     private EditText etInput;
     private ArrayList<ArrayList<?>> itemsArray;
-    private ArrayList<Item> calendarItemArr;
-    private ArrayList<Item> itemArr;
-    private ArrayList<Item> completedItemsArr;
+    private ArrayList<CalendarItem> calendarItemArr;
+    private ArrayList<UserItem> userItemArr;
+    private ArrayList<UserItem> completedItemsArr;
     private ExpandableListView expandableListView;
     private ItemsAdapter itemsAdapter;
     private UnlockBar unlock;
@@ -92,13 +92,15 @@ public class MainActivity extends AppCompatActivity {
     public static final String[] INSTANCE_PROJECTION = new String[] {
             CalendarContract.Instances.EVENT_ID,      // 0
             CalendarContract.Instances.BEGIN,         // 1
-            CalendarContract.Instances.TITLE          // 2
+            CalendarContract.Instances.TITLE,         // 2
+            CalendarContract.Instances.END            // 3
     };
 
     // The indices for the projection array above.
     private static final int PROJECTION_ID_INDEX = 0;
     private static final int PROJECTION_BEGIN_INDEX = 1;
     private static final int PROJECTION_TITLE_INDEX = 2;
+    private static final int PROJECTION_END_INDEX = 3;
 
     private static final String[] EVENT_PROJECTION =
             new String[]{
@@ -125,21 +127,22 @@ public class MainActivity extends AppCompatActivity {
         db=new DBAdapter(this);
         db.open();
 
-        itemArr = new ArrayList<Item>();
-        completedItemsArr =new ArrayList<Item>();
+        userItemArr = new ArrayList<UserItem>();
+        completedItemsArr =new ArrayList<UserItem>();
         db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
-        getAllItems(db.getAllRows(),itemArr);
+        getAllItems(db.getAllRows(),userItemArr);
         db.switchTable(DBAdapter.DATABASE_TABLE_COMPLETED_ITEMS);
         getAllItems(db.getAllRows(),completedItemsArr);
 
-        calendarItemArr = new ArrayList<Item>();
+        calendarItemArr = new ArrayList<CalendarItem>();
+        beginTime = Calendar.getInstance();
         getCalendarEvents(calendarItemArr);
 
         itemsArray = new ArrayList<ArrayList<?>>();
 
         expandableListView=(ExpandableListView) findViewById(R.id.exlvItems);
         itemsArray.add(calendarItemArr);
-        itemsArray.add(itemArr);
+        itemsArray.add(userItemArr);
         itemsArray.add(completedItemsArr);
         itemsAdapter = new ItemsAdapter(this,itemsArray);
         expandableListView.setAdapter(itemsAdapter);
@@ -191,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
                                                       db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
                                                       Long newId=db.insertRow(etInput.getText().toString().trim());
                                                       //writeFile(etInput.getText().toString().trim());
-                                                      itemArr.add(0, new Item(newId, etInput.getText().toString().trim(), false));
+                                                      userItemArr.add(0, new UserItem(newId, etInput.getText().toString().trim(), false));
                                                       itemsAdapter.notifyDataSetChanged();
                                                       etInput.setText("");
                                                       requestBackup(MainActivity.this);
@@ -295,85 +298,105 @@ public class MainActivity extends AppCompatActivity {
         bm.dataChanged();
     }
 
-    private void getCalendarEvents(ArrayList<Item> calendarItems){
-        try {
-            Cursor cur = null;
-            ContentResolver cr = getContentResolver();
+    private void getCalendarEvents(ArrayList<CalendarItem> calendarItems){
+        if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(SettingsActivity.PREF_KEY_CALENDAR,true)) {
+            try {
+                Cursor cur = null;
+                ContentResolver cr = getContentResolver();
 
-            // Specify the date range you want to search for recurring
-            // event instances
-            beginTime = Calendar.getInstance();
-            beginTime.getTime();
-            beginTime.add(Calendar.DATE,-1);
-            beginTime.set(Calendar.HOUR_OF_DAY,23);
-            beginTime.set(Calendar.MINUTE,59);
-            beginTime.set(Calendar.SECOND,59);
+                // Specify the date range you want to search for recurring
+                // event instances
+                beginTime = Calendar.getInstance();
+                beginTime.getTime();
+                beginTime.add(Calendar.DATE, -1);
+                beginTime.set(Calendar.HOUR_OF_DAY, 23);
+                beginTime.set(Calendar.MINUTE, 59);
+                beginTime.set(Calendar.SECOND, 59);
+                beginTime.set(Calendar.MILLISECOND, 999);
 
-            long startMillis = beginTime.getTimeInMillis();
-            Calendar endTime = Calendar.getInstance();
-            endTime.setTimeInMillis(startMillis);
-            endTime.add(Calendar.DATE,2);
-            long endMillis = endTime.getTimeInMillis();
+                long startMillis = beginTime.getTimeInMillis();
+                Calendar endTime = Calendar.getInstance();
+                endTime.setTimeInMillis(startMillis);
+                endTime.add(Calendar.DATE, 1);
+                long endMillis = endTime.getTimeInMillis();
 
-            Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
-            ContentUris.appendId(builder, startMillis);
-            ContentUris.appendId(builder, endMillis);
+                Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
+                ContentUris.appendId(builder, startMillis);
+                ContentUris.appendId(builder, endMillis);
 
 
-            // Submit the query
-            cur = cr.query(builder.build(),
-                    INSTANCE_PROJECTION,
-                    null,
-                    null,
-                    CalendarContract.Instances.BEGIN + " DESC");
+                // Submit the query
+                cur = cr.query(builder.build(),
+                        INSTANCE_PROJECTION,
+                        null,
+                        null,
+                        CalendarContract.Instances.BEGIN + " DESC");
 
-            while (cur.moveToNext()) {
-                String title = null;
-                String location = null;
-                long eventID = 0;
-                long beginVal = 0;
+                // boolean first=true;
+                while (cur.moveToNext()) {
+                    String title = null;
+                    String location = null;
+                    long eventID = 0;
+                    long beginVal = 0;
+                    long endVal = 0;
 
-                // Get the field values
-                eventID = cur.getLong(PROJECTION_ID_INDEX);
-                beginVal = cur.getLong(PROJECTION_BEGIN_INDEX);
-                title = cur.getString(PROJECTION_TITLE_INDEX);
+                    // Get the field values
+                    eventID = cur.getLong(PROJECTION_ID_INDEX);
+                    beginVal = cur.getLong(PROJECTION_BEGIN_INDEX);
+                    title = cur.getString(PROJECTION_TITLE_INDEX);
+                    endVal = cur.getLong(PROJECTION_END_INDEX);
 
-                try {
-                    Cursor cursor = cr.query(
-                            CalendarContract.Events.CONTENT_URI,
-                            EVENT_PROJECTION,
-                            CalendarContract.Events._ID + " = ? ",
-                            new String[]{Long.toString(eventID)},
-                            null);
-                    if (cursor.moveToFirst()) {
-                        location = cursor.getString(PROJECTION_LOCATION_INDEX);
+                    try {
+                        Cursor cursor = cr.query(
+                                CalendarContract.Events.CONTENT_URI,
+                                EVENT_PROJECTION,
+                                CalendarContract.Events._ID + " = ? ",
+                                new String[]{Long.toString(eventID)},
+                                null);
+                        if (cursor.moveToFirst()) {
+                            location = cursor.getString(PROJECTION_LOCATION_INDEX);
+                        }
+                        cursor.close();
+                    } catch (SecurityException e) {
+                        Toast.makeText(this, "Cannot get calendar event start time.\nError: " + e.getMessage(),
+                                Toast.LENGTH_LONG).show();
+                        Log.d("calEvent", "Event ID Error " + e.getMessage());
                     }
-                }
-                catch (SecurityException e){
-                    Toast.makeText(this, "Cannot get calendar event start time.\nError: " + e.getMessage(),
-                            Toast.LENGTH_LONG).show();
-                    Log.d("calEvent", "Event ID Error " + e.getMessage());
-                }
 
-                // add to calendarItems
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTimeInMillis(beginVal);
-                DateFormat formatter = new SimpleDateFormat("E-MMM dd K:m a");
-                String item = formatter.format(calendar.getTime()) + "\n" + title + "\nat " + location;
-                Log.d("calEvent",item);
-                calendarItems.add(0,new Item(-1,item,false));
+                    // add to calendarItems
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTimeInMillis(beginVal);
+                    DateFormat formatter = new SimpleDateFormat("E-MMM dd");
+                    String date = formatter.format(calendar.getTime());
+                    formatter = new SimpleDateFormat("h:mm a");
+                    String timeBegin = formatter.format(calendar.getTime());
+                    calendar.setTimeInMillis(endVal);
+                    String timeEnd = formatter.format(calendar.getTime());
+                    if (timeBegin.equals(timeEnd)) {
+                        timeBegin = "All day";
+                        timeEnd = null;
+                    }
+                    if (location.isEmpty()) location = null;
+//                String item = formatter.format(calendar.getTime()) + "\n" + title + "\nat " + location;
+//                Log.d("calEvent",item);
+                    calendarItems.add(0, new CalendarItem(date, timeBegin, timeEnd, title, location));
+
+//                if (first){
+//                    first=false;
+//                    beginTime=calendar;
+//                }
+                }
+                Log.d("calEvent", "cursor done");
+                cur.close();
+            } catch (Exception e) {
+                Toast.makeText(this, "Cannot get calendar events.\nError: " + e.getMessage(),
+                        Toast.LENGTH_LONG).show();
+                Log.d("calEvent", e.getMessage());
             }
-            Log.d("calEvent", "cursor done");
-        }
-        catch (Exception e)
-        {
-            Toast.makeText(this, "Cannot get calendar events.\nError: " + e.getMessage(),
-                Toast.LENGTH_LONG).show();
-            Log.d("calEvent", e.getMessage());
         }
     }
 
-    public static void getAllItems(Cursor cursor,ArrayList<Item> arrayList){;
+    public static void getAllItems(Cursor cursor,ArrayList<UserItem> arrayList){;
         // Reset cursor to start, checking to see if there's data:
         if (cursor.moveToFirst()) {
             do {
@@ -386,7 +409,7 @@ public class MainActivity extends AppCompatActivity {
                     selected=true;
                 }
 
-                arrayList.add(0,new Item(id,item,selected));
+                arrayList.add(0,new UserItem(id,item,selected));
             } while(cursor.moveToNext());
         }
     }
@@ -426,16 +449,27 @@ public class MainActivity extends AppCompatActivity {
         //homeKeyLocker.lock(this);
         //unlock.reset();
 
-        Calendar currentTime = Calendar.getInstance();
-        currentTime.getTime();
-        currentTime.add(Calendar.DATE,-1);
-        currentTime.set(Calendar.HOUR_OF_DAY,23);
-        currentTime.set(Calendar.MINUTE,59);
-        currentTime.set(Calendar.SECOND,59);
-        if (beginTime.compareTo(currentTime)==-1) {
-            calendarItemArr.clear();
-            getCalendarEvents(calendarItemArr);
-            itemsAdapter.notifyDataSetChanged();
+        if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(SettingsActivity.PREF_KEY_CALENDAR,true)) {
+            if (calendarItemArr.size()==0) {
+                getCalendarEvents(calendarItemArr);
+                itemsAdapter.notifyDataSetChanged();
+                expandableListView.expandGroup(itemsAdapter.CALENDAR);
+            }
+            else {
+                Calendar currentTime = Calendar.getInstance();
+                currentTime.getTime();
+                currentTime.add(Calendar.DATE, -1);
+                currentTime.set(Calendar.HOUR_OF_DAY, 23);
+                currentTime.set(Calendar.MINUTE, 59);
+                currentTime.set(Calendar.SECOND, 59);
+                currentTime.set(Calendar.MILLISECOND, 999);
+                if (beginTime.compareTo(currentTime) != 0) {
+                    Log.d("calEvent", String.valueOf(beginTime.compareTo(currentTime)));
+                    calendarItemArr.clear();
+                    getCalendarEvents(calendarItemArr);
+                    itemsAdapter.notifyDataSetChanged();
+                }
+            }
         }
 
         ((EditText) findViewById(R.id.editText)).setText("");
