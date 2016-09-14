@@ -3,6 +3,7 @@ package com.dev.fondson.NoteLocker;
 import android.app.Activity;
 import android.app.Service;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Paint;
 import android.os.Build;
 import android.os.Handler;
@@ -112,7 +113,9 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
         headerText = HEADERS[groupPosition] + " (" + getChildrenCount(groupPosition) + ")";
         if (groupPosition==CALENDAR) {
             headerText += " for " + formatter.format(Calendar.getInstance().getTime());
-            if (!PreferenceManager.getDefaultSharedPreferences(context).getBoolean(SettingsActivity.PREF_KEY_CALENDAR,true)) {
+            if (!PreferenceManager.getDefaultSharedPreferences(context).getBoolean(SettingsActivity.PREF_KEY_CALENDAR,true)
+                    || context.checkCallingOrSelfPermission("android.permission.READ_CALENDAR")!= PackageManager.PERMISSION_GRANTED
+                    || context.checkCallingOrSelfPermission("android.permission.WRITE_CALENDAR")!= PackageManager.PERMISSION_GRANTED) {
                 header.setVisibility(View.GONE);
                 ((ExpandableListView)parent).collapseGroup(CALENDAR);
             }

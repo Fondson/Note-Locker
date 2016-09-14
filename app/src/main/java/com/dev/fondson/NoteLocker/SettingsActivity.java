@@ -18,6 +18,7 @@ import android.os.Environment;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
+import android.preference.SwitchPreference;
 import android.provider.MediaStore;
 import android.support.annotation.MainThread;
 import android.support.v7.app.AppCompatActivity;
@@ -99,6 +100,7 @@ public class SettingsActivity extends AppCompatActivity {
         private SeekBarPreference darkTintSeekBar;
         private SharedPreferences sharedPreferences;
         private Preference googleAccountPref;
+        private SwitchPreference calendarPref;
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
@@ -108,6 +110,7 @@ public class SettingsActivity extends AppCompatActivity {
 
             Preference wallpaperPref = (Preference) findPreference("pref_key_wallpaper");
             Preference tutorialPref = (Preference) findPreference("pref_tutorial");
+            calendarPref = (SwitchPreference) findPreference("pref_key_calendar");
             googleAccountPref = (Preference) findPreference("pref_key_google_account");
             darkTintSeekBar = (SeekBarPreference)findPreference("pref_key_darkTint");
 
@@ -123,7 +126,7 @@ public class SettingsActivity extends AppCompatActivity {
             wallpaperPref.setOnPreferenceClickListener(this);
             googleAccountPref.setOnPreferenceClickListener(this);
             tutorialPref.setOnPreferenceClickListener(this);
-
+            calendarPref.setOnPreferenceClickListener(this);
         }
 
         @Override
@@ -159,6 +162,12 @@ public class SettingsActivity extends AppCompatActivity {
                     Intent i = new Intent(getActivity(), Intro.class);
                     startActivity(i);
                     break;
+                case "pref_key_calendar":
+                    if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.M
+                            && getContext().checkCallingOrSelfPermission("android.permission.READ_CALENDAR")!= PackageManager.PERMISSION_GRANTED
+                            && getContext().checkCallingOrSelfPermission("android.permission.WRITE_CALENDAR")!= PackageManager.PERMISSION_GRANTED){
+                        requestPermissions(MainActivity.calendarPerms, MainActivity.CALENDAR_PERMS);
+                    }
             }
             return true;
         }
@@ -185,6 +194,13 @@ public class SettingsActivity extends AppCompatActivity {
                     if (grantResults.length>0
                             && grantResults[0]==PackageManager.PERMISSION_GRANTED) {
                         launchGalleryPicker();
+                    }
+                    break;
+                case MainActivity.CALENDAR_PERMS:
+                    if (grantResults.length>=0
+                        && grantResults[0]==PackageManager.PERMISSION_DENIED) {
+                        calendarPref.getEditor().putBoolean(PREF_KEY_CALENDAR,false).apply();
+                        calendarPref.setChecked(false);
                     }
                     break;
             }

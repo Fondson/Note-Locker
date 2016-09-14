@@ -60,6 +60,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -71,8 +72,8 @@ public class MainActivity extends AppCompatActivity {
     public static String WALLPAPER_PATH;
     public static String WALLPAPER_FULL_PATH;
     public static String[] wallpaperPerms={"android.permission.READ_EXTERNAL_STORAGE"};//,"android.permission.WRITE_EXTERNAL_STORAGE","android.permision.READ_INTERNAL_STORAGE","android.permission.WRITE_INTERNAL_STORAGE"};
-    private static String[] calendarPerms = {"android.permission.READ_CALENDAR","android.permission.WRITE_CALENDAR"};
-    private static final int CALENDAR_PERMS = 0;
+    public static String[] calendarPerms = {"android.permission.READ_CALENDAR","android.permission.WRITE_CALENDAR"};
+    public static final int CALENDAR_PERMS = 0;
     private static RelativeLayout rl;
     private static ImageView darkTint;
     private static LinearLayout ll;
@@ -299,20 +300,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getCalendarEvents(ArrayList<CalendarItem> calendarItems){
-        if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(SettingsActivity.PREF_KEY_CALENDAR,true)) {
+        if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(SettingsActivity.PREF_KEY_CALENDAR,true)
+                && checkCallingOrSelfPermission("android.permission.READ_CALENDAR")== PackageManager.PERMISSION_GRANTED
+                && checkCallingOrSelfPermission("android.permission.WRITE_CALENDAR")== PackageManager.PERMISSION_GRANTED) {
             try {
                 Cursor cur = null;
                 ContentResolver cr = getContentResolver();
 
                 // Specify the date range you want to search for recurring
                 // event instances
-                beginTime = Calendar.getInstance();
+                beginTime = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
                 beginTime.getTime();
                 beginTime.add(Calendar.DATE, -1);
                 beginTime.set(Calendar.HOUR_OF_DAY, 23);
                 beginTime.set(Calendar.MINUTE, 59);
                 beginTime.set(Calendar.SECOND, 59);
-                beginTime.set(Calendar.MILLISECOND, 999);
+                beginTime.set(Calendar.MILLISECOND, 0);
 
                 long startMillis = beginTime.getTimeInMillis();
                 Calendar endTime = Calendar.getInstance();
@@ -387,6 +390,12 @@ public class MainActivity extends AppCompatActivity {
 //                }
                 }
                 Log.d("calEvent", "cursor done");
+                beginTime=Calendar.getInstance();
+                beginTime.add(Calendar.DATE, -1);
+                beginTime.set(Calendar.HOUR_OF_DAY, 23);
+                beginTime.set(Calendar.MINUTE, 59);
+                beginTime.set(Calendar.SECOND, 59);
+                beginTime.set(Calendar.MILLISECOND, 0);
                 cur.close();
             } catch (Exception e) {
                 Toast.makeText(this, "Cannot get calendar events.\nError: " + e.getMessage(),
@@ -449,7 +458,9 @@ public class MainActivity extends AppCompatActivity {
         //homeKeyLocker.lock(this);
         //unlock.reset();
 
-        if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(SettingsActivity.PREF_KEY_CALENDAR,true)) {
+        if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(SettingsActivity.PREF_KEY_CALENDAR,true)
+                && checkCallingOrSelfPermission("android.permission.READ_CALENDAR")== PackageManager.PERMISSION_GRANTED
+                && checkCallingOrSelfPermission("android.permission.WRITE_CALENDAR")== PackageManager.PERMISSION_GRANTED) {
             if (calendarItemArr.size()==0) {
                 getCalendarEvents(calendarItemArr);
                 itemsAdapter.notifyDataSetChanged();
@@ -462,7 +473,7 @@ public class MainActivity extends AppCompatActivity {
                 currentTime.set(Calendar.HOUR_OF_DAY, 23);
                 currentTime.set(Calendar.MINUTE, 59);
                 currentTime.set(Calendar.SECOND, 59);
-                currentTime.set(Calendar.MILLISECOND, 999);
+                currentTime.set(Calendar.MILLISECOND, 0);
                 if (beginTime.compareTo(currentTime) != 0) {
                     Log.d("calEvent", String.valueOf(beginTime.compareTo(currentTime)));
                     calendarItemArr.clear();
