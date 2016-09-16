@@ -311,16 +311,20 @@ public class MainActivity extends AppCompatActivity {
                 // event instances
                 beginTime = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
                 beginTime.getTime();
-                beginTime.add(Calendar.DATE, -1);
-                beginTime.set(Calendar.HOUR_OF_DAY, 23);
-                beginTime.set(Calendar.MINUTE, 59);
-                beginTime.set(Calendar.SECOND, 59);
-                beginTime.set(Calendar.MILLISECOND, 0);
+                //beginTime.add(Calendar.DATE, -1);
+                beginTime.set(Calendar.HOUR_OF_DAY, 0);
+                beginTime.set(Calendar.MINUTE, 0);
+                beginTime.set(Calendar.SECOND, 0);
+                beginTime.set(Calendar.MILLISECOND, 1);
 
                 long startMillis = beginTime.getTimeInMillis();
                 Calendar endTime = Calendar.getInstance();
-                endTime.setTimeInMillis(startMillis);
-                endTime.add(Calendar.DATE, 1);
+//                endTime.setTimeInMillis(startMillis);
+//                endTime.add(Calendar.DATE, 1);
+                beginTime.set(Calendar.HOUR_OF_DAY, 23);
+                beginTime.set(Calendar.MINUTE, 59);
+                beginTime.set(Calendar.SECOND, 59);
+                beginTime.set(Calendar.MILLISECOND, 1);
                 long endMillis = endTime.getTimeInMillis();
 
                 Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
@@ -380,8 +384,8 @@ public class MainActivity extends AppCompatActivity {
                         timeEnd = null;
                     }
                     if (location.isEmpty()) location = null;
-//                String item = formatter.format(calendar.getTime()) + "\n" + title + "\nat " + location;
-//                Log.d("calEvent",item);
+                String item = formatter.format(calendar.getTime()) + "\n" + title + "\nat " + location;
+                Log.d("calEvent",item);
                     calendarItems.add(0, new CalendarItem(date, timeBegin, timeEnd, title, location));
 
 //                if (first){
@@ -391,11 +395,11 @@ public class MainActivity extends AppCompatActivity {
                 }
                 Log.d("calEvent", "cursor done");
                 beginTime=Calendar.getInstance();
-                beginTime.add(Calendar.DATE, -1);
-                beginTime.set(Calendar.HOUR_OF_DAY, 23);
-                beginTime.set(Calendar.MINUTE, 59);
-                beginTime.set(Calendar.SECOND, 59);
-                beginTime.set(Calendar.MILLISECOND, 0);
+                //beginTime.add(Calendar.DATE, -1);
+                beginTime.set(Calendar.HOUR_OF_DAY, 0);
+                beginTime.set(Calendar.MINUTE, 0);
+                beginTime.set(Calendar.SECOND, 0);
+                beginTime.set(Calendar.MILLISECOND, 1);
                 cur.close();
             } catch (Exception e) {
                 Toast.makeText(this, "Cannot get calendar events.\nError: " + e.getMessage(),
@@ -469,11 +473,11 @@ public class MainActivity extends AppCompatActivity {
             else {
                 Calendar currentTime = Calendar.getInstance();
                 currentTime.getTime();
-                currentTime.add(Calendar.DATE, -1);
-                currentTime.set(Calendar.HOUR_OF_DAY, 23);
-                currentTime.set(Calendar.MINUTE, 59);
-                currentTime.set(Calendar.SECOND, 59);
-                currentTime.set(Calendar.MILLISECOND, 0);
+                //currentTime.add(Calendar.DATE, -1);
+                currentTime.set(Calendar.HOUR_OF_DAY, 0);
+                currentTime.set(Calendar.MINUTE, 0);
+                currentTime.set(Calendar.SECOND, 0);
+                currentTime.set(Calendar.MILLISECOND, 1);
                 if (beginTime.compareTo(currentTime) != 0) {
                     Log.d("calEvent", String.valueOf(beginTime.compareTo(currentTime)));
                     calendarItemArr.clear();
