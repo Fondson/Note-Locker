@@ -1,4 +1,10 @@
 <resources>
     <string name="app_name">Note Locker</string>
     <string name="editText">Add an item...</string>
+    <string name="setting_turn_off">Turn off Note Locker</string>
+    <string name="slide_up">Slide UP to unlock</string>
+    <string name="setting_signed_in_as">Signed in as</string>
+    <string name="setting_view_tutorial">View tutorial</string>
+    <string name="setting_enable_calendar">Enable Calendar</string>
+    <string name="setting_calendar_desc">Receive events from Google Calendar</string>
 </resources>

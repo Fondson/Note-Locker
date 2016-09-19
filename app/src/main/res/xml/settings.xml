@@ -4,7 +4,7 @@
     <PreferenceCategory android:title="Settings">
         <SwitchPreference
             android:key = "pref_key_off"
-            android:title = "Turn off Note Locker"
+            android:title = "@string/setting_turn_off"
             android:summary="Stop Note Locker from auto-starting"
             android:defaultValue ="true"/>
         <PreferenceScreen
@@ -17,22 +17,22 @@
             android:key="pref_key_darkTint"
             android:max="100"
             android:summary="settings_summary"
-            android:text="%"
+            android:text=""
             android:title="Change wallpaper dark tint filter" />
         <SwitchPreference
             android:key = "pref_key_calendar"
-            android:title = "Enable Calendar"
-            android:summary="Receive events from Google Calendar"
+            android:title = "@string/setting_enable_calendar"
+            android:summary="@string/setting_calendar_desc"
             android:defaultValue ="true"/>
     </PreferenceCategory>
     <PreferenceCategory android:title="Other">
         <PreferenceScreen
             android:key="pref_key_google_account"
-            android:title = "Signed in as"
+            android:title = "@string/setting_signed_in_as"
             android:id="@+id/googleAccountSetting"/>
         <PreferenceScreen
             android:key = "pref_tutorial"
-            android:title = "View tutorial"
+            android:title = "@string/setting_view_tutorial"
             android:id="@+id/tutorial"/>
     </PreferenceCategory>
 </PreferenceScreen>

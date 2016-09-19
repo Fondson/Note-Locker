@@ -309,22 +309,20 @@ public class MainActivity extends AppCompatActivity {
 
                 // Specify the date range you want to search for recurring
                 // event instances
-                beginTime = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-                beginTime.getTime();
-                //beginTime.add(Calendar.DATE, -1);
+                beginTime = Calendar.getInstance();
                 beginTime.set(Calendar.HOUR_OF_DAY, 0);
                 beginTime.set(Calendar.MINUTE, 0);
                 beginTime.set(Calendar.SECOND, 0);
                 beginTime.set(Calendar.MILLISECOND, 1);
+                beginTime.setTimeZone(TimeZone.getTimeZone("UTC"));
 
                 long startMillis = beginTime.getTimeInMillis();
                 Calendar endTime = Calendar.getInstance();
-//                endTime.setTimeInMillis(startMillis);
-//                endTime.add(Calendar.DATE, 1);
-                beginTime.set(Calendar.HOUR_OF_DAY, 23);
-                beginTime.set(Calendar.MINUTE, 59);
-                beginTime.set(Calendar.SECOND, 59);
-                beginTime.set(Calendar.MILLISECOND, 1);
+                endTime.set(Calendar.HOUR_OF_DAY, 23);
+                endTime.set(Calendar.MINUTE, 59);
+                endTime.set(Calendar.SECOND, 59);
+                endTime.set(Calendar.MILLISECOND, 1);
+                endTime.setTimeZone(TimeZone.getTimeZone("UTC"));
                 long endMillis = endTime.getTimeInMillis();
 
                 Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
@@ -339,7 +337,6 @@ public class MainActivity extends AppCompatActivity {
                         null,
                         CalendarContract.Instances.BEGIN + " DESC");
 
-                // boolean first=true;
                 while (cur.moveToNext()) {
                     String title = null;
                     String location = null;
@@ -387,15 +384,9 @@ public class MainActivity extends AppCompatActivity {
                 String item = formatter.format(calendar.getTime()) + "\n" + title + "\nat " + location;
                 Log.d("calEvent",item);
                     calendarItems.add(0, new CalendarItem(date, timeBegin, timeEnd, title, location));
-
-//                if (first){
-//                    first=false;
-//                    beginTime=calendar;
-//                }
                 }
                 Log.d("calEvent", "cursor done");
                 beginTime=Calendar.getInstance();
-                //beginTime.add(Calendar.DATE, -1);
                 beginTime.set(Calendar.HOUR_OF_DAY, 0);
                 beginTime.set(Calendar.MINUTE, 0);
                 beginTime.set(Calendar.SECOND, 0);
@@ -441,7 +432,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         hideKeyboard();
-        //homeKeyLocker.unlock();
         startService(new Intent(this, UpdateService.class));
     }
 
@@ -459,8 +449,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
 
         fullScreencall();
-        //homeKeyLocker.lock(this);
-        //unlock.reset();
 
         if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(SettingsActivity.PREF_KEY_CALENDAR,true)
                 && checkCallingOrSelfPermission("android.permission.READ_CALENDAR")== PackageManager.PERMISSION_GRANTED
@@ -473,7 +461,6 @@ public class MainActivity extends AppCompatActivity {
             else {
                 Calendar currentTime = Calendar.getInstance();
                 currentTime.getTime();
-                //currentTime.add(Calendar.DATE, -1);
                 currentTime.set(Calendar.HOUR_OF_DAY, 0);
                 currentTime.set(Calendar.MINUTE, 0);
                 currentTime.set(Calendar.SECOND, 0);
