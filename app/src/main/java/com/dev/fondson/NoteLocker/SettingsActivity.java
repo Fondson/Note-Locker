@@ -198,7 +198,7 @@ public class SettingsActivity extends AppCompatActivity {
                     break;
                 case MainActivity.CALENDAR_PERMS:
                     if (grantResults.length>=0
-                        && grantResults[0]==PackageManager.PERMISSION_DENIED) {
+                            && grantResults[0]==PackageManager.PERMISSION_DENIED) {
                         calendarPref.getEditor().putBoolean(PREF_KEY_CALENDAR,false).apply();
                         calendarPref.setChecked(false);
                     }

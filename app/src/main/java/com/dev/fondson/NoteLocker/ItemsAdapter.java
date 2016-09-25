@@ -162,6 +162,7 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
         //final KeyListener editable = name.getKeyListener();
         holder.name.setKeyListener(null);
         holder.darkTint.setVisibility(View.GONE);
+        holder.name.setPaintFlags(0);
 
         holder.checkBox.setOnCheckedChangeListener(null);
         holder.name.setOnLongClickListener(null);
@@ -237,7 +238,6 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
             final UserItem userItem = (UserItem)getChild(groupPosition,childPosition);
             holder.name.setText(userItem.getName());
             holder.checkBox.setChecked(false);
-            holder.name.setPaintFlags(0);
             holder.imageButton.setImageDrawable(context.getResources().getDrawable(R.drawable.star_selector));
            // holder.imageButton.setSelected(!holder.imageButton.isSelected());
 

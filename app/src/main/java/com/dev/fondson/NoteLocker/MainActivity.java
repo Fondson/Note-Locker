@@ -477,7 +477,7 @@ public class MainActivity extends AppCompatActivity {
         ((EditText) findViewById(R.id.editText)).setText("");
         itemsAdapter.notifyDataSetChanged();
 
-        ((View)findViewById(R.id.slidable_content)).setAlpha(1f);
+        (findViewById(R.id.slidable_content)).setAlpha(1f);
         startService(new Intent(this, UpdateService.class));
         super.onResume();
     }
