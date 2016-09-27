@@ -9,7 +9,7 @@ be reminded everytime you open your phone.
 
 #Features
 - Easily add and dismiss items
-- Receive daily events from Google Calendar
+- Receive daily events from <b>Google Calendar</b>
 - Takes the wallpaper of the current home launcher <b>OR</b> select your own
 - Slide UP to unlock (using modified <a href ="https://github.com/r0adkll/Slidr">Slidr</a> library)
 - <a href ="https://github.com/PaoloRotolo/AppIntro"> App intro</a>
