@@ -2,6 +2,8 @@ package com.dev.fondson.NoteLocker;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.app.WallpaperManager;
 import android.app.backup.BackupManager;
@@ -185,7 +187,6 @@ public class MainActivity extends AppCompatActivity {
         float scale = getResources().getDisplayMetrics().density;
         int dpAsPixels = (int) (16 * scale + 0.5f); //standard padding by Android Design Guidelines
         ll.setPadding(dpAsPixels, dpAsPixels + getStatusBarHeight(), dpAsPixels, dpAsPixels);
-        startService(new Intent(this, UpdateService.class));
 
         etInput = (EditText) findViewById(R.id.editText);
         etInput.setOnEditorActionListener(new EditText.OnEditorActionListener() {
@@ -242,6 +243,13 @@ public class MainActivity extends AppCompatActivity {
         ShimmerFrameLayout slideUpShimmer = (ShimmerFrameLayout) findViewById(R.id.slide_up_shimmer);
         slideUpShimmer.setDuration(1500);
         slideUpShimmer.startShimmerAnimation();
+
+        //experimental to keep service alive.
+        Intent ishintent = new Intent(this, UpdateService.class);
+        PendingIntent pintent = PendingIntent.getService(this, 0, ishintent, 0);
+        AlarmManager alarm = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+        alarm.cancel(pintent);
+        alarm.setRepeating(AlarmManager.RTC, System.currentTimeMillis(), 1000 * 60 * 20, pintent);
     }
 
     private void introCheck(){
