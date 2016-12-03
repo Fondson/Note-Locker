@@ -24,8 +24,12 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.provider.CalendarContract;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.format.Time;
@@ -55,6 +59,18 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.File;
 import java.text.DateFormat;
@@ -63,11 +79,14 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
+import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity {
 
     public static final int WALLPAPER_CODE = 10;
     public static final int GOOGLE_ACCOUNT_SIGN_IN_CODE = 9;
+    public static final int FIREBASE_MESSAGE_CODE = 1;
+    public static boolean transfer = false;
     public static DBAdapter db;
     public static String userEmail;
     public static KeyListener listener;
@@ -80,6 +99,12 @@ public class MainActivity extends AppCompatActivity {
     private static ImageView darkTint;
     private static LinearLayout ll;
     public static GoogleApiClient mGoogleApiClient;
+    public static FirebaseAuth mAuth;
+    public static DatabaseReference toDoDatabase;
+    public static DatabaseReference completedDatabase;
+    public static Handler mHandler;
+    public static boolean loggingOut;
+    private FirebaseAuth.AuthStateListener mAuthListener;
     private EditText etInput;
     private ArrayList<ArrayList<?>> itemsArray;
     private ArrayList<CalendarItem> calendarItemArr;
@@ -91,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
     private SlidrConfig config;
     private SlidrInterface slidrInterface;
     private Calendar beginTime;
+    private String pastUser;
 
     public static final String[] INSTANCE_PROJECTION = new String[] {
             CalendarContract.Instances.EVENT_ID,      // 0
@@ -126,34 +152,52 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        //open database
-        db=new DBAdapter(this);
-        db.open();
-
-        userItemArr = new ArrayList<UserItem>();
-        completedItemsArr =new ArrayList<UserItem>();
-        db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
-        getAllItems(db.getAllRows(),userItemArr);
-        db.switchTable(DBAdapter.DATABASE_TABLE_COMPLETED_ITEMS);
-        getAllItems(db.getAllRows(),completedItemsArr);
-
-        calendarItemArr = new ArrayList<CalendarItem>();
-        beginTime = Calendar.getInstance();
-        getCalendarEvents(calendarItemArr);
-
-        itemsArray = new ArrayList<ArrayList<?>>();
-
-        expandableListView=(ExpandableListView) findViewById(R.id.exlvItems);
-        itemsArray.add(calendarItemArr);
-        itemsArray.add(userItemArr);
-        itemsArray.add(completedItemsArr);
-        itemsAdapter = new ItemsAdapter(this,itemsArray);
-        expandableListView.setAdapter(itemsAdapter);
-        expandableListView.expandGroup(itemsAdapter.CALENDAR);
-        expandableListView.expandGroup(itemsAdapter.NOT_COMPLETED);
-        itemsAdapter.notifyDataSetChanged();
+//        //open database
+//        db=new DBAdapter(this);
+//        db.open();
 
         introCheck();
+        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+        mAuth = FirebaseAuth.getInstance();
+        mAuthListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                Log.d("firebasetag", "AM I EVEN CALLED?");
+                if (user != null && pastUser!=userEmail) {
+                    pastUser=userEmail;
+                    // User is signed in
+                    Log.d("firebasetag", "onAuthStateChanged:signed_in:" + user.getUid());
+                    if (userEmail != null) {
+                        // firebase database
+                        toDoDatabase = Firebase.getToDoRef();
+                        completedDatabase = Firebase.getCompletedRef();
+                        userItemArr.clear();
+                        completedItemsArr.clear();
+                        setUpToDoListener();
+                        setUpCompletedListener();
+                        itemsAdapter.notifyDataSetChanged();
+                    }
+                } else {
+                    // User is signed out
+                    Log.d("firebasetag", "onAuthStateChanged:signed_out");
+                }
+            }
+        };
+
+        // Configure sign-in to request the user's ID, email address, and basic
+        // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+
+        // Build a GoogleApiClient with access to the Google Sign-In API and the
+        // options specified by gso.
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build();
+        mGoogleApiClient.connect();
 
         rl = (RelativeLayout) findViewById(R.id.rl);
         //set initial wallpaper
@@ -193,13 +237,14 @@ public class MainActivity extends AppCompatActivity {
                                               @Override
                                               public boolean onEditorAction(TextView arg0, int arg1, KeyEvent event) {
                                                   if (!(etInput.getText().toString().trim().matches(""))) {
-                                                      db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
-                                                      Long newId=db.insertRow(etInput.getText().toString().trim());
-                                                      //writeFile(etInput.getText().toString().trim());
-                                                      userItemArr.add(0, new UserItem(newId, etInput.getText().toString().trim(), false));
-                                                      itemsAdapter.notifyDataSetChanged();
+//                                                      db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
+//                                                      Long newId=db.insertRow(etInput.getText().toString().trim());
+//                                                      //writeFile(etInput.getText().toString().trim());
+//                                                      userItemArr.add(0, new UserItem(newId, etInput.getText().toString().trim(), false));
+//                                                      itemsAdapter.notifyDataSetChanged();
+                                                      Firebase.writeNewToDoItem(etInput.getText().toString().trim(), false);
                                                       etInput.setText("");
-                                                      requestBackup(MainActivity.this);
+//                                                      requestBackup(MainActivity.this);
                                                   }
                                                   return true;
 
@@ -250,6 +295,18 @@ public class MainActivity extends AppCompatActivity {
         AlarmManager alarm = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
         alarm.cancel(pintent);
         alarm.setRepeating(AlarmManager.RTC, System.currentTimeMillis(), 1000 * 60 * 20, pintent);
+
+        mHandler = new Handler(Looper.getMainLooper()) {
+            @Override
+            public void handleMessage(Message message) {
+                if (message.what == FIREBASE_MESSAGE_CODE) {
+                    Toast.makeText(getApplicationContext(), (String)message.obj,
+                            Toast.LENGTH_LONG).show();
+                }
+
+            }
+        };
+
     }
 
     private void introCheck(){
@@ -279,24 +336,10 @@ public class MainActivity extends AppCompatActivity {
 
                     //  Apply changes
                     e.apply();
-
-                    expandableListView.expandGroup(itemsAdapter.COMPLETED);
                 }
             }
         });
 
-        // Configure sign-in to request the user's ID, email address, and basic
-        // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .build();
-
-        // Build a GoogleApiClient with access to the Google Sign-In API and the
-        // options specified by gso.
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .build();
-        mGoogleApiClient.connect();
 
         // Start the thread
         t.start();
@@ -305,6 +348,162 @@ public class MainActivity extends AppCompatActivity {
     public static void requestBackup(Context context) {
         BackupManager bm = new BackupManager(context);
         bm.dataChanged();
+    }
+
+    private void setUpToDoListener(){
+        ChildEventListener childEventListener = new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
+                Log.d("todochild", "onChildAdded:" + dataSnapshot.getKey());
+
+                // A new todo item has been added, add it to the displayed list
+                userItemArr.add(0, dataSnapshot.getValue(UserItem.class));
+                itemsAdapter.notifyDataSetChanged();
+
+                // ...
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String previousChildName) {
+                Log.d("todochild", "onChildChanged:" + dataSnapshot.getKey());
+
+//                // A comment has changed, use the key to determine if we are displaying this
+//                // comment and if so displayed the changed comment.
+//                Comment newComment = dataSnapshot.getValue(Comment.class);
+//                String commentKey = dataSnapshot.getKey();
+//
+//                // ...
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                Log.d("todochild", "onChildRemoved:" + dataSnapshot.getKey());
+
+//                // A comment has changed, use the key to determine if we are displaying this
+//                // comment and if so remove it.
+//                String commentKey = dataSnapshot.getKey();
+                //String itemName = dataSnapshot.getValue(UserItem.class).name;
+                removeToDoItem(dataSnapshot.getValue(UserItem.class).name);
+                itemsAdapter.notifyDataSetChanged();
+//                // ...
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String previousChildName) {
+                Log.d("todochild", "onChildMoved:" + dataSnapshot.getKey());
+
+//                // A comment has changed position, use the key to determine if we are
+//                // displaying this comment and if so move it.
+//                Comment movedComment = dataSnapshot.getValue(Comment.class);
+//                String commentKey = dataSnapshot.getKey();
+//
+//                // ...
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.w("todochild", "postComments:onCancelled", databaseError.toException());
+//                Toast.makeText(mContext, "Failed to load comments.",
+//                        Toast.LENGTH_SHORT).show();
+                if (!loggingOut) {
+                    Toast.makeText(getApplicationContext(), "Something went wrong, please login again and wait a few seconds",
+                            Toast.LENGTH_SHORT).show();
+//                    MainActivity.loggingOut = true;
+//                    Auth.GoogleSignInApi.signOut(MainActivity.mGoogleApiClient);
+//                    FirebaseAuth.getInstance().signOut();
+//                    Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(MainActivity.mGoogleApiClient);
+//                    startActivityForResult(signInIntent, MainActivity.GOOGLE_ACCOUNT_SIGN_IN_CODE);
+                }
+            }
+
+            private void removeToDoItem(String name){
+                for (int i = 0; i < userItemArr.size(); i++){
+                    if (name.equals(userItemArr.get(i).name)){
+                        userItemArr.remove(i);
+                        break;
+                    }
+                }
+            }
+        };
+        //toDoDatabase.removeEventListener(childEventListener);
+        toDoDatabase.addChildEventListener(childEventListener);
+    }
+
+    private void setUpCompletedListener(){
+        ChildEventListener childEventListener = new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
+                Log.d("completedchild", "onChildAdded:" + dataSnapshot.getKey());
+
+                // A new todo item has been added, add it to the displayed list
+                completedItemsArr.add(0, dataSnapshot.getValue(UserItem.class));
+                itemsAdapter.notifyDataSetChanged();
+
+                // ...
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String previousChildName) {
+                Log.d("completedchild", "onChildChanged:" + dataSnapshot.getKey());
+
+//                // A comment has changed, use the key to determine if we are displaying this
+//                // comment and if so displayed the changed comment.
+//                Comment newComment = dataSnapshot.getValue(Comment.class);
+//                String commentKey = dataSnapshot.getKey();
+//
+//                // ...
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                Log.d("completedchild", "onChildRemoved:" + dataSnapshot.getKey());
+
+//                // A comment has changed, use the key to determine if we are displaying this
+//                // comment and if so remove it.
+//                String commentKey = dataSnapshot.getKey();
+                //String itemName = dataSnapshot.getValue(UserItem.class).name;
+                removeCompletedItem(dataSnapshot.getValue(UserItem.class).name);
+                itemsAdapter.notifyDataSetChanged();
+//                // ...
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String previousChildName) {
+                Log.d("completedchild", "onChildMoved:" + dataSnapshot.getKey());
+
+//                // A comment has changed position, use the key to determine if we are
+//                // displaying this comment and if so move it.
+//                Comment movedComment = dataSnapshot.getValue(Comment.class);
+//                String commentKey = dataSnapshot.getKey();
+//
+//                // ...
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.w("completedchild", "postComments:onCancelled", databaseError.toException());
+                if (!loggingOut) {
+                    Toast.makeText(getApplicationContext(), "Something went wrong, please login again and wait a few seconds",
+                            Toast.LENGTH_SHORT).show();
+//                    MainActivity.loggingOut = true;
+//                    Auth.GoogleSignInApi.signOut(MainActivity.mGoogleApiClient);
+//                    FirebaseAuth.getInstance().signOut();
+//                    Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(MainActivity.mGoogleApiClient);
+//                    startActivityForResult(signInIntent, MainActivity.GOOGLE_ACCOUNT_SIGN_IN_CODE);
+                }
+            }
+
+            private void removeCompletedItem(String name){
+                for (int i = 0; i < completedItemsArr.size(); i++){
+                    if (name.equals(completedItemsArr.get(i).name)){
+                        completedItemsArr.remove(i);
+                        break;
+                    }
+                }
+            }
+        };
+        //completedDatabase.removeEventListener(childEventListener);
+        completedDatabase.addChildEventListener(childEventListener);
     }
 
     private void getCalendarEvents(ArrayList<CalendarItem> calendarItems){
@@ -408,7 +607,39 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public static void getAllItems(Cursor cursor,ArrayList<UserItem> arrayList){;
+    private void setUpItemList(){
+        userItemArr = new ArrayList<UserItem>();
+        completedItemsArr =new ArrayList<UserItem>();
+//        db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
+//        getAllItems(db.getAllRows(),userItemArr);
+//        db.switchTable(DBAdapter.DATABASE_TABLE_COMPLETED_ITEMS);
+//        getAllItems(db.getAllRows(),completedItemsArr);
+
+        calendarItemArr = new ArrayList<CalendarItem>();
+        beginTime = Calendar.getInstance();
+        getCalendarEvents(calendarItemArr);
+
+        itemsArray = new ArrayList<ArrayList<?>>();
+
+        itemsArray.add(calendarItemArr);
+        itemsArray.add(userItemArr);
+        itemsArray.add(completedItemsArr);
+        itemsAdapter = new ItemsAdapter(this,itemsArray);
+        expandableListView=(ExpandableListView) findViewById(R.id.exlvItems);
+        expandableListView.setAdapter(itemsAdapter);
+        expandableListView.expandGroup(itemsAdapter.CALENDAR);
+        expandableListView.expandGroup(itemsAdapter.NOT_COMPLETED);
+        if (PreferenceManager
+                .getDefaultSharedPreferences(getBaseContext())
+                .getBoolean("firstStart", true)) {
+            expandableListView.expandGroup(itemsAdapter.COMPLETED);
+            Firebase.writeNewToDoItem("Check me to move me to the Completed list.", true);
+            Firebase.writeNewCompletedItem("Uncheck me to move me to the To do list or press the \"X\" to permanently delete me.",true);
+        }
+        itemsAdapter.notifyDataSetChanged();
+    }
+
+    public static void getAllItems(Cursor cursor, boolean todo){;
         // Reset cursor to start, checking to see if there's data:
         if (cursor.moveToFirst()) {
             do {
@@ -420,8 +651,12 @@ public class MainActivity extends AppCompatActivity {
                 if (cursor.getInt(DBAdapter.COL_SELECTED)==1){
                     selected=true;
                 }
-
-                arrayList.add(0,new UserItem(id,item,selected));
+                if (todo) {
+                    Firebase.writeNewToDoItem(item, selected);
+                }else{
+                    Firebase.writeNewCompletedItem(item, selected);
+                }
+                //arrayList.add(0,new UserItem(id,item,selected));
             } while(cursor.moveToNext());
         }
     }
@@ -457,33 +692,33 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
 
         fullScreencall();
-
-        if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(SettingsActivity.PREF_KEY_CALENDAR,true)
-                && checkCallingOrSelfPermission("android.permission.READ_CALENDAR")== PackageManager.PERMISSION_GRANTED
-                && checkCallingOrSelfPermission("android.permission.WRITE_CALENDAR")== PackageManager.PERMISSION_GRANTED) {
-            if (calendarItemArr.size()==0) {
-                getCalendarEvents(calendarItemArr);
-                itemsAdapter.notifyDataSetChanged();
-                expandableListView.expandGroup(itemsAdapter.CALENDAR);
-            }
-            else {
-                Calendar currentTime = Calendar.getInstance();
-                currentTime.getTime();
-                currentTime.set(Calendar.HOUR_OF_DAY, 0);
-                currentTime.set(Calendar.MINUTE, 0);
-                currentTime.set(Calendar.SECOND, 0);
-                currentTime.set(Calendar.MILLISECOND, 1);
-                if (beginTime.compareTo(currentTime) != 0) {
-                    Log.d("calEvent", String.valueOf(beginTime.compareTo(currentTime)));
-                    calendarItemArr.clear();
+        if (userEmail != null && calendarItemArr != null) {
+            if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(SettingsActivity.PREF_KEY_CALENDAR, true)
+                    && checkCallingOrSelfPermission("android.permission.READ_CALENDAR") == PackageManager.PERMISSION_GRANTED
+                    && checkCallingOrSelfPermission("android.permission.WRITE_CALENDAR") == PackageManager.PERMISSION_GRANTED) {
+                if (calendarItemArr.size() == 0) {
                     getCalendarEvents(calendarItemArr);
                     itemsAdapter.notifyDataSetChanged();
+                    expandableListView.expandGroup(itemsAdapter.CALENDAR);
+                } else {
+                    Calendar currentTime = Calendar.getInstance();
+                    currentTime.getTime();
+                    currentTime.set(Calendar.HOUR_OF_DAY, 0);
+                    currentTime.set(Calendar.MINUTE, 0);
+                    currentTime.set(Calendar.SECOND, 0);
+                    currentTime.set(Calendar.MILLISECOND, 1);
+                    if (beginTime.compareTo(currentTime) != 0) {
+                        Log.d("calEvent", String.valueOf(beginTime.compareTo(currentTime)));
+                        calendarItemArr.clear();
+                        getCalendarEvents(calendarItemArr);
+                        itemsAdapter.notifyDataSetChanged();
+                    }
                 }
+                itemsAdapter.notifyDataSetChanged();
             }
-        }
 
-        ((EditText) findViewById(R.id.editText)).setText("");
-        itemsAdapter.notifyDataSetChanged();
+            ((EditText) findViewById(R.id.editText)).setText("");
+        }
 
         (findViewById(R.id.slidable_content)).setAlpha(1f);
         startService(new Intent(this, UpdateService.class));
@@ -523,10 +758,27 @@ public class MainActivity extends AppCompatActivity {
             switch (requestCode) {
                 case GOOGLE_ACCOUNT_SIGN_IN_CODE:
                     GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+                    SharedPreferences getPrefs = PreferenceManager
+                            .getDefaultSharedPreferences(getBaseContext());
                     if (result.isSuccess()) {
                         // Signed in successfully, show authenticated UI.
                         GoogleSignInAccount acct = result.getSignInAccount();
+                        Firebase.authWithGoogle(acct, mAuth, MainActivity.this);
                         userEmail=acct.getEmail();
+
+                        if (!userEmail.equals(getPrefs.getString("userEmail", ""))){
+                            //  Make a new preferences editor
+                            SharedPreferences.Editor e = getPrefs.edit();
+                            //  Edit preference to make it false because we don't want this to run again
+                            e.putString("userEmail", userEmail);
+                            //  Apply changes
+                            e.apply();
+                        }
+                        setUpItemList();
+                    }
+                    else {
+                        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+                        startActivityForResult(signInIntent, GOOGLE_ACCOUNT_SIGN_IN_CODE);
                     }
                     break;
             }
@@ -548,22 +800,47 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onStart() {
+        Log.d("onStart", "onStart");
+        if (transfer) {
+            //open database
+            db=new DBAdapter(this);
+            db.open();
+            try {
+                db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
+                getAllItems(db.getAllRows(), true);
+                db.switchTable(DBAdapter.DATABASE_TABLE_COMPLETED_ITEMS);
+                getAllItems(db.getAllRows(), false);
+                db.dropTables();
+            }catch (Exception e){}
+            db.close();
+            Toast.makeText(this, "Transfer complete.\nLocal database data will be erased.",
+                    Toast.LENGTH_SHORT).show();
+            transfer = false;
+        }
         if (userEmail==null && isOnline()) {
             Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
             startActivityForResult(signInIntent, GOOGLE_ACCOUNT_SIGN_IN_CODE);
+        }else if (userEmail == null){
+            userEmail = PreferenceManager
+                    .getDefaultSharedPreferences(getBaseContext()).getString("userEmail",null);
+            setUpItemList();
         }
+        mAuth.addAuthStateListener(mAuthListener);
         super.onStart();
     }
 
     @Override
     public void onStop() {
+        if (mAuthListener != null) {
+            mAuth.removeAuthStateListener(mAuthListener);
+        }
         super.onStop();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        db.close();
+        //db.close();
         mGoogleApiClient.disconnect();
         startService(new Intent(this, UpdateService.class));
     }

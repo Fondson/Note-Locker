@@ -9,6 +9,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -194,19 +195,19 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
                         row.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                MainActivity.db.switchTable(DBAdapter.DATABASE_TABLE_COMPLETED_ITEMS);
-                                MainActivity.db.deleteRow(userItem.getId());
-                                completedItems.remove(childPosition);
+//                                MainActivity.db.switchTable(DBAdapter.DATABASE_TABLE_COMPLETED_ITEMS);
+//                                MainActivity.db.deleteRow(userItem.getId());
+                                //completedItems.remove(childPosition);
+                                Firebase.removeCompletedItem(userItem.getKey());
+                                Firebase.writeNewToDoItem(userItem.getName(),userItem.isSelected());
                                 enableDisableViewGroupClickable(parent, true);
 
-                                MainActivity.db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
-                                Long newId=MainActivity.db.insertRow(userItem.getName(),(userItem.isSelected())?1 :0);
-                                notCompletedItems.add(0, new UserItem(newId, userItem.getName(), userItem.isSelected()));
-                                MainActivity.requestBackup(context);
-
-                                notifyDataSetChanged();
+                                //MainActivity.db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
+                                //Long newId=MainActivity.db.insertRow(userItem.getName(),(userItem.isSelected())?1 :0);
+                                //notCompletedItems.add(0, new UserItem(newId, userItem.getName(), userItem.isSelected()));
+                                //MainActivity.requestBackup(context);
                             }
-                        }, 300);
+                        }, 250);
                     }
                 }
             });
@@ -220,15 +221,15 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
                     row.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            MainActivity.db.switchTable(DBAdapter.DATABASE_TABLE_COMPLETED_ITEMS);
-                            MainActivity.db.deleteRow(userItem.getId());
-                            completedItems.remove(childPosition);
+//                            MainActivity.db.switchTable(DBAdapter.DATABASE_TABLE_COMPLETED_ITEMS);
+//                            MainActivity.db.deleteRow(userItem.getId());
+//                            completedItems.remove(childPosition);
+//                            enableDisableViewGroupClickable(parent, true);
+//                            MainActivity.requestBackup(context);
+                            Firebase.removeCompletedItem(userItem.getKey());
                             enableDisableViewGroupClickable(parent, true);
-                            MainActivity.requestBackup(context);
-
-                            notifyDataSetChanged();
                         }
-                    }, 300);
+                    }, 250);
                 }
 
             });
@@ -256,20 +257,23 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
                         row.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                MainActivity.db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
-                                MainActivity.db.deleteRow(userItem.getId());
-                                notCompletedItems.remove(childPosition);
+//                                MainActivity.db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
+//                                MainActivity.db.deleteRow(userItem.getId());
+//                                notCompletedItems.remove(childPosition);
+//                                enableDisableViewGroupClickable(parent, true);
+//
+//                                MainActivity.db.switchTable(DBAdapter.DATABASE_TABLE_COMPLETED_ITEMS);
+//                                Long newId=MainActivity.db.insertRow(userItem.getName(),(userItem.isSelected())?1 :0);
+//                                //writeFile(etInput.getText().toString().trim());
+//                                completedItems.add(0, new UserItem(newId, userItem.getName(), userItem.isSelected()));
+//                                notifyDataSetChanged();
+//                                MainActivity.requestBackup(context);
+                                Firebase.removeToDoItem(userItem.getKey());
+                                Firebase.writeNewCompletedItem(userItem.name,userItem.isSelected());
                                 enableDisableViewGroupClickable(parent, true);
-
-                                MainActivity.db.switchTable(DBAdapter.DATABASE_TABLE_COMPLETED_ITEMS);
-                                Long newId=MainActivity.db.insertRow(userItem.getName(),(userItem.isSelected())?1 :0);
-                                //writeFile(etInput.getText().toString().trim());
-                                completedItems.add(0, new UserItem(newId, userItem.getName(), userItem.isSelected()));
-                                notifyDataSetChanged();
-                                MainActivity.requestBackup(context);
                                 //Toast.makeText(context, userItem.getName() + " removed.", Toast.LENGTH_SHORT).show();
                             }
-                        }, 300);
+                        }, 250);
                     }
                 }
             });
@@ -294,16 +298,17 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
                                                                if (!(Pattern.quote(editText.getText().toString().trim()).matches(Pattern.quote(userItem.getName()))) && !(Pattern.quote(editText.getText().toString().trim()).matches(""))) {
                                                                    //replaceFile(userItem.getName(), editText.getText().toString().trim());
                                                                    String newItemName = editText.getText().toString().trim();
-                                                                   MainActivity.db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
-                                                                   MainActivity.db.updateRow(userItem.getId(), newItemName);
+//                                                                   MainActivity.db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
+//                                                                   MainActivity.db.updateRow(userItem.getId(), newItemName);
                                                                    userItem.setName(newItemName);
+                                                                   Firebase.updateToDoItem(userItem);
                                                                    //Toast.makeText(MainActivity.this, pastName + " changed to " + userItem.getName(), Toast.LENGTH_SHORT).show();
                                                                }
                                                                editText.setKeyListener(null);
                                                                hideKeyboard();
                                                                fullScreencall();
                                                                editText.setText(userItem.getName());
-                                                               MainActivity.requestBackup(context);
+                                                               //MainActivity.requestBackup(context);
                                                                return true;
                                                            }
 
@@ -344,9 +349,10 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
                         intBool =1;
                     }
 
-                    MainActivity.db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
-                    MainActivity.db.updateRowSelected(userItem.getId(),userItem.getName(),intBool);
-                    MainActivity.requestBackup(context);
+//                    MainActivity.db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
+//                    MainActivity.db.updateRowSelected(userItem.getId(),userItem.getName(),intBool);
+//                    MainActivity.requestBackup(context);
+                    Firebase.updateToDoItem(userItem);
 
                 }
 

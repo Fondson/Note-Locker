@@ -34,5 +34,10 @@
             android:key = "pref_tutorial"
             android:title = "@string/setting_view_tutorial"
             android:id="@+id/tutorial"/>
+        <PreferenceScreen
+            android:key = "pref_key_transfer_data"
+            android:title = "Transfer local database items"
+            android:summary="For old users to transfer old items to online database."
+            android:id="@+id/transfer"/>
     </PreferenceCategory>
 </PreferenceScreen>

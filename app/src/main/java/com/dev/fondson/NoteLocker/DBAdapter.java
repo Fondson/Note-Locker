@@ -205,6 +205,12 @@ public class DBAdapter {
         return db.update(DATABASE_TABLE, newValues, where, null) != 0;
     }
 
+    public void dropTables(){
+            // Destroy old database:
+            db.execSQL("DROP TABLE IF EXISTS " + DATABASE_TABLE_COMPLETED_ITEMS);
+            db.execSQL("DROP TABLE IF EXISTS " + DATABASE_TABLE_ITEMS);
+    }
+
 
     /////////////////////////////////////////////////////////////////////
     //	Private Helper Classes:
@@ -224,8 +230,8 @@ public class DBAdapter {
         public void onCreate(SQLiteDatabase _db) {
             _db.execSQL(DATABASE_CREATE_ITEM_SQL);
             _db.execSQL(DATABASE_CREATE_COMPLETED_ITEM_SQL);
-            _db.execSQL(DATABASE_INSERT_INITIAL_VALUES_ITEMS);
-            _db.execSQL(DATABASE_INSERT_INITIAL_VALUES_COMPLETED_ITEMS);
+            //_db.execSQL(DATABASE_INSERT_INITIAL_VALUES_ITEMS);
+            //_db.execSQL(DATABASE_INSERT_INITIAL_VALUES_COMPLETED_ITEMS);
         }
 
         @Override

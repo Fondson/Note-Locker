@@ -14,6 +14,7 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Debug;
 import android.os.Environment;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
@@ -23,6 +24,7 @@ import android.provider.MediaStore;
 import android.support.annotation.MainThread;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -32,6 +34,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.firebase.auth.FirebaseAuth;
 import com.theartofdev.edmodo.cropper.CropImage;
 
 import java.io.BufferedInputStream;
@@ -96,6 +99,14 @@ public class SettingsActivity extends AppCompatActivity {
             }
         }
     }
+
+    @Override
+    public void onBackPressed() {
+        if (!MainActivity.loggingOut) {
+            super.onBackPressed();
+        }
+        return;
+    }
     public static class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener,Preference.OnPreferenceClickListener {
         private SeekBarPreference darkTintSeekBar;
         private SharedPreferences sharedPreferences;
@@ -113,6 +124,7 @@ public class SettingsActivity extends AppCompatActivity {
             calendarPref = (SwitchPreference) findPreference("pref_key_calendar");
             googleAccountPref = (Preference) findPreference("pref_key_google_account");
             darkTintSeekBar = (SeekBarPreference)findPreference("pref_key_darkTint");
+            Preference transferPref = (Preference) findPreference("pref_key_transfer_data");
 
 
             // Set listener :
@@ -127,6 +139,7 @@ public class SettingsActivity extends AppCompatActivity {
             googleAccountPref.setOnPreferenceClickListener(this);
             tutorialPref.setOnPreferenceClickListener(this);
             calendarPref.setOnPreferenceClickListener(this);
+            transferPref.setOnPreferenceClickListener(this);
         }
 
         @Override
@@ -144,8 +157,11 @@ public class SettingsActivity extends AppCompatActivity {
             switch (preference.getKey()) {
                 case "pref_key_google_account":
                     if (MainActivity.mGoogleApiClient.isConnected() && isOnline()) {
+                        MainActivity.loggingOut = true;
                         Auth.GoogleSignInApi.signOut(MainActivity.mGoogleApiClient);
+                        MainActivity.mAuth.signOut();
                         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(MainActivity.mGoogleApiClient);
+                        //MainActivity.mAuth = FirebaseAuth.getInstance();
                         startActivityForResult(signInIntent, MainActivity.GOOGLE_ACCOUNT_SIGN_IN_CODE);
                     }
                     break;
@@ -168,6 +184,27 @@ public class SettingsActivity extends AppCompatActivity {
                             && getContext().checkCallingOrSelfPermission("android.permission.WRITE_CALENDAR")!= PackageManager.PERMISSION_GRANTED){
                         requestPermissions(MainActivity.calendarPerms, MainActivity.CALENDAR_PERMS);
                     }
+                    break;
+                case "pref_key_transfer_data":
+                    Log.d("transfer", "onPreferenceClick: transfer");
+                    if (MainActivity.userEmail != null) {
+                        if (!PreferenceManager
+                                .getDefaultSharedPreferences(getActivity()).getBoolean("transfer", false)) {
+                            PreferenceManager
+                                    .getDefaultSharedPreferences(getActivity()).edit().putBoolean("transfer", true).apply();
+                            MainActivity.transfer = true;
+                            Toast.makeText(getActivity(), "Please exit to the main screen and wait until process is complete.",
+                                    Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(getActivity(), "Already transferred data once.",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    else{
+                        Toast.makeText(getActivity(), "Please ensure you're logged in.",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                    break;
             }
             return true;
         }
@@ -253,17 +290,19 @@ public class SettingsActivity extends AppCompatActivity {
                         if (result.isSuccess()) {
                             // Signed in successfully, show authenticated UI.
                             GoogleSignInAccount acct = result.getSignInAccount();
+                            Firebase.authWithGoogle(acct, MainActivity.mAuth, getActivity());
                             MainActivity.userEmail=acct.getEmail();
                             googleAccountPref.setSummary(MainActivity.userEmail);
                         }
-                        else{
-                            MainActivity.userEmail=null;
-                            googleAccountPref.setSummary("None");
+                        else {
+                            Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(MainActivity.mGoogleApiClient);
+                            startActivityForResult(signInIntent, MainActivity.GOOGLE_ACCOUNT_SIGN_IN_CODE);
                         }
                         break;
                 }
             }
         }
+
         public boolean isOnline() {
             ConnectivityManager cm =
                     (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
