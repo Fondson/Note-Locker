@@ -23,7 +23,7 @@
             android:key = "pref_key_calendar"
             android:title = "@string/setting_enable_calendar"
             android:summary="@string/setting_calendar_desc"
-            android:defaultValue ="true"/>
+            android:defaultValue ="false"/>
     </PreferenceCategory>
     <PreferenceCategory android:title="Other">
         <PreferenceScreen

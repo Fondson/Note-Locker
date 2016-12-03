@@ -37,7 +37,7 @@ public class Firebase {
         String key= MainActivity.toDoDatabase.push().getKey();
         UserItem item = new UserItem(key, name, selected);
         Map<String, Object> itemValues = item.toMap();
-        Map<String,Object> childUpdates = new HashMap<>();
+        Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put(key, itemValues);
         MainActivity.toDoDatabase.updateChildren(childUpdates);
     }

@@ -260,7 +260,6 @@ public class SettingsActivity extends AppCompatActivity {
                         int height = heightMetrics.heightPixels;
 
                         CropImage.activity(data.getData()).setAspectRatio(width,height).setFixAspectRatio(true).start(getActivity());
-
                         break;
                     case MainActivity.GOOGLE_ACCOUNT_SIGN_IN_CODE:
                         GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);

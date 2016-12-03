@@ -107,6 +107,7 @@ public class MainActivity extends AppCompatActivity {
     public static ItemsAdapter itemsAdapter;
     private FirebaseAuth.AuthStateListener mAuthListener;
     private EditText etInput;
+    private boolean firstLogIn = false;
     private ArrayList<ArrayList<?>> itemsArray;
     private ArrayList<CalendarItem> calendarItemArr;
     private ArrayList<UserItem> userItemArr;
@@ -150,7 +151,6 @@ public class MainActivity extends AppCompatActivity {
         //getWindow().setStatusBarColor(Color.TRANSPARENT);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        introCheck();
 
         // set up firebase authentication
         FirebaseDatabase.getInstance().setPersistenceEnabled(true);
@@ -166,12 +166,13 @@ public class MainActivity extends AppCompatActivity {
                     Log.d("firebasetag", "onAuthStateChanged:signed_in:" + user.getUid());
                     if (userEmail != null) {
                         try {
-                            if (userItemArr == null || completedItemsArr == null) {
-                                setUpItemList();
-                            }
                             // firebase database
                             toDoDatabase = Firebase.getToDoRef();
                             completedDatabase = Firebase.getCompletedRef();
+                            if (userItemArr == null || completedItemsArr == null) {
+                                Log.d("setupitem", "auth ");
+                                setUpItemList();
+                            }
                             userItemArr.clear();
                             completedItemsArr.clear();
                             setUpToDoListener();
@@ -199,7 +200,6 @@ public class MainActivity extends AppCompatActivity {
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
-        mGoogleApiClient.connect();
 
         rl = (RelativeLayout) findViewById(R.id.rl);
         // get existing wallpaper
@@ -276,7 +276,7 @@ public class MainActivity extends AppCompatActivity {
                                 .edge(true)
                                 .edgeSize(0.18f) // The % of the screen that counts as the edge, default 18%
                                 .build();
-        slidrInterface=Slidr.attach(this, config);
+        slidrInterface = Slidr.attach(this, config);
 
         // facebook shimmer effect for slide up text
         ShimmerFrameLayout slideUpShimmer = (ShimmerFrameLayout) findViewById(R.id.slide_up_shimmer);
@@ -302,28 +302,21 @@ public class MainActivity extends AppCompatActivity {
         };
     }
 
-    private void introCheck(){
+    private void doIntro(final SharedPreferences getPrefs){
         //  Declare a new thread to do a preference check
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
-                //  Initialize SharedPreferences
-                SharedPreferences getPrefs = PreferenceManager
-                        .getDefaultSharedPreferences(getBaseContext());
-                //  Create a new boolean and preference and set it to true
-                boolean isFirstStart = getPrefs.getBoolean("firstStart", true);
-                //  If the activity has never started before...
-                if (isFirstStart) {
-                    //  Launch app intro
-                    Intent i = new Intent(MainActivity.this, Intro.class);
-                    startActivity(i);
-                    //  Make a new preferences editor
-                    SharedPreferences.Editor e = getPrefs.edit();
-                    //  Edit preference to make it false because we don't want this to run again
-                    e.putBoolean("firstStart", false);
-                    //  Apply changes
-                    e.apply();
-                }
+                firstLogIn = true;
+                //  Launch app intro
+                Intent i = new Intent(MainActivity.this, Intro.class);
+                startActivity(i);
+                //  Make a new preferences editor
+                SharedPreferences.Editor e = getPrefs.edit();
+                //  Edit preference to make it false because we don't want this to run again
+                e.putBoolean("firstStart", false);
+                //  Apply changes
+                e.apply();
             }
         });
         // Start the thread
@@ -534,7 +527,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setUpItemList(){
-        Log.d("setupitem", "setUpItemList: ");
+        Log.d("setupitem", "setUpItemList: " + String.valueOf(firstLogIn));
         userItemArr = new ArrayList<UserItem>();
         completedItemsArr =new ArrayList<UserItem>();
         calendarItemArr = new ArrayList<CalendarItem>();
@@ -549,9 +542,7 @@ public class MainActivity extends AppCompatActivity {
         expandableListView.setAdapter(itemsAdapter);
         expandableListView.expandGroup(itemsAdapter.CALENDAR);
         expandableListView.expandGroup(itemsAdapter.NOT_COMPLETED);
-        if (PreferenceManager
-                .getDefaultSharedPreferences(getBaseContext())
-                .getBoolean("firstStart", true)) {
+        if (firstLogIn) {
             expandableListView.expandGroup(itemsAdapter.COMPLETED);
             Firebase.writeNewToDoItem("Check me to move me to the Completed list.", true);
             Firebase.writeNewCompletedItem("Uncheck me to move me to the To do list or press the \"X\" to permanently delete me.",true);
@@ -578,7 +569,6 @@ public class MainActivity extends AppCompatActivity {
             } while(cursor.moveToNext());
         }
     }
-
 
     public static ImageView getDarkTint(){
         return darkTint;
@@ -608,9 +598,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     protected void onResume() {
+        Log.d("onResume", "should be visible");
+        (findViewById(R.id.slidable_content)).setAlpha(1f);
         fullScreencall();
         if (userEmail != null && calendarItemArr != null) {
-            if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(SettingsActivity.PREF_KEY_CALENDAR, true)
+            if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(SettingsActivity.PREF_KEY_CALENDAR, false)
                     && checkCallingOrSelfPermission("android.permission.READ_CALENDAR") == PackageManager.PERMISSION_GRANTED
                     && checkCallingOrSelfPermission("android.permission.WRITE_CALENDAR") == PackageManager.PERMISSION_GRANTED) {
                 if (calendarItemArr.size() == 0) {
@@ -633,9 +625,8 @@ public class MainActivity extends AppCompatActivity {
                 }
                 itemsAdapter.notifyDataSetChanged();
             }
-            ((EditText) findViewById(R.id.editText)).setText("");
         }
-        (findViewById(R.id.slidable_content)).setAlpha(1f);
+        ((EditText) findViewById(R.id.editText)).setText("");
         startService(new Intent(this, UpdateService.class));
         super.onResume();
     }
@@ -692,7 +683,6 @@ public class MainActivity extends AppCompatActivity {
                             //  Apply changes
                             e.apply();
                         }
-                        setUpItemList();
                     }
                     else {
                         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
@@ -718,33 +708,47 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onStart() {
-        if (transfer) {
-            //open database
-            db=new DBAdapter(this);
-            db.open();
-            try {
-                db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
-                getAllItems(db.getAllRows(), true);
-                db.switchTable(DBAdapter.DATABASE_TABLE_COMPLETED_ITEMS);
-                getAllItems(db.getAllRows(), false);
-                db.dropTables();
-            }catch (Exception e){}
-            db.close();
-            Toast.makeText(this, "Transfer complete.\nLocal database data will be erased.",
-                    Toast.LENGTH_SHORT).show();
-            transfer = false;
+        SharedPreferences getPrefs = PreferenceManager
+                .getDefaultSharedPreferences(getBaseContext());
+        boolean isFirstStart = getPrefs.getBoolean("firstStart", true);
+        if (isFirstStart && !firstLogIn) {
+            doIntro(getPrefs);
         }
-        if (userEmail == null && isOnline()) {
-            Log.d("onStart", "online");
-            Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
-            startActivityForResult(signInIntent, GOOGLE_ACCOUNT_SIGN_IN_CODE);
-        }else if (userEmail == null){
-            Log.d("onStart", "not online");
-            userEmail = PreferenceManager
-                    .getDefaultSharedPreferences(getBaseContext()).getString("userEmail",null);
-            setUpItemList();
+
+        else {
+            if (transfer) {
+                //open database
+                db = new DBAdapter(this);
+                db.open();
+                try {
+                    db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
+                    getAllItems(db.getAllRows(), true);
+                    db.switchTable(DBAdapter.DATABASE_TABLE_COMPLETED_ITEMS);
+                    getAllItems(db.getAllRows(), false);
+                    db.dropTables();
+                } catch (Exception e) {
+                }
+                db.close();
+                Toast.makeText(this, "Transfer complete.\nLocal database data will be erased.",
+                        Toast.LENGTH_SHORT).show();
+                transfer = false;
+            }
+            if (userEmail == null && isOnline()) {
+                Log.d("onStart", "online");
+                if (!mGoogleApiClient.isConnected()) {
+                    mGoogleApiClient.connect();
+                }
+                Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+                startActivityForResult(signInIntent, GOOGLE_ACCOUNT_SIGN_IN_CODE);
+            } else if (userEmail == null) {
+                Log.d("onStart", "not online");
+                userEmail = PreferenceManager
+                        .getDefaultSharedPreferences(getBaseContext()).getString("userEmail", null);
+                Log.d("setupitem", "start ");
+                setUpItemList();
+            }
+            mAuth.addAuthStateListener(mAuthListener);
         }
-        mAuth.addAuthStateListener(mAuthListener);
         super.onStart();
     }
 

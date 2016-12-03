@@ -126,7 +126,6 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
         ImageButton imageButton;
         LinearLayout time;
         LinearLayout event;
-        //TextView date;
         ImageView darkTint;
         TextView timeBegin;
         TextView timeEnd;
