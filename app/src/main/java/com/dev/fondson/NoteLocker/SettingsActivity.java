@@ -54,7 +54,6 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         // Display the fragment as the main content.
         getFragmentManager().beginTransaction()
                 .replace(android.R.id.content, new SettingsFragment())
@@ -67,7 +66,6 @@ public class SettingsActivity extends AppCompatActivity {
         if (data!=null) {
             switch (requestCode) {
                 case CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE:
-
                     CropImage.ActivityResult result = CropImage.getActivityResult(data);
                     InputStream inputStream;
                     File wallpaperFile = new File(MainActivity.WALLPAPER_FULL_PATH);
@@ -76,11 +74,9 @@ public class SettingsActivity extends AppCompatActivity {
                         BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
 
                         Bitmap bitmap = BitmapFactory.decodeStream(bufferedInputStream);
-                        //copyInputStreamToFile(inputStream,wallpaperFile);                        //Bitmap bitmap=data.getExtras().getParcelable("data");
                         bitmap =Bitmap.createScaledBitmap(bitmap, 2048, 2048, true);
                         Drawable wallpaper= new BitmapDrawable(getResources(), bitmap);
                         MainActivity.getBackground().setBackground(wallpaper);
-                        //copyInputStreamToFile(inputStream,wallpaperFile);
                         if (wallpaperFile.exists())
                             wallpaperFile.delete();
                         try {
@@ -217,8 +213,6 @@ public class SettingsActivity extends AppCompatActivity {
                 int alphaValue = sharedPreferences.getInt("pref_key_darkTint", 50);
                 darkTintSeekBar.setSummary(("$%").replace("$", "" + alphaValue));
                 ((View)MainActivity.getDarkTint()).setAlpha((float)alphaValue/100);
-//                Toast.makeText(getActivity(), "hi",
-//                        Toast.LENGTH_LONG).show();
             }
         }
 
@@ -244,18 +238,9 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         private void launchGalleryPicker(){
-//            File wallpaperPath = new File(MainActivity.WALLPAPER_PATH);
-//            try {
-//                wallpaperPath.mkdirs();
-//                wallpaper.createNewFile();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
             Intent photoPickerIntent = new Intent(Intent.ACTION_GET_CONTENT);
             photoPickerIntent.setType("image/*");
             photoPickerIntent.putExtra("return-data", true);
-            //photoPickerIntent.putExtra("crop", "true");
-            //photoPickerIntent.putExtra("output", Uri.parse(MainActivity.WALLPAPER_FULL_PATH));
             startActivityForResult(photoPickerIntent,MainActivity.WALLPAPER_CODE);
         }
 
@@ -266,13 +251,6 @@ public class SettingsActivity extends AppCompatActivity {
                 switch (requestCode) {
                     //handles picture-cropping results
                     case MainActivity.WALLPAPER_CODE:
-//                        Bitmap bitmap = BitmapFactory.decodeFile(MainActivity.WALLPAPER_FULL_PATH);
-//                        Bitmap bitmap = null;
-//                        try {
-//                            bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), Uri.parse(MainActivity.WALLPAPER_FULL_PATH));
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
                         DisplayMetrics widthMetrics = new DisplayMetrics();
                         ((WindowManager)getActivity().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(widthMetrics);
                         int width = widthMetrics.widthPixels;
@@ -282,7 +260,6 @@ public class SettingsActivity extends AppCompatActivity {
                         int height = heightMetrics.heightPixels;
 
                         CropImage.activity(data.getData()).setAspectRatio(width,height).setFixAspectRatio(true).start(getActivity());
-                        //startActivity(intent);x
 
                         break;
                     case MainActivity.GOOGLE_ACCOUNT_SIGN_IN_CODE:

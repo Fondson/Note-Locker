@@ -102,11 +102,6 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = inflater.inflate(R.layout.state,parent,false);
         }
-        //convertView.setClickable(false);
-//        if (groupPosition==NOT_COMPLETED || groupPosition==CALENDAR){
-//            ((ExpandableListView)parent).expandGroup(groupPosition);
-//            convertView.setClickable(true); //tip: this makes convertView NOT clickable along with convertView.setClickable(false) above???
-//        }//
         String headerText;
         TextView header= (TextView) convertView.findViewById(R.id.header);
         header.setVisibility(View.VISIBLE);
@@ -144,7 +139,6 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
         if(convertView==null){
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = inflater.inflate(R.layout.row,parent,false);
-
             holder = new ViewHolder();
             holder.name = (EditText) convertView.findViewById(R.id.editText1);
             holder.darkTint = (ImageView) convertView.findViewById(R.id.ivCalendarDarkTint);
@@ -156,11 +150,9 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
             holder.timeEnd = (TextView) convertView.findViewById(R.id.txtTimeEnd);
             holder.title = (TextView) convertView.findViewById(R.id.txtTitle);
             holder.location = (TextView) convertView.findViewById(R.id.txtLocation);
-
             convertView.setTag(holder);
         }
         else{holder=(ViewHolder) convertView.getTag();}
-        //final KeyListener editable = name.getKeyListener();
         holder.name.setKeyListener(null);
         holder.darkTint.setVisibility(View.GONE);
         holder.name.setPaintFlags(0);
@@ -195,17 +187,9 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
                         row.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-//                                MainActivity.db.switchTable(DBAdapter.DATABASE_TABLE_COMPLETED_ITEMS);
-//                                MainActivity.db.deleteRow(userItem.getId());
-                                //completedItems.remove(childPosition);
                                 Firebase.removeCompletedItem(userItem.getKey());
                                 Firebase.writeNewToDoItem(userItem.getName(),userItem.isSelected());
                                 enableDisableViewGroupClickable(parent, true);
-
-                                //MainActivity.db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
-                                //Long newId=MainActivity.db.insertRow(userItem.getName(),(userItem.isSelected())?1 :0);
-                                //notCompletedItems.add(0, new UserItem(newId, userItem.getName(), userItem.isSelected()));
-                                //MainActivity.requestBackup(context);
                             }
                         }, 250);
                     }
@@ -221,11 +205,6 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
                     row.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-//                            MainActivity.db.switchTable(DBAdapter.DATABASE_TABLE_COMPLETED_ITEMS);
-//                            MainActivity.db.deleteRow(userItem.getId());
-//                            completedItems.remove(childPosition);
-//                            enableDisableViewGroupClickable(parent, true);
-//                            MainActivity.requestBackup(context);
                             Firebase.removeCompletedItem(userItem.getKey());
                             enableDisableViewGroupClickable(parent, true);
                         }
@@ -240,14 +219,12 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
             holder.name.setText(userItem.getName());
             holder.checkBox.setChecked(false);
             holder.imageButton.setImageDrawable(context.getResources().getDrawable(R.drawable.star_selector));
-           // holder.imageButton.setSelected(!holder.imageButton.isSelected());
 
             holder.imageButton.setSelected(userItem.isSelected());
             holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(final CompoundButton arg0, boolean isChecked) {
                     if (isChecked) {
-                        //holder.linearLayout.animate().setDuration(200).alpha(0);
                         arg0.setChecked(false);
                         holder.imageButton.setSelected(false);
                         enableDisableViewGroupClickable(parent, false);
@@ -257,21 +234,9 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
                         row.postDelayed(new Runnable() {
                             @Override
                             public void run() {
-//                                MainActivity.db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
-//                                MainActivity.db.deleteRow(userItem.getId());
-//                                notCompletedItems.remove(childPosition);
-//                                enableDisableViewGroupClickable(parent, true);
-//
-//                                MainActivity.db.switchTable(DBAdapter.DATABASE_TABLE_COMPLETED_ITEMS);
-//                                Long newId=MainActivity.db.insertRow(userItem.getName(),(userItem.isSelected())?1 :0);
-//                                //writeFile(etInput.getText().toString().trim());
-//                                completedItems.add(0, new UserItem(newId, userItem.getName(), userItem.isSelected()));
-//                                notifyDataSetChanged();
-//                                MainActivity.requestBackup(context);
                                 Firebase.removeToDoItem(userItem.getKey());
                                 Firebase.writeNewCompletedItem(userItem.name,userItem.isSelected());
                                 enableDisableViewGroupClickable(parent, true);
-                                //Toast.makeText(context, userItem.getName() + " removed.", Toast.LENGTH_SHORT).show();
                             }
                         }, 250);
                     }
@@ -282,8 +247,6 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
             holder.name.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View view) {
-                    //homeKeyLocker.unlock();
-                    //final UserItem userItem = (UserItem) view.getItemAtPosition(pos);
                     final EditText editText = (EditText) view;
                     editText.setKeyListener(MainActivity.listener);
                     editText.requestFocus();
@@ -296,19 +259,14 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
                                                            public boolean onEditorAction(TextView arg0, int arg1, KeyEvent event) {
                                                                //Pattern.quote is used to escape special regex characters in userItem if present
                                                                if (!(Pattern.quote(editText.getText().toString().trim()).matches(Pattern.quote(userItem.getName()))) && !(Pattern.quote(editText.getText().toString().trim()).matches(""))) {
-                                                                   //replaceFile(userItem.getName(), editText.getText().toString().trim());
-                                                                   String newItemName = editText.getText().toString().trim();
-//                                                                   MainActivity.db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
-//                                                                   MainActivity.db.updateRow(userItem.getId(), newItemName);
+                                                                  String newItemName = editText.getText().toString().trim();
                                                                    userItem.setName(newItemName);
                                                                    Firebase.updateToDoItem(userItem);
-                                                                   //Toast.makeText(MainActivity.this, pastName + " changed to " + userItem.getName(), Toast.LENGTH_SHORT).show();
                                                                }
                                                                editText.setKeyListener(null);
                                                                hideKeyboard();
                                                                fullScreencall();
                                                                editText.setText(userItem.getName());
-                                                               //MainActivity.requestBackup(context);
                                                                return true;
                                                            }
 
@@ -342,16 +300,9 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
                     boolean selected =!button.isSelected();
                     button.setSelected(selected);
                     userItem.setSelected(selected);
-
-                    int intBool=0;
                     if (selected){
                         userItem.setSelected(true);
-                        intBool =1;
                     }
-
-//                    MainActivity.db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
-//                    MainActivity.db.updateRowSelected(userItem.getId(),userItem.getName(),intBool);
-//                    MainActivity.requestBackup(context);
                     Firebase.updateToDoItem(userItem);
 
                 }
@@ -361,7 +312,6 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
 
         else if (groupPosition==CALENDAR) {
             CalendarItem calendarItem = (CalendarItem)getChild(groupPosition,childPosition);
-
             if (calendarItem.timeBegin.equals("All day")){
                 holder.timeBegin.setText(calendarItem.timeBegin);
             }

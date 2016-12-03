@@ -104,6 +104,7 @@ public class MainActivity extends AppCompatActivity {
     public static DatabaseReference completedDatabase;
     public static Handler mHandler;
     public static boolean loggingOut;
+    public static ItemsAdapter itemsAdapter;
     private FirebaseAuth.AuthStateListener mAuthListener;
     private EditText etInput;
     private ArrayList<ArrayList<?>> itemsArray;
@@ -111,7 +112,6 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<UserItem> userItemArr;
     private ArrayList<UserItem> completedItemsArr;
     private ExpandableListView expandableListView;
-    private ItemsAdapter itemsAdapter;
     private UnlockBar unlock;
     private SlidrConfig config;
     private SlidrInterface slidrInterface;
@@ -149,14 +149,10 @@ public class MainActivity extends AppCompatActivity {
                 );
         //getWindow().setStatusBarColor(Color.TRANSPARENT);
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
-
-//        //open database
-//        db=new DBAdapter(this);
-//        db.open();
-
         introCheck();
+
+        // set up firebase authentication
         FirebaseDatabase.getInstance().setPersistenceEnabled(true);
         mAuth = FirebaseAuth.getInstance();
         mAuthListener = new FirebaseAuth.AuthStateListener() {
@@ -169,14 +165,21 @@ public class MainActivity extends AppCompatActivity {
                     // User is signed in
                     Log.d("firebasetag", "onAuthStateChanged:signed_in:" + user.getUid());
                     if (userEmail != null) {
-                        // firebase database
-                        toDoDatabase = Firebase.getToDoRef();
-                        completedDatabase = Firebase.getCompletedRef();
-                        userItemArr.clear();
-                        completedItemsArr.clear();
-                        setUpToDoListener();
-                        setUpCompletedListener();
-                        itemsAdapter.notifyDataSetChanged();
+                        try {
+                            if (userItemArr == null || completedItemsArr == null) {
+                                setUpItemList();
+                            }
+                            // firebase database
+                            toDoDatabase = Firebase.getToDoRef();
+                            completedDatabase = Firebase.getCompletedRef();
+                            userItemArr.clear();
+                            completedItemsArr.clear();
+                            setUpToDoListener();
+                            setUpCompletedListener();
+                            itemsAdapter.notifyDataSetChanged();
+                        } catch (Exception e) {
+                            Log.d("exception", e.getMessage());
+                        }
                     }
                 } else {
                     // User is signed out
@@ -191,7 +194,6 @@ public class MainActivity extends AppCompatActivity {
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
                 .build();
-
         // Build a GoogleApiClient with access to the Google Sign-In API and the
         // options specified by gso.
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -200,16 +202,16 @@ public class MainActivity extends AppCompatActivity {
         mGoogleApiClient.connect();
 
         rl = (RelativeLayout) findViewById(R.id.rl);
-        //set initial wallpaper
+        // get existing wallpaper
         WALLPAPER_PATH = getFilesDir().getAbsolutePath();
         WALLPAPER_FULL_PATH = WALLPAPER_PATH + "/wallpaper.jpg";
         File wallpaperFile= new File(WALLPAPER_FULL_PATH);
-
         if(wallpaperFile.exists()
                 && this.checkCallingOrSelfPermission("android.permission.READ_EXTERNAL_STORAGE")== PackageManager.PERMISSION_GRANTED) {
             Drawable wallpaper=Drawable.createFromPath(WALLPAPER_FULL_PATH);
             rl.setBackground(wallpaper);
         }
+        //set default wallpaper
         else{
             WallpaperManager wallpaperManager = WallpaperManager.getInstance(this);
             Drawable wallpaperDrawable = wallpaperManager.getDrawable();
@@ -227,7 +229,6 @@ public class MainActivity extends AppCompatActivity {
         });
         darkTint=(ImageView)findViewById(R.id.ivDarkTint);
         ((View)darkTint).setAlpha((float)PreferenceManager.getDefaultSharedPreferences(MainActivity.this).getInt("pref_key_darkTint", 50)/100);
-
         float scale = getResources().getDisplayMetrics().density;
         int dpAsPixels = (int) (16 * scale + 0.5f); //standard padding by Android Design Guidelines
         ll.setPadding(dpAsPixels, dpAsPixels + getStatusBarHeight(), dpAsPixels, dpAsPixels);
@@ -237,14 +238,8 @@ public class MainActivity extends AppCompatActivity {
                                               @Override
                                               public boolean onEditorAction(TextView arg0, int arg1, KeyEvent event) {
                                                   if (!(etInput.getText().toString().trim().matches(""))) {
-//                                                      db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
-//                                                      Long newId=db.insertRow(etInput.getText().toString().trim());
-//                                                      //writeFile(etInput.getText().toString().trim());
-//                                                      userItemArr.add(0, new UserItem(newId, etInput.getText().toString().trim(), false));
-//                                                      itemsAdapter.notifyDataSetChanged();
                                                       Firebase.writeNewToDoItem(etInput.getText().toString().trim(), false);
                                                       etInput.setText("");
-//                                                      requestBackup(MainActivity.this);
                                                   }
                                                   return true;
 
@@ -254,7 +249,6 @@ public class MainActivity extends AppCompatActivity {
         etInput.setOnClickListener(new EditText.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //homeKeyLocker.unlock();
                 InputMethodManager imm = (InputMethodManager) MainActivity.this.getSystemService(Service.INPUT_METHOD_SERVICE);
                 imm.showSoftInput(etInput, InputMethodManager.SHOW_FORCED);
             }
@@ -270,6 +264,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // set up slide up interface
         config = new SlidrConfig.Builder()
                                 .position(SlidrPosition.BOTTOM)
                                 .sensitivity(0.75f)
@@ -281,21 +276,21 @@ public class MainActivity extends AppCompatActivity {
                                 .edge(true)
                                 .edgeSize(0.18f) // The % of the screen that counts as the edge, default 18%
                                 .build();
-
-
         slidrInterface=Slidr.attach(this, config);
 
+        // facebook shimmer effect for slide up text
         ShimmerFrameLayout slideUpShimmer = (ShimmerFrameLayout) findViewById(R.id.slide_up_shimmer);
         slideUpShimmer.setDuration(1500);
         slideUpShimmer.startShimmerAnimation();
 
-        //experimental to keep service alive.
+        // experimental feature to regularly restart service
         Intent ishintent = new Intent(this, UpdateService.class);
         PendingIntent pintent = PendingIntent.getService(this, 0, ishintent, 0);
         AlarmManager alarm = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
         alarm.cancel(pintent);
         alarm.setRepeating(AlarmManager.RTC, System.currentTimeMillis(), 1000 * 60 * 20, pintent);
 
+        // handles firebase crowd messages/alerts
         mHandler = new Handler(Looper.getMainLooper()) {
             @Override
             public void handleMessage(Message message) {
@@ -303,10 +298,8 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), (String)message.obj,
                             Toast.LENGTH_LONG).show();
                 }
-
             }
         };
-
     }
 
     private void introCheck(){
@@ -317,30 +310,22 @@ public class MainActivity extends AppCompatActivity {
                 //  Initialize SharedPreferences
                 SharedPreferences getPrefs = PreferenceManager
                         .getDefaultSharedPreferences(getBaseContext());
-
                 //  Create a new boolean and preference and set it to true
                 boolean isFirstStart = getPrefs.getBoolean("firstStart", true);
-
                 //  If the activity has never started before...
                 if (isFirstStart) {
-
                     //  Launch app intro
                     Intent i = new Intent(MainActivity.this, Intro.class);
                     startActivity(i);
-
                     //  Make a new preferences editor
                     SharedPreferences.Editor e = getPrefs.edit();
-
                     //  Edit preference to make it false because we don't want this to run again
                     e.putBoolean("firstStart", false);
-
                     //  Apply changes
                     e.apply();
                 }
             }
         });
-
-
         // Start the thread
         t.start();
     }
@@ -355,34 +340,19 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
                 Log.d("todochild", "onChildAdded:" + dataSnapshot.getKey());
-
                 // A new todo item has been added, add it to the displayed list
                 userItemArr.add(0, dataSnapshot.getValue(UserItem.class));
                 itemsAdapter.notifyDataSetChanged();
-
-                // ...
             }
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String previousChildName) {
                 Log.d("todochild", "onChildChanged:" + dataSnapshot.getKey());
-
-//                // A comment has changed, use the key to determine if we are displaying this
-//                // comment and if so displayed the changed comment.
-//                Comment newComment = dataSnapshot.getValue(Comment.class);
-//                String commentKey = dataSnapshot.getKey();
-//
-//                // ...
             }
 
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
                 Log.d("todochild", "onChildRemoved:" + dataSnapshot.getKey());
-
-//                // A comment has changed, use the key to determine if we are displaying this
-//                // comment and if so remove it.
-//                String commentKey = dataSnapshot.getKey();
-                //String itemName = dataSnapshot.getValue(UserItem.class).name;
                 removeToDoItem(dataSnapshot.getValue(UserItem.class).name);
                 itemsAdapter.notifyDataSetChanged();
 //                // ...
@@ -391,28 +361,14 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onChildMoved(DataSnapshot dataSnapshot, String previousChildName) {
                 Log.d("todochild", "onChildMoved:" + dataSnapshot.getKey());
-
-//                // A comment has changed position, use the key to determine if we are
-//                // displaying this comment and if so move it.
-//                Comment movedComment = dataSnapshot.getValue(Comment.class);
-//                String commentKey = dataSnapshot.getKey();
-//
-//                // ...
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 Log.w("todochild", "postComments:onCancelled", databaseError.toException());
-//                Toast.makeText(mContext, "Failed to load comments.",
-//                        Toast.LENGTH_SHORT).show();
                 if (!loggingOut) {
                     Toast.makeText(getApplicationContext(), "Something went wrong, please login again and wait a few seconds",
                             Toast.LENGTH_SHORT).show();
-//                    MainActivity.loggingOut = true;
-//                    Auth.GoogleSignInApi.signOut(MainActivity.mGoogleApiClient);
-//                    FirebaseAuth.getInstance().signOut();
-//                    Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(MainActivity.mGoogleApiClient);
-//                    startActivityForResult(signInIntent, MainActivity.GOOGLE_ACCOUNT_SIGN_IN_CODE);
                 }
             }
 
@@ -425,7 +381,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
-        //toDoDatabase.removeEventListener(childEventListener);
         toDoDatabase.addChildEventListener(childEventListener);
     }
 
@@ -434,49 +389,26 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
                 Log.d("completedchild", "onChildAdded:" + dataSnapshot.getKey());
-
                 // A new todo item has been added, add it to the displayed list
                 completedItemsArr.add(0, dataSnapshot.getValue(UserItem.class));
                 itemsAdapter.notifyDataSetChanged();
-
-                // ...
             }
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String previousChildName) {
                 Log.d("completedchild", "onChildChanged:" + dataSnapshot.getKey());
-
-//                // A comment has changed, use the key to determine if we are displaying this
-//                // comment and if so displayed the changed comment.
-//                Comment newComment = dataSnapshot.getValue(Comment.class);
-//                String commentKey = dataSnapshot.getKey();
-//
-//                // ...
             }
 
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
                 Log.d("completedchild", "onChildRemoved:" + dataSnapshot.getKey());
-
-//                // A comment has changed, use the key to determine if we are displaying this
-//                // comment and if so remove it.
-//                String commentKey = dataSnapshot.getKey();
-                //String itemName = dataSnapshot.getValue(UserItem.class).name;
                 removeCompletedItem(dataSnapshot.getValue(UserItem.class).name);
                 itemsAdapter.notifyDataSetChanged();
-//                // ...
             }
 
             @Override
             public void onChildMoved(DataSnapshot dataSnapshot, String previousChildName) {
                 Log.d("completedchild", "onChildMoved:" + dataSnapshot.getKey());
-
-//                // A comment has changed position, use the key to determine if we are
-//                // displaying this comment and if so move it.
-//                Comment movedComment = dataSnapshot.getValue(Comment.class);
-//                String commentKey = dataSnapshot.getKey();
-//
-//                // ...
             }
 
             @Override
@@ -485,11 +417,6 @@ public class MainActivity extends AppCompatActivity {
                 if (!loggingOut) {
                     Toast.makeText(getApplicationContext(), "Something went wrong, please login again and wait a few seconds",
                             Toast.LENGTH_SHORT).show();
-//                    MainActivity.loggingOut = true;
-//                    Auth.GoogleSignInApi.signOut(MainActivity.mGoogleApiClient);
-//                    FirebaseAuth.getInstance().signOut();
-//                    Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(MainActivity.mGoogleApiClient);
-//                    startActivityForResult(signInIntent, MainActivity.GOOGLE_ACCOUNT_SIGN_IN_CODE);
                 }
             }
 
@@ -502,7 +429,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         };
-        //completedDatabase.removeEventListener(childEventListener);
         completedDatabase.addChildEventListener(childEventListener);
     }
 
@@ -608,19 +534,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setUpItemList(){
+        Log.d("setupitem", "setUpItemList: ");
         userItemArr = new ArrayList<UserItem>();
         completedItemsArr =new ArrayList<UserItem>();
-//        db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
-//        getAllItems(db.getAllRows(),userItemArr);
-//        db.switchTable(DBAdapter.DATABASE_TABLE_COMPLETED_ITEMS);
-//        getAllItems(db.getAllRows(),completedItemsArr);
-
         calendarItemArr = new ArrayList<CalendarItem>();
         beginTime = Calendar.getInstance();
         getCalendarEvents(calendarItemArr);
-
         itemsArray = new ArrayList<ArrayList<?>>();
-
         itemsArray.add(calendarItemArr);
         itemsArray.add(userItemArr);
         itemsArray.add(completedItemsArr);
@@ -644,7 +564,6 @@ public class MainActivity extends AppCompatActivity {
         if (cursor.moveToFirst()) {
             do {
                 // Process the data:
-
                 int id = cursor.getInt(DBAdapter.COL_ROWID);
                 String item = cursor.getString(DBAdapter.COL_ITEM);
                 boolean selected=false;
@@ -656,7 +575,6 @@ public class MainActivity extends AppCompatActivity {
                 }else{
                     Firebase.writeNewCompletedItem(item, selected);
                 }
-                //arrayList.add(0,new UserItem(id,item,selected));
             } while(cursor.moveToNext());
         }
     }
@@ -690,7 +608,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     protected void onResume() {
-
         fullScreencall();
         if (userEmail != null && calendarItemArr != null) {
             if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(SettingsActivity.PREF_KEY_CALENDAR, true)
@@ -716,17 +633,17 @@ public class MainActivity extends AppCompatActivity {
                 }
                 itemsAdapter.notifyDataSetChanged();
             }
-
             ((EditText) findViewById(R.id.editText)).setText("");
         }
-
         (findViewById(R.id.slidable_content)).setAlpha(1f);
         startService(new Intent(this, UpdateService.class));
         super.onResume();
     }
+
     public static RelativeLayout getBackground(){
         return rl;
     }
+
     public void hideKeyboard() {
         View view = this.getCurrentFocus();
         if (view != null) {
@@ -760,6 +677,7 @@ public class MainActivity extends AppCompatActivity {
                     GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
                     SharedPreferences getPrefs = PreferenceManager
                             .getDefaultSharedPreferences(getBaseContext());
+                    Log.d("mainActivityResult", "result :" + String.valueOf(result.isSuccess()));
                     if (result.isSuccess()) {
                         // Signed in successfully, show authenticated UI.
                         GoogleSignInAccount acct = result.getSignInAccount();
@@ -800,7 +718,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onStart() {
-        Log.d("onStart", "onStart");
         if (transfer) {
             //open database
             db=new DBAdapter(this);
@@ -817,10 +734,12 @@ public class MainActivity extends AppCompatActivity {
                     Toast.LENGTH_SHORT).show();
             transfer = false;
         }
-        if (userEmail==null && isOnline()) {
+        if (userEmail == null && isOnline()) {
+            Log.d("onStart", "online");
             Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
             startActivityForResult(signInIntent, GOOGLE_ACCOUNT_SIGN_IN_CODE);
         }else if (userEmail == null){
+            Log.d("onStart", "not online");
             userEmail = PreferenceManager
                     .getDefaultSharedPreferences(getBaseContext()).getString("userEmail",null);
             setUpItemList();
@@ -840,7 +759,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //db.close();
         mGoogleApiClient.disconnect();
         startService(new Intent(this, UpdateService.class));
     }
