@@ -115,12 +115,13 @@ public class SettingsActivity extends AppCompatActivity {
             // Load the preferences from an XML resource
             addPreferencesFromResource(R.xml.settings);
 
-            Preference wallpaperPref = (Preference) findPreference("pref_key_wallpaper");
-            Preference tutorialPref = (Preference) findPreference("pref_tutorial");
+            Preference wallpaperPref = findPreference("pref_key_wallpaper");
+            Preference tutorialPref = findPreference("pref_tutorial");
             calendarPref = (SwitchPreference) findPreference("pref_key_calendar");
-            googleAccountPref = (Preference) findPreference("pref_key_google_account");
+            googleAccountPref = findPreference("pref_key_google_account");
             darkTintSeekBar = (SeekBarPreference)findPreference("pref_key_darkTint");
-            Preference transferPref = (Preference) findPreference("pref_key_transfer_data");
+            //Preference transferPref = findPreference("pref_key_transfer_data");
+            Preference betaLinkPref = findPreference("pref_key_beta_link");
 
 
             // Set listener :
@@ -135,7 +136,8 @@ public class SettingsActivity extends AppCompatActivity {
             googleAccountPref.setOnPreferenceClickListener(this);
             tutorialPref.setOnPreferenceClickListener(this);
             calendarPref.setOnPreferenceClickListener(this);
-            transferPref.setOnPreferenceClickListener(this);
+            //transferPref.setOnPreferenceClickListener(this);
+            betaLinkPref.setOnPreferenceClickListener(this);
         }
 
         @Override
@@ -180,26 +182,38 @@ public class SettingsActivity extends AppCompatActivity {
                             && getContext().checkCallingOrSelfPermission("android.permission.WRITE_CALENDAR")!= PackageManager.PERMISSION_GRANTED){
                         requestPermissions(MainActivity.calendarPerms, MainActivity.CALENDAR_PERMS);
                     }
-                    break;
-                case "pref_key_transfer_data":
-                    Log.d("transfer", "onPreferenceClick: transfer");
-                    if (MainActivity.userEmail != null) {
-                        if (!PreferenceManager
-                                .getDefaultSharedPreferences(getActivity()).getBoolean("transfer", false)) {
-                            PreferenceManager
-                                    .getDefaultSharedPreferences(getActivity()).edit().putBoolean("transfer", true).apply();
-                            MainActivity.transfer = true;
-                            Toast.makeText(getActivity(), "Please exit to the main screen and wait until process is complete.",
-                                    Toast.LENGTH_SHORT).show();
-                        } else {
-                            Toast.makeText(getActivity(), "Already transferred data once.",
-                                    Toast.LENGTH_SHORT).show();
-                        }
+//                    break;
+//                case "pref_key_transfer_data":
+//                    Log.d("transfer", "onPreferenceClick: transfer");
+//                    if (MainActivity.userEmail != null) {
+//                        if (!PreferenceManager
+//                                .getDefaultSharedPreferences(getActivity()).getBoolean("transfer", false)) {
+//                            PreferenceManager
+//                                    .getDefaultSharedPreferences(getActivity()).edit().putBoolean("transfer", true).apply();
+//                            MainActivity.transfer = true;
+//                            Toast.makeText(getActivity(), "Please exit to the main screen and wait until process is complete.",
+//                                    Toast.LENGTH_SHORT).show();
+//                        } else {
+//                            Toast.makeText(getActivity(), "Already transferred data once.",
+//                                    Toast.LENGTH_SHORT).show();
+//                        }
+//                    }
+//                    else{
+//                        Toast.makeText(getActivity(), "Please ensure you're logged in.",
+//                                Toast.LENGTH_SHORT).show();
+//                    }
+//                    break;
+                case "pref_key_beta_link":
+                    if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB) {
+                        android.text.ClipboardManager clipboard = (android.text.ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+                        clipboard.setText("https://play.google.com/apps/testing/com.dev.fondson.NoteLocker");
+                    } else {
+                        android.content.ClipboardManager clipboard = (android.content.ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+                        android.content.ClipData clip = android.content.ClipData.newPlainText("Copied Text", "https://play.google.com/apps/testing/com.dev.fondson.NoteLocker");
+                        clipboard.setPrimaryClip(clip);
                     }
-                    else{
-                        Toast.makeText(getActivity(), "Please ensure you're logged in.",
-                                Toast.LENGTH_SHORT).show();
-                    }
+                    Toast.makeText(getActivity(), "Copied beta link to clipboard.",
+                            Toast.LENGTH_SHORT).show();
                     break;
             }
             return true;

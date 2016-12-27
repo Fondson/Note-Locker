@@ -34,10 +34,15 @@
             android:key = "pref_tutorial"
             android:title = "@string/setting_view_tutorial"
             android:id="@+id/tutorial"/>
-        <PreferenceScreen
+        <!--<PreferenceScreen
             android:key = "pref_key_transfer_data"
             android:title = "Transfer local database items"
             android:summary="For old users to transfer old items to online database."
-            android:id="@+id/transfer"/>
+            android:id="@+id/transfer"/>-->
+        <PreferenceScreen
+            android:key = "pref_key_beta_link"
+            android:title = "Share Note Locker beta link"
+            android:summary="Tap to copy beta opt-in link."
+            android:id="@+id/beta_link"/>
     </PreferenceCategory>
 </PreferenceScreen>

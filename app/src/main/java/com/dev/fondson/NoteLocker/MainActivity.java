@@ -581,25 +581,25 @@ public class MainActivity extends AppCompatActivity {
         itemsAdapter.notifyDataSetChanged();
     }
 
-    public static void getAllItems(Cursor cursor, boolean todo){;
-        // Reset cursor to start, checking to see if there's data:
-        if (cursor.moveToFirst()) {
-            do {
-                // Process the data:
-                int id = cursor.getInt(DBAdapter.COL_ROWID);
-                String item = cursor.getString(DBAdapter.COL_ITEM);
-                boolean selected=false;
-                if (cursor.getInt(DBAdapter.COL_SELECTED)==1){
-                    selected=true;
-                }
-                if (todo) {
-                    Firebase.writeNewToDoItem(item, selected);
-                }else{
-                    Firebase.writeNewCompletedItem(item, selected);
-                }
-            } while(cursor.moveToNext());
-        }
-    }
+//    public static void getAllItems(Cursor cursor, boolean todo){;
+//        // Reset cursor to start, checking to see if there's data:
+//        if (cursor.moveToFirst()) {
+//            do {
+//                // Process the data:
+//                int id = cursor.getInt(DBAdapter.COL_ROWID);
+//                String item = cursor.getString(DBAdapter.COL_ITEM);
+//                boolean selected=false;
+//                if (cursor.getInt(DBAdapter.COL_SELECTED)==1){
+//                    selected=true;
+//                }
+//                if (todo) {
+//                    Firebase.writeNewToDoItem(item, selected);
+//                }else{
+//                    Firebase.writeNewCompletedItem(item, selected);
+//                }
+//            } while(cursor.moveToNext());
+//        }
+//    }
 
     public static ImageView getDarkTint(){
         return darkTint;
@@ -747,23 +747,23 @@ public class MainActivity extends AppCompatActivity {
             doIntro(getPrefs);
         }
         else {
-            if (transfer) {
-                //open database
-                db = new DBAdapter(this);
-                db.open();
-                try {
-                    db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
-                    getAllItems(db.getAllRows(), true);
-                    db.switchTable(DBAdapter.DATABASE_TABLE_COMPLETED_ITEMS);
-                    getAllItems(db.getAllRows(), false);
-                    db.dropTables();
-                } catch (Exception e) {
-                }
-                db.close();
-                Toast.makeText(this, "Transfer complete.\nLocal database data will be erased.",
-                        Toast.LENGTH_SHORT).show();
-                transfer = false;
-            }
+//            if (transfer) {
+//                //open database
+//                db = new DBAdapter(this);
+//                db.open();
+//                try {
+//                    db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
+//                    getAllItems(db.getAllRows(), true);
+//                    db.switchTable(DBAdapter.DATABASE_TABLE_COMPLETED_ITEMS);
+//                    getAllItems(db.getAllRows(), false);
+//                    db.dropTables();
+//                } catch (Exception e) {
+//                }
+//                db.close();
+//                Toast.makeText(this, "Transfer complete.\nLocal database data will be erased.",
+//                        Toast.LENGTH_SHORT).show();
+//                transfer = false;
+//            }
             if (userEmail == null && isOnline()) {
                 Log.d("onStart", "online");
                 if (!mGoogleApiClient.isConnected()) {
