@@ -7,20 +7,21 @@ import java.util.Map;
  * Created by Fondson on 2015-12-21.
  */
 public class UserItem {
-    long id = 0;
-    String key = null;
-    String name = null;
-    boolean selected = false;
+    private long id = 0;
+    private String key = null;
+    private String name = null;
+    private boolean selected = false;
 
     public UserItem(){
 
     }
 
     public UserItem(long id, String name, boolean selected) {
-        this.id=id;
+        this.id = id;
         this.name = name;
         this.selected = selected;
     }
+
 
     public UserItem(String key, String name, boolean selected) {
         this.key = key;

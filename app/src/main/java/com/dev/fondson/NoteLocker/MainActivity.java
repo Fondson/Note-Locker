@@ -75,9 +75,10 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.ListIterator;
 import java.util.TimeZone;
 import java.util.concurrent.ExecutionException;
 
@@ -108,10 +109,10 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth.AuthStateListener mAuthListener;
     private EditText etInput;
     private boolean firstLogIn = false;
-    private ArrayList<ArrayList<?>> itemsArray;
-    private ArrayList<CalendarItem> calendarItemArr;
-    private ArrayList<UserItem> userItemArr;
-    private ArrayList<UserItem> completedItemsArr;
+    private LinkedList<LinkedList<?>> itemsArray;
+    private LinkedList<CalendarItem> calendarItemArr;
+    private LinkedList<UserItem> userItemsList;
+    private LinkedList<UserItem> completedItemsList;
     private ExpandableListView expandableListView;
     private UnlockBar unlock;
     private SlidrConfig config;
@@ -142,7 +143,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         getWindow().getDecorView().setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -169,12 +169,12 @@ public class MainActivity extends AppCompatActivity {
                             // firebase database
                             toDoDatabase = Firebase.getToDoRef();
                             completedDatabase = Firebase.getCompletedRef();
-                            if (userItemArr == null || completedItemsArr == null) {
+                            if (userItemsList == null || completedItemsList == null) {
                                 Log.d("setupitem", "auth ");
                                 setUpItemList();
                             }
-                            userItemArr.clear();
-                            completedItemsArr.clear();
+                            userItemsList.clear();
+                            completedItemsList.clear();
                             setUpToDoListener();
                             setUpCompletedListener();
                             itemsAdapter.notifyDataSetChanged();
@@ -334,21 +334,23 @@ public class MainActivity extends AppCompatActivity {
             public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
                 Log.d("todochild", "onChildAdded:" + dataSnapshot.getKey());
                 // A new todo item has been added, add it to the displayed list
-                userItemArr.add(0, dataSnapshot.getValue(UserItem.class));
+                userItemsList.add(0, dataSnapshot.getValue(UserItem.class));
                 itemsAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String previousChildName) {
                 Log.d("todochild", "onChildChanged:" + dataSnapshot.getKey());
+                UserItem newItem = dataSnapshot.getValue(UserItem.class);
+                changeToDoItem(newItem.getKey(), newItem.getName(), newItem.isSelected());
+                itemsAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
                 Log.d("todochild", "onChildRemoved:" + dataSnapshot.getKey());
-                removeToDoItem(dataSnapshot.getValue(UserItem.class).name);
+                removeToDoItem(dataSnapshot.getValue(UserItem.class).getKey());
                 itemsAdapter.notifyDataSetChanged();
-//                // ...
             }
 
             @Override
@@ -365,10 +367,23 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
-            private void removeToDoItem(String name){
-                for (int i = 0; i < userItemArr.size(); i++){
-                    if (name.equals(userItemArr.get(i).name)){
-                        userItemArr.remove(i);
+            private void removeToDoItem(String key){
+                ListIterator<UserItem> iterator = userItemsList.listIterator();
+                while (iterator.hasNext()){
+                    if (key.equals(iterator.next().getKey())){
+                        iterator.remove();
+                        break;
+                    }
+                }
+            }
+
+            private void changeToDoItem(String key, String name, Boolean selected){
+                ListIterator<UserItem> iterator = userItemsList.listIterator();
+                while (iterator.hasNext()){
+                    UserItem item = iterator.next();
+                    if (key.equals(item.getKey())){
+                        item.setName(name);
+                        item.setSelected(selected);
                         break;
                     }
                 }
@@ -383,19 +398,22 @@ public class MainActivity extends AppCompatActivity {
             public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
                 Log.d("completedchild", "onChildAdded:" + dataSnapshot.getKey());
                 // A new todo item has been added, add it to the displayed list
-                completedItemsArr.add(0, dataSnapshot.getValue(UserItem.class));
+                completedItemsList.add(0, dataSnapshot.getValue(UserItem.class));
                 itemsAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String previousChildName) {
                 Log.d("completedchild", "onChildChanged:" + dataSnapshot.getKey());
+                UserItem newItem = dataSnapshot.getValue(UserItem.class);
+                changeCompletedItem(newItem.getKey(), newItem.getName(), newItem.isSelected());
+                itemsAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
                 Log.d("completedchild", "onChildRemoved:" + dataSnapshot.getKey());
-                removeCompletedItem(dataSnapshot.getValue(UserItem.class).name);
+                removeCompletedItem(dataSnapshot.getValue(UserItem.class).getKey());
                 itemsAdapter.notifyDataSetChanged();
             }
 
@@ -413,10 +431,23 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
-            private void removeCompletedItem(String name){
-                for (int i = 0; i < completedItemsArr.size(); i++){
-                    if (name.equals(completedItemsArr.get(i).name)){
-                        completedItemsArr.remove(i);
+            private void removeCompletedItem(String key){
+                ListIterator<UserItem> iterator = completedItemsList.listIterator();
+                while (iterator.hasNext()){
+                    if (key.equals(iterator.next().getKey())){
+                        iterator.remove();
+                        break;
+                    }
+                }
+            }
+
+            private void changeCompletedItem(String key, String name, Boolean selected){
+                ListIterator<UserItem> iterator = completedItemsList.listIterator();
+                while (iterator.hasNext()){
+                    UserItem item = iterator.next();
+                    if (key.equals(item.getKey())){
+                        item.setName(name);
+                        item.setSelected(selected);
                         break;
                     }
                 }
@@ -425,7 +456,7 @@ public class MainActivity extends AppCompatActivity {
         completedDatabase.addChildEventListener(childEventListener);
     }
 
-    private void getCalendarEvents(ArrayList<CalendarItem> calendarItems){
+    private void getCalendarEvents(LinkedList<CalendarItem> calendarItems){
         if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(SettingsActivity.PREF_KEY_CALENDAR,true)
                 && checkCallingOrSelfPermission("android.permission.READ_CALENDAR")== PackageManager.PERMISSION_GRANTED
                 && checkCallingOrSelfPermission("android.permission.WRITE_CALENDAR")== PackageManager.PERMISSION_GRANTED) {
@@ -528,15 +559,15 @@ public class MainActivity extends AppCompatActivity {
 
     private void setUpItemList(){
         Log.d("setupitem", "setUpItemList: " + String.valueOf(firstLogIn));
-        userItemArr = new ArrayList<UserItem>();
-        completedItemsArr =new ArrayList<UserItem>();
-        calendarItemArr = new ArrayList<CalendarItem>();
+        userItemsList = new LinkedList<UserItem>();
+        completedItemsList =new LinkedList<UserItem>();
+        calendarItemArr = new LinkedList<CalendarItem>();
         beginTime = Calendar.getInstance();
         getCalendarEvents(calendarItemArr);
-        itemsArray = new ArrayList<ArrayList<?>>();
+        itemsArray = new LinkedList<LinkedList<?>>();
         itemsArray.add(calendarItemArr);
-        itemsArray.add(userItemArr);
-        itemsArray.add(completedItemsArr);
+        itemsArray.add(userItemsList);
+        itemsArray.add(completedItemsList);
         itemsAdapter = new ItemsAdapter(this,itemsArray);
         expandableListView=(ExpandableListView) findViewById(R.id.exlvItems);
         expandableListView.setAdapter(itemsAdapter);
@@ -597,6 +628,7 @@ public class MainActivity extends AppCompatActivity {
             decorView.setSystemUiVisibility(uiOptions);
         }
     }
+
     protected void onResume() {
         Log.d("onResume", "should be visible");
         (findViewById(R.id.slidable_content)).setAlpha(1f);
@@ -714,7 +746,6 @@ public class MainActivity extends AppCompatActivity {
         if (isFirstStart && !firstLogIn) {
             doIntro(getPrefs);
         }
-
         else {
             if (transfer) {
                 //open database

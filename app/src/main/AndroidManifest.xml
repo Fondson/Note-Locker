@@ -37,8 +37,7 @@
             android:screenOrientation="portrait"
             android:excludeFromRecents = "true"
             android:theme="@style/Theme.AppCompat.NoActionBar"
-            android:showOnLockScreen="true"
-            android:windowSoftInputMode="stateAlwaysHidden">
+            android:showOnLockScreen="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

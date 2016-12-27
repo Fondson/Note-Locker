@@ -1,22 +1,29 @@
 package com.dev.fondson.NoteLocker;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Service;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Paint;
 import android.os.Build;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
+import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AutoCompleteTextView;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -27,13 +34,15 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Calendar;
+import java.util.LinkedList;
 import java.util.regex.Pattern;
 
 /**
@@ -45,17 +54,17 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
     public static int COMPLETED = 2;
     private static String[] HEADERS = {"Agenda","To do" ,"Completed"};
     private Context context;
-    private ArrayList<ArrayList<?>> state;
-    private ArrayList<UserItem> notCompletedItems;
-    private ArrayList<UserItem> completedItems;
-    private ArrayList<UserItem> calendarItems;
+    private LinkedList<LinkedList<?>> state;
+    private LinkedList<UserItem> notCompletedItems;
+    private LinkedList<UserItem> completedItems;
+    private LinkedList<UserItem> calendarItems;
 
-    public ItemsAdapter(Context context, ArrayList<ArrayList<?>> state){
+    public ItemsAdapter(Context context, LinkedList<LinkedList<?>> state){
         this.context=context;
         this.state=state;
-        calendarItems=(ArrayList<UserItem>)state.get(CALENDAR);
-        notCompletedItems=(ArrayList<UserItem>)state.get(NOT_COMPLETED);
-        completedItems=(ArrayList<UserItem>)state.get(COMPLETED);
+        calendarItems=(LinkedList<UserItem>)state.get(CALENDAR);
+        notCompletedItems=(LinkedList<UserItem>)state.get(NOT_COMPLETED);
+        completedItems=(LinkedList<UserItem>)state.get(COMPLETED);
     }
 
     @Override
@@ -109,7 +118,7 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
         headerText = HEADERS[groupPosition] + " (" + getChildrenCount(groupPosition) + ")";
         if (groupPosition==CALENDAR) {
             headerText += " for " + formatter.format(Calendar.getInstance().getTime());
-            if (!PreferenceManager.getDefaultSharedPreferences(context).getBoolean(SettingsActivity.PREF_KEY_CALENDAR,true)
+            if (!PreferenceManager.getDefaultSharedPreferences(context).getBoolean(SettingsActivity.PREF_KEY_CALENDAR,false)
                     || context.checkCallingOrSelfPermission("android.permission.READ_CALENDAR")!= PackageManager.PERMISSION_GRANTED
                     || context.checkCallingOrSelfPermission("android.permission.WRITE_CALENDAR")!= PackageManager.PERMISSION_GRANTED) {
                 header.setVisibility(View.GONE);
@@ -234,7 +243,7 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
                             @Override
                             public void run() {
                                 Firebase.removeToDoItem(userItem.getKey());
-                                Firebase.writeNewCompletedItem(userItem.name,userItem.isSelected());
+                                Firebase.writeNewCompletedItem(userItem.getName(),userItem.isSelected());
                                 enableDisableViewGroupClickable(parent, true);
                             }
                         }, 250);
@@ -247,49 +256,94 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
                 @Override
                 public boolean onLongClick(View view) {
                     final EditText editText = (EditText) view;
-                    editText.setKeyListener(MainActivity.listener);
-                    editText.requestFocus();
-                    editText.setSelection(editText.getText().length());
+//                    editText.setKeyListener(MainActivity.listener);
+//                    editText.requestFocus();
+//                    editText.setSelection(editText.getText().length());
+//
+//                    InputMethodManager imm = (InputMethodManager) context.getSystemService(Service.INPUT_METHOD_SERVICE);
+//                    imm.showSoftInput(editText, InputMethodManager.SHOW_FORCED);
+//                    editText.setOnEditorActionListener(new EditText.OnEditorActionListener() {
+//                                                           @Override
+//                                                           public boolean onEditorAction(TextView arg0, int arg1, KeyEvent event) {
+//                                                               //Pattern.quote is used to escape special regex characters in userItem if present
+//                                                               if (!(Pattern.quote(editText.getText().toString().trim()).matches(Pattern.quote(userItem.getName()))) && !(Pattern.quote(editText.getText().toString().trim()).matches(""))) {
+//                                                                  String newItemName = editText.getText().toString().trim();
+//                                                                   userItem.setName(newItemName);
+//                                                                   Firebase.updateToDoItem(userItem);
+//                                                               }
+//                                                               editText.setKeyListener(null);
+//                                                               hideKeyboard();
+//                                                               fullScreencall();
+//                                                               editText.setText(userItem.getName());
+//                                                               return true;
+//                                                           }
+//
+//                                                           public void hideKeyboard() {
+//                                                               View view = cView;
+//                                                               if (view != null) {
+//                                                                   InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
+//                                                                   imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+//                                                               }
+//                                                           }
 
-                    InputMethodManager imm = (InputMethodManager) context.getSystemService(Service.INPUT_METHOD_SERVICE);
-                    imm.showSoftInput(editText, InputMethodManager.SHOW_FORCED);
-                    editText.setOnEditorActionListener(new EditText.OnEditorActionListener() {
-                                                           @Override
-                                                           public boolean onEditorAction(TextView arg0, int arg1, KeyEvent event) {
-                                                               //Pattern.quote is used to escape special regex characters in userItem if present
-                                                               if (!(Pattern.quote(editText.getText().toString().trim()).matches(Pattern.quote(userItem.getName()))) && !(Pattern.quote(editText.getText().toString().trim()).matches(""))) {
-                                                                  String newItemName = editText.getText().toString().trim();
-                                                                   userItem.setName(newItemName);
-                                                                   Firebase.updateToDoItem(userItem);
-                                                               }
-                                                               editText.setKeyListener(null);
-                                                               hideKeyboard();
-                                                               fullScreencall();
-                                                               editText.setText(userItem.getName());
-                                                               return true;
-                                                           }
-
-                                                           public void hideKeyboard() {
-                                                               View view = cView;
-                                                               if (view != null) {
-                                                                   InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
-                                                                   imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-                                                               }
-                                                           }
-                                                            public void fullScreencall() {
-                                                                if(Build.VERSION.SDK_INT < 19){ //19 or above api
-                                                                    View v = ((Activity)context).getWindow().getDecorView();
-                                                                    v.setSystemUiVisibility(View.GONE);
-                                                                } else {
-                                                                    //for lower api versions.
-                                                                    View decorView = ((Activity)context).getWindow().getDecorView();
-                                                                    int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-                                                                    decorView.setSystemUiVisibility(uiOptions);
-                                                                }
-                                                            }
-                                                       }
-                    );
+//                                                       }
+//                    );
+                    showTextDialog(editText);
                     return true;
+                }
+
+                private void showTextDialog(final EditText editText){
+                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                    String oldItem = editText.getText().toString();
+
+                    builder.setTitle("Change item:");
+                    // Inflate new view
+                    View viewInflated = LayoutInflater.from(context).inflate(R.layout.edit_item, null);
+                    // Set up the input
+                    final EditText input = (EditText) viewInflated.findViewById(R.id.newItemInput);
+                    // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+                    input.setText(oldItem);
+                    input.setSelection(editText.getText().length());
+                    builder.setView(viewInflated);
+
+                    // Set up the buttons
+                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            //Pattern.quote is used to escape special regex characters if present
+                            if (!(input.getText().toString().trim()).isEmpty()) {
+                                String newItemName = input.getText().toString().trim();
+                                userItem.setName(newItemName);
+                                Firebase.updateToDoItem(userItem);
+                                editText.setText(newItemName);
+                            }else{
+                                Toast.makeText(context, "Invalid item.",
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                            fullScreencall();
+                        }
+                    });
+                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.cancel();
+                            fullScreencall();
+                        }
+                    });
+
+                    builder.show();
+                }
+
+                private void fullScreencall() {
+                    if(Build.VERSION.SDK_INT < 19){ //19 or above api
+                        View v = ((Activity)context).getWindow().getDecorView();
+                        v.setSystemUiVisibility(View.GONE);
+                    } else {
+                        //for lower api versions.
+                        View decorView = ((Activity)context).getWindow().getDecorView();
+                        int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+                        decorView.setSystemUiVisibility(uiOptions);
+                    }
                 }
             });
             holder.imageButton.setOnClickListener(new View.OnClickListener() {

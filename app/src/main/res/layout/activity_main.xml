@@ -6,8 +6,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.dev.fondson.NoteLocker.MainActivity"
-    android:clickable="true"
-    android:focusableInTouchMode="false"
     android:id="@+id/rl">
 
     <ImageView
@@ -61,7 +59,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="45dp"
                     android:id="@+id/editText"
-                    android:imeOptions="actionNext"
+                    android:imeOptions="actionDone"
                     android:inputType="text|textCapSentences"
                     android:hint="@string/editText"
                     android:theme="@android:style/Widget.Material.Light.EditText"
@@ -71,7 +69,7 @@
                     android:layout_weight=".25"
                     android:maxLines="1"
                     android:textIsSelectable="true"
-                    android:layout_gravity="center" />
+                    android:layout_gravity="center"/>
 
                 <ImageButton
                     android:layout_width="fill_parent"
