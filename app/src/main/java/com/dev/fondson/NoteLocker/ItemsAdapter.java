@@ -52,7 +52,7 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
     public static int CALENDAR = 0;
     public static int NOT_COMPLETED = 1;
     public static int COMPLETED = 2;
-    private static String[] HEADERS = {"Agenda","To do" ,"Completed"};
+    private static String[] HEADERS = {"Agenda", "To do", "Completed"};
     private Context context;
     private LinkedList<LinkedList<?>> state;
     private LinkedList<UserItem> notCompletedItems;
@@ -114,9 +114,9 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
         String headerText;
         TextView header= (TextView) convertView.findViewById(R.id.header);
         header.setVisibility(View.VISIBLE);
-        DateFormat formatter = new SimpleDateFormat("E-MMM dd");
         headerText = HEADERS[groupPosition] + " (" + getChildrenCount(groupPosition) + ")";
         if (groupPosition==CALENDAR) {
+            DateFormat formatter = new SimpleDateFormat("E-MMM dd");
             headerText += " for " + formatter.format(Calendar.getInstance().getTime());
             if (!PreferenceManager.getDefaultSharedPreferences(context).getBoolean(SettingsActivity.PREF_KEY_CALENDAR,false)
                     || context.checkCallingOrSelfPermission("android.permission.READ_CALENDAR")!= PackageManager.PERMISSION_GRANTED

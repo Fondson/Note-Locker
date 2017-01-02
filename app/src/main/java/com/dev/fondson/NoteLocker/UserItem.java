@@ -12,9 +12,8 @@ public class UserItem {
     private String name = null;
     private boolean selected = false;
 
-    public UserItem(){
-
-    }
+    // constructor used by Firebase
+    public UserItem(){}
 
     public UserItem(long id, String name, boolean selected) {
         this.id = id;

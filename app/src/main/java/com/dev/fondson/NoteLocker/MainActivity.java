@@ -101,8 +101,9 @@ public class MainActivity extends AppCompatActivity {
     private static LinearLayout ll;
     public static GoogleApiClient mGoogleApiClient;
     public static FirebaseAuth mAuth;
-    public static DatabaseReference toDoDatabase;
-    public static DatabaseReference completedDatabase;
+    private static FirebaseDatabase firebaseDatabase;
+    private static DatabaseReference toDoDatabase;
+    private static DatabaseReference completedDatabase;
     public static Handler mHandler;
     public static boolean loggingOut;
     public static ItemsAdapter itemsAdapter;
@@ -114,7 +115,6 @@ public class MainActivity extends AppCompatActivity {
     private LinkedList<UserItem> userItemsList;
     private LinkedList<UserItem> completedItemsList;
     private ExpandableListView expandableListView;
-    private UnlockBar unlock;
     private SlidrConfig config;
     private SlidrInterface slidrInterface;
     private Calendar beginTime;
@@ -153,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // set up firebase authentication
-        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+        firebaseDatabase = Firebase.getDatabaseInstance();
         mAuth = FirebaseAuth.getInstance();
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -457,7 +457,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getCalendarEvents(LinkedList<CalendarItem> calendarItems){
-        if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(SettingsActivity.PREF_KEY_CALENDAR,true)
+        if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(SettingsActivity.PREF_KEY_CALENDAR,false)
                 && checkCallingOrSelfPermission("android.permission.READ_CALENDAR")== PackageManager.PERMISSION_GRANTED
                 && checkCallingOrSelfPermission("android.permission.WRITE_CALENDAR")== PackageManager.PERMISSION_GRANTED) {
             try {
@@ -633,6 +633,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d("onResume", "should be visible");
         (findViewById(R.id.slidable_content)).setAlpha(1f);
         fullScreencall();
+        hideKeyboard();
         if (userEmail != null && calendarItemArr != null) {
             if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(SettingsActivity.PREF_KEY_CALENDAR, false)
                     && checkCallingOrSelfPermission("android.permission.READ_CALENDAR") == PackageManager.PERMISSION_GRANTED
@@ -780,11 +781,13 @@ public class MainActivity extends AppCompatActivity {
             }
             mAuth.addAuthStateListener(mAuthListener);
         }
+        hideKeyboard();
         super.onStart();
     }
 
     @Override
     public void onStop() {
+        hideKeyboard();
         if (mAuthListener != null) {
             mAuth.removeAuthStateListener(mAuthListener);
         }

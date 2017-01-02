@@ -182,7 +182,7 @@ public class SettingsActivity extends AppCompatActivity {
                             && getContext().checkCallingOrSelfPermission("android.permission.WRITE_CALENDAR")!= PackageManager.PERMISSION_GRANTED){
                         requestPermissions(MainActivity.calendarPerms, MainActivity.CALENDAR_PERMS);
                     }
-//                    break;
+                    break;
 //                case "pref_key_transfer_data":
 //                    Log.d("transfer", "onPreferenceClick: transfer");
 //                    if (MainActivity.userEmail != null) {
@@ -221,7 +221,6 @@ public class SettingsActivity extends AppCompatActivity {
 
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-
             if (key.equals("pref_key_darkTint")) {
                 // Set seekbar summary :
                 int alphaValue = sharedPreferences.getInt("pref_key_darkTint", 50);

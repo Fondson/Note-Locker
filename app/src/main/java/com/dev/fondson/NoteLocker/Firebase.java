@@ -25,49 +25,73 @@ import java.util.Map;
 
 public class Firebase {
 
+    private static FirebaseDatabase firebaseDatabase;
+    private static DatabaseReference toDoDatabase;
+    private static DatabaseReference completedDatabase;
+
+    static public FirebaseDatabase getDatabaseInstance(){
+        if (firebaseDatabase == null){
+            firebaseDatabase = FirebaseDatabase.getInstance();
+            firebaseDatabase.setPersistenceEnabled(true);
+        }
+        return firebaseDatabase;
+    }
+
     static public DatabaseReference getToDoRef() {
-        return FirebaseDatabase.getInstance().getReference().child("todo").child(MainActivity.userEmail.replace(".","\"(dot)\""));
+        toDoDatabase = firebaseDatabase.getReference().child("todo").child(MainActivity.userEmail.replace(".","\"(dot)\""));
+        return toDoDatabase;
     }
 
     static public DatabaseReference getCompletedRef() {
-        return FirebaseDatabase.getInstance().getReference().child("completed").child(MainActivity.userEmail.replace(".","\"(dot)\""));
+        completedDatabase = firebaseDatabase.getReference().child("completed").child(MainActivity.userEmail.replace(".","\"(dot)\""));
+        return completedDatabase;
     }
 
     static public void writeNewToDoItem(String name, boolean selected){
-        String key= MainActivity.toDoDatabase.push().getKey();
-        UserItem item = new UserItem(key, name, selected);
-        Map<String, Object> itemValues = item.toMap();
-        Map<String, Object> childUpdates = new HashMap<>();
-        childUpdates.put(key, itemValues);
-        MainActivity.toDoDatabase.updateChildren(childUpdates);
+        if (toDoDatabase != null) {
+            String key = toDoDatabase.push().getKey();
+            UserItem item = new UserItem(key, name, selected);
+            Map<String, Object> itemValues = item.toMap();
+            Map<String, Object> childUpdates = new HashMap<>();
+            childUpdates.put(key, itemValues);
+            toDoDatabase.updateChildren(childUpdates);
+        }
     }
 
     static public void removeToDoItem(String key){
-        Map<String,Object> childUpdates = new HashMap<>();
-        childUpdates.put(key, null);
-        MainActivity.toDoDatabase.updateChildren(childUpdates);
+        if (toDoDatabase != null) {
+            Map<String, Object> childUpdates = new HashMap<>();
+            childUpdates.put(key, null);
+            toDoDatabase.updateChildren(childUpdates);
+        }
     }
 
     static public void updateToDoItem(UserItem item) {
-        Map<String, Object> itemValues = item.toMap();
-        Map<String,Object> childUpdates = new HashMap<>();
-        childUpdates.put(item.getKey(), itemValues);
-        MainActivity.toDoDatabase.updateChildren(childUpdates);
+        if (toDoDatabase != null) {
+            Map<String, Object> itemValues = item.toMap();
+            Map<String, Object> childUpdates = new HashMap<>();
+            childUpdates.put(item.getKey(), itemValues);
+            toDoDatabase.updateChildren(childUpdates);
+        }
     }
 
     static public void writeNewCompletedItem(String name, boolean selected){
-        String key= MainActivity.completedDatabase.push().getKey();
-        UserItem item = new UserItem(key, name, selected);
-        Map<String, Object> itemValues = item.toMap();
-        Map<String,Object> childUpdates = new HashMap<>();
-        childUpdates.put(key, itemValues);
-        MainActivity.completedDatabase.updateChildren(childUpdates);
+        if (completedDatabase != null) {
+            String key = completedDatabase.push().getKey();
+            UserItem item = new UserItem(key, name, selected);
+            Map<String, Object> itemValues = item.toMap();
+            Map<String, Object> childUpdates = new HashMap<>();
+            childUpdates.put(key, itemValues);
+            completedDatabase.updateChildren(childUpdates);
+        }
     }
 
     static public void removeCompletedItem(String key){
-        Map<String,Object> childUpdates = new HashMap<>();
-        childUpdates.put(key, null);
-        MainActivity.completedDatabase.updateChildren(childUpdates);
+        if (completedDatabase != null) {
+            Map<String, Object> childUpdates = new HashMap<>();
+            childUpdates.put(key, null);
+            completedDatabase.updateChildren(childUpdates);
+        }
     }
 
     static public void authWithGoogle(GoogleSignInAccount acct, FirebaseAuth mAuth, final Context context) {
