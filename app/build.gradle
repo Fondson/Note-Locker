@@ -18,6 +18,9 @@ android {
         }
     }
 
+    dataBinding {
+        enabled = true
+    }
     compileSdkVersion 24
     buildToolsVersion "23.0.1"
     defaultConfig {
@@ -42,6 +45,9 @@ repositories {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
+    compile 'com.android.support:support-v4:24.2.1'
+    compile 'com.android.support:recyclerview-v7:24.2.1'
+    compile 'com.bignerdranch.android:expandablerecyclerview:3.0.0-RC1'
     compile 'com.android.support:appcompat-v7:24.2.1'
     compile 'com.github.paolorotolo:appintro:4.0.0'
     compile 'com.theartofdev.edmodo:android-image-cropper:2.2.+'

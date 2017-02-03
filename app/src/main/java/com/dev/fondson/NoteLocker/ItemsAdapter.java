@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Paint;
 import android.os.Build;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +24,9 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.dev.fondson.NoteLocker.databinding.RowBinding;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.LinkedList;
@@ -107,6 +111,7 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
                     || context.checkCallingOrSelfPermission("android.permission.WRITE_CALENDAR")!= PackageManager.PERMISSION_GRANTED) {
                 header.setVisibility(View.GONE);
                 ((ExpandableListView)parent).collapseGroup(CALENDAR);
+                Log.d("caldebug", "hiding cal");
             }
         }
         header.setText(headerText);
@@ -124,14 +129,17 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
         TextView timeEnd;
         TextView title;
         TextView location;
+        RowBinding binding;
     }
     @Override
     public View getChildView(final int groupPosition, final int childPosition, boolean isLastChild, View convertView, final ViewGroup parent) {
         final ViewHolder holder;
-        if(convertView==null){
+        if(convertView == null){
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = inflater.inflate(R.layout.row,parent,false);
             holder = new ViewHolder();
+            holder.binding = RowBinding.inflate(inflater, parent, false);//inflater.inflate(R.layout.row,parent,false);
+
+            convertView = holder.binding.getRoot();
             holder.name = (EditText) convertView.findViewById(R.id.editText1);
             holder.darkTint = (ImageView) convertView.findViewById(R.id.itemDarkTint);
             holder.checkBox = (CheckBox) convertView.findViewById(R.id.checkBox1);
@@ -144,7 +152,9 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
             holder.location = (TextView) convertView.findViewById(R.id.txtLocation);
             convertView.setTag(holder);
         }
-        else{ holder=(ViewHolder) convertView.getTag();}
+        else{
+            holder=(ViewHolder) convertView.getTag();
+        }
         holder.name.setKeyListener(null);
         //holder.darkTint.setBackgroundColor(darkColour);
         holder.name.setPaintFlags(0);
@@ -162,6 +172,7 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
         final View row = convertView;
         if (groupPosition==COMPLETED) {
             final UserItem userItem = (UserItem)getChild(groupPosition,childPosition);
+            holder.binding.setItem(userItem);
             holder.name.setText(userItem.getName());
             holder.checkBox.setChecked(true);
             holder.name.setPaintFlags(holder.name.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
@@ -208,6 +219,7 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
         }
         else if (groupPosition==NOT_COMPLETED){
             final UserItem userItem = (UserItem)getChild(groupPosition,childPosition);
+            holder.binding.setItem(userItem);
             holder.name.setText(userItem.getName());
             holder.checkBox.setChecked(false);
             holder.imageButton.setImageDrawable(context.getResources().getDrawable(R.drawable.star_selector));
