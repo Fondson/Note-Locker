@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
     tools:context="com.dev.fondson.NoteLocker.MainActivity"
     android:id="@+id/rl">
 
@@ -19,11 +20,8 @@
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingBottom="@dimen/activity_vertical_margin"
-        android:paddingLeft="@dimen/activity_horizontal_margin"
-        android:paddingRight="@dimen/activity_horizontal_margin"
-        android:paddingTop="@dimen/activity_vertical_margin"
-        android:id="@+id/llMain">
+        android:id="@+id/llMain"
+        android:paddingBottom="@dimen/activity_vertical_margin">
 
         <TextClock
             android:layout_width="wrap_content"
@@ -40,7 +38,7 @@
 
         <LinearLayout
             android:orientation="vertical"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingTop="10dp"
             android:layout_weight="1"
@@ -72,8 +70,8 @@
                     android:layout_gravity="center"/>
 
                 <ImageButton
-                    android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
                     android:id="@+id/btnSettings"
                     android:src="@drawable/settings"
                     android:visibility="visible"
@@ -82,16 +80,17 @@
                     android:layout_weight="2"
                     android:scaleType="fitXY"
                     android:tint="#535353" />
-
             </LinearLayout>
 
             <ExpandableListView
-                android:layout_width="fill_parent"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:requiresFadingEdge = "vertical"
                 android:groupIndicator="@null"
                 android:id="@+id/exlvItems"
-                android:visibility="visible" />
+                android:visibility="visible"
+                android:divider="@null"
+                android:dividerHeight="4dp"/>
 
         </LinearLayout>
 
@@ -109,15 +108,7 @@
                     android:textColor="@android:color/white"
                     android:textSize="18sp"
                     android:textStyle="italic"/>
-
-                    <!--<com.dev.fondson.NoteLocker.UnlockBar
-                    android:id="@+id/unlock"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-                    -->
-
         </com.facebook.shimmer.ShimmerFrameLayout>
-
 
     </LinearLayout>
 

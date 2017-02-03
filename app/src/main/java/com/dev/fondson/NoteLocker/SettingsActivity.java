@@ -74,7 +74,7 @@ public class SettingsActivity extends AppCompatActivity {
                         BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
 
                         Bitmap bitmap = BitmapFactory.decodeStream(bufferedInputStream);
-                        bitmap =Bitmap.createScaledBitmap(bitmap, 2048, 2048, true);
+                        bitmap = Bitmap.createScaledBitmap(bitmap, 2048, 2048, true);
                         Drawable wallpaper= new BitmapDrawable(getResources(), bitmap);
                         MainActivity.getBackground().setBackground(wallpaper);
                         if (wallpaperFile.exists())
@@ -87,6 +87,7 @@ public class SettingsActivity extends AppCompatActivity {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
+                        new PaletteTask().execute(bitmap);
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     }

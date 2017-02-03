@@ -1,7 +1,5 @@
 package com.dev.fondson.NoteLocker;
 
-import android.accounts.Account;
-import android.accounts.AccountManager;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -15,7 +13,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -23,7 +21,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -32,7 +29,6 @@ import android.provider.CalendarContract;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.format.Time;
 import android.text.method.KeyListener;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -59,13 +55,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -77,13 +68,10 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.LinkedList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.ListIterator;
 import java.util.TimeZone;
-import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity {
-
     public static final int WALLPAPER_CODE = 10;
     public static final int GOOGLE_ACCOUNT_SIGN_IN_CODE = 9;
     public static final int FIREBASE_MESSAGE_CODE = 1;
@@ -206,17 +194,19 @@ public class MainActivity extends AppCompatActivity {
         WALLPAPER_PATH = getFilesDir().getAbsolutePath();
         WALLPAPER_FULL_PATH = WALLPAPER_PATH + "/wallpaper.jpg";
         File wallpaperFile= new File(WALLPAPER_FULL_PATH);
+        Drawable wallpaper;
         if(wallpaperFile.exists()
-                && this.checkCallingOrSelfPermission("android.permission.READ_EXTERNAL_STORAGE")== PackageManager.PERMISSION_GRANTED) {
-            Drawable wallpaper=Drawable.createFromPath(WALLPAPER_FULL_PATH);
+                && this.checkCallingOrSelfPermission("android.permission.READ_EXTERNAL_STORAGE") == PackageManager.PERMISSION_GRANTED) {
+            wallpaper=Drawable.createFromPath(WALLPAPER_FULL_PATH);
             rl.setBackground(wallpaper);
         }
         //set default wallpaper
         else{
             WallpaperManager wallpaperManager = WallpaperManager.getInstance(this);
-            Drawable wallpaperDrawable = wallpaperManager.getDrawable();
-            rl.setBackground(wallpaperDrawable);
+            wallpaper = wallpaperManager.getDrawable();
+            rl.setBackground(wallpaper);
         }
+        new PaletteTask().execute(drawableToBitmap(wallpaper));
 
         ll = (LinearLayout) findViewById(R.id.llMain);
         ll.setOnTouchListener(new View.OnTouchListener() {
@@ -581,26 +571,6 @@ public class MainActivity extends AppCompatActivity {
         itemsAdapter.notifyDataSetChanged();
     }
 
-//    public static void getAllItems(Cursor cursor, boolean todo){;
-//        // Reset cursor to start, checking to see if there's data:
-//        if (cursor.moveToFirst()) {
-//            do {
-//                // Process the data:
-//                int id = cursor.getInt(DBAdapter.COL_ROWID);
-//                String item = cursor.getString(DBAdapter.COL_ITEM);
-//                boolean selected=false;
-//                if (cursor.getInt(DBAdapter.COL_SELECTED)==1){
-//                    selected=true;
-//                }
-//                if (todo) {
-//                    Firebase.writeNewToDoItem(item, selected);
-//                }else{
-//                    Firebase.writeNewCompletedItem(item, selected);
-//                }
-//            } while(cursor.moveToNext());
-//        }
-//    }
-
     public static ImageView getDarkTint(){
         return darkTint;
     }
@@ -686,6 +656,28 @@ public class MainActivity extends AppCompatActivity {
         return result;
     }
 
+    public Bitmap drawableToBitmap (Drawable drawable) {
+        Bitmap bitmap = null;
+
+        if (drawable instanceof BitmapDrawable) {
+            BitmapDrawable bitmapDrawable = (BitmapDrawable) drawable;
+            if(bitmapDrawable.getBitmap() != null) {
+                return bitmapDrawable.getBitmap();
+            }
+        }
+
+        if(drawable.getIntrinsicWidth() <= 0 || drawable.getIntrinsicHeight() <= 0) {
+            bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888); // Single color bitmap will be created of 1x1 pixel
+        } else {
+            bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        }
+
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+        return bitmap;
+    }
+
     public boolean isOnline() {
         ConnectivityManager cm =
                 (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -748,23 +740,6 @@ public class MainActivity extends AppCompatActivity {
             doIntro(getPrefs);
         }
         else {
-//            if (transfer) {
-//                //open database
-//                db = new DBAdapter(this);
-//                db.open();
-//                try {
-//                    db.switchTable(DBAdapter.DATABASE_TABLE_ITEMS);
-//                    getAllItems(db.getAllRows(), true);
-//                    db.switchTable(DBAdapter.DATABASE_TABLE_COMPLETED_ITEMS);
-//                    getAllItems(db.getAllRows(), false);
-//                    db.dropTables();
-//                } catch (Exception e) {
-//                }
-//                db.close();
-//                Toast.makeText(this, "Transfer complete.\nLocal database data will be erased.",
-//                        Toast.LENGTH_SHORT).show();
-//                transfer = false;
-//            }
             if (userEmail == null && isOnline()) {
                 Log.d("onStart", "online");
                 if (!mGoogleApiClient.isConnected()) {

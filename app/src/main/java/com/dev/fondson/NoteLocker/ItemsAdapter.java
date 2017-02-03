@@ -2,28 +2,17 @@ package com.dev.fondson.NoteLocker;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Paint;
 import android.os.Build;
-import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.speech.tts.TextToSpeech;
-import android.support.v7.app.AppCompatActivity;
-import android.text.InputType;
-import android.util.Log;
-import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.AutoCompleteTextView;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -32,18 +21,12 @@ import android.widget.ExpandableListView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import org.w3c.dom.Text;
-
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.LinkedList;
 import java.util.Calendar;
-import java.util.LinkedList;
-import java.util.regex.Pattern;
 
 /**
  * Created by Fondson on 2016-05-16.
@@ -52,6 +35,7 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
     public static int CALENDAR = 0;
     public static int NOT_COMPLETED = 1;
     public static int COMPLETED = 2;
+    public static int darkColour = 0;
     private static String[] HEADERS = {"Agenda", "To do", "Completed"};
     private Context context;
     private LinkedList<LinkedList<?>> state;
@@ -149,7 +133,7 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
             convertView = inflater.inflate(R.layout.row,parent,false);
             holder = new ViewHolder();
             holder.name = (EditText) convertView.findViewById(R.id.editText1);
-            holder.darkTint = (ImageView) convertView.findViewById(R.id.ivCalendarDarkTint);
+            holder.darkTint = (ImageView) convertView.findViewById(R.id.itemDarkTint);
             holder.checkBox = (CheckBox) convertView.findViewById(R.id.checkBox1);
             holder.imageButton = (ImageButton) convertView.findViewById(R.id.imageButton1);
             holder.time = (LinearLayout) convertView.findViewById(R.id.llTime);
@@ -160,9 +144,9 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
             holder.location = (TextView) convertView.findViewById(R.id.txtLocation);
             convertView.setTag(holder);
         }
-        else{holder=(ViewHolder) convertView.getTag();}
+        else{ holder=(ViewHolder) convertView.getTag();}
         holder.name.setKeyListener(null);
-        holder.darkTint.setVisibility(View.GONE);
+        //holder.darkTint.setBackgroundColor(darkColour);
         holder.name.setPaintFlags(0);
 
         holder.checkBox.setOnCheckedChangeListener(null);
@@ -174,6 +158,7 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
         holder.name.setVisibility(View.VISIBLE);
         holder.time.setVisibility(View.GONE);
         holder.event.setVisibility(View.GONE);
+
         final View row = convertView;
         if (groupPosition==COMPLETED) {
             final UserItem userItem = (UserItem)getChild(groupPosition,childPosition);
@@ -221,7 +206,6 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
 
             });
         }
-
         else if (groupPosition==NOT_COMPLETED){
             final UserItem userItem = (UserItem)getChild(groupPosition,childPosition);
             holder.name.setText(userItem.getName());
@@ -256,38 +240,6 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
                 @Override
                 public boolean onLongClick(View view) {
                     final EditText editText = (EditText) view;
-//                    editText.setKeyListener(MainActivity.listener);
-//                    editText.requestFocus();
-//                    editText.setSelection(editText.getText().length());
-//
-//                    InputMethodManager imm = (InputMethodManager) context.getSystemService(Service.INPUT_METHOD_SERVICE);
-//                    imm.showSoftInput(editText, InputMethodManager.SHOW_FORCED);
-//                    editText.setOnEditorActionListener(new EditText.OnEditorActionListener() {
-//                                                           @Override
-//                                                           public boolean onEditorAction(TextView arg0, int arg1, KeyEvent event) {
-//                                                               //Pattern.quote is used to escape special regex characters in userItem if present
-//                                                               if (!(Pattern.quote(editText.getText().toString().trim()).matches(Pattern.quote(userItem.getName()))) && !(Pattern.quote(editText.getText().toString().trim()).matches(""))) {
-//                                                                  String newItemName = editText.getText().toString().trim();
-//                                                                   userItem.setName(newItemName);
-//                                                                   Firebase.updateToDoItem(userItem);
-//                                                               }
-//                                                               editText.setKeyListener(null);
-//                                                               hideKeyboard();
-//                                                               fullScreencall();
-//                                                               editText.setText(userItem.getName());
-//                                                               return true;
-//                                                           }
-//
-//                                                           public void hideKeyboard() {
-//                                                               View view = cView;
-//                                                               if (view != null) {
-//                                                                   InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
-//                                                                   imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-//                                                               }
-//                                                           }
-
-//                                                       }
-//                    );
                     showTextDialog(editText);
                     return true;
                 }
@@ -362,7 +314,6 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
 
             });
         }
-
         else if (groupPosition==CALENDAR) {
             CalendarItem calendarItem = (CalendarItem)getChild(groupPosition,childPosition);
             if (calendarItem.timeBegin.equals("All day")){
