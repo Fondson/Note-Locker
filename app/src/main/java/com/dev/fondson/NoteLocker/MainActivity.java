@@ -27,16 +27,19 @@ import android.os.Message;
 import android.preference.PreferenceManager;
 import android.provider.CalendarContract;
 import android.support.annotation.NonNull;
+import android.support.v4.view.MotionEventCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Layout;
 import android.text.method.KeyListener;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.ExpandableListView;
+//import android.widget.ExpandableListView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -45,10 +48,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.dev.fondson.NoteLocker.model.SlidrConfig;
-import com.dev.fondson.NoteLocker.model.SlidrInterface;
-import com.dev.fondson.NoteLocker.model.SlidrListener;
-import com.dev.fondson.NoteLocker.model.SlidrPosition;
 import com.facebook.shimmer.ShimmerFrameLayout;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -75,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
     public static final int WALLPAPER_CODE = 10;
     public static final int GOOGLE_ACCOUNT_SIGN_IN_CODE = 9;
     public static final int FIREBASE_MESSAGE_CODE = 1;
+    static final int MIN_DISTANCE = 150;
     public static boolean transfer = false;
     public static DBAdapter db;
     public static String userEmail;
@@ -93,18 +93,19 @@ public class MainActivity extends AppCompatActivity {
     private static DatabaseReference toDoDatabase;
     private static DatabaseReference completedDatabase;
     public static Handler mHandler;
+    private View slideUpView;
     public static boolean loggingOut;
-    public static ItemsAdapter itemsAdapter;
+    private static DragLinearLayout dragll;
+    //public static ItemsAdapter itemsAdapter;
     private FirebaseAuth.AuthStateListener mAuthListener;
     private EditText etInput;
     private boolean firstLogIn = false;
+    private float y1, y2;
     private LinkedList<LinkedList<?>> itemsArray;
     private LinkedList<CalendarItem> calendarItemArr;
     private LinkedList<UserItem> userItemsList;
     private LinkedList<UserItem> completedItemsList;
-    private ExpandableListView expandableListView;
-    private SlidrConfig config;
-    private SlidrInterface slidrInterface;
+    //private ExpandableListView expandableListView;
     private Calendar beginTime;
     private String pastUser;
 
@@ -165,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
                             completedItemsList.clear();
                             setUpToDoListener();
                             setUpCompletedListener();
-                            itemsAdapter.notifyDataSetChanged();
+                            //itemsAdapter.notifyDataSetChanged();
                         } catch (Exception e) {
                             Log.d("exception", e.getMessage());
                         }
@@ -190,23 +191,6 @@ public class MainActivity extends AppCompatActivity {
                 .build();
 
         rl = (RelativeLayout) findViewById(R.id.rl);
-        // get existing wallpaper
-        WALLPAPER_PATH = getFilesDir().getAbsolutePath();
-        WALLPAPER_FULL_PATH = WALLPAPER_PATH + "/wallpaper.jpg";
-        File wallpaperFile= new File(WALLPAPER_FULL_PATH);
-        Drawable wallpaper;
-        if(wallpaperFile.exists()
-                && this.checkCallingOrSelfPermission("android.permission.READ_EXTERNAL_STORAGE") == PackageManager.PERMISSION_GRANTED) {
-            wallpaper=Drawable.createFromPath(WALLPAPER_FULL_PATH);
-            rl.setBackground(wallpaper);
-        }
-        //set default wallpaper
-        else{
-            WallpaperManager wallpaperManager = WallpaperManager.getInstance(this);
-            wallpaper = wallpaperManager.getDrawable();
-            rl.setBackground(wallpaper);
-        }
-        new PaletteTask().execute(drawableToBitmap(wallpaper));
 
         ll = (LinearLayout) findViewById(R.id.llMain);
         ll.setOnTouchListener(new View.OnTouchListener() {
@@ -217,11 +201,38 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+        slideUpView = findViewById(R.id.slide_up_shimmer);
+        dragll = (DragLinearLayout) findViewById(R.id.dragll);
+        dragll.setViewDraggable(ll, slideUpView);
+
+        // get existing wallpaper
+        WALLPAPER_PATH = getFilesDir().getAbsolutePath();
+        WALLPAPER_FULL_PATH = WALLPAPER_PATH + "/wallpaper.jpg";
+        File wallpaperFile= new File(WALLPAPER_FULL_PATH);
+        Drawable wallpaper;
+        if(wallpaperFile.exists()
+                && this.checkCallingOrSelfPermission("android.permission.READ_EXTERNAL_STORAGE") == PackageManager.PERMISSION_GRANTED) {
+            wallpaper=Drawable.createFromPath(WALLPAPER_FULL_PATH);
+            getBackground().setBackground(wallpaper);
+        }
+        //set default wallpaper
+        else{
+            WallpaperManager wallpaperManager = WallpaperManager.getInstance(this);
+            wallpaper = wallpaperManager.getDrawable();
+            rl.setBackground(wallpaper);
+        }
+        new PaletteTask().execute(drawableToBitmap(wallpaper));
         darkTint=(ImageView)findViewById(R.id.ivDarkTint);
         ((View)darkTint).setAlpha((float)PreferenceManager.getDefaultSharedPreferences(MainActivity.this).getInt("pref_key_darkTint", 50)/100);
         float scale = getResources().getDisplayMetrics().density;
+
+
+
+
+        //****************************************************************************************************
         int dpAsPixels = (int) (16 * scale + 0.5f); //standard padding by Android Design Guidelines
-        ll.setPadding(dpAsPixels, dpAsPixels + getStatusBarHeight(), dpAsPixels, dpAsPixels);
+        ll.setPadding(dpAsPixels, dpAsPixels + getStatusBarHeight(), dpAsPixels, 0);
+        //****************************************************************************************************
 
         etInput = (EditText) findViewById(R.id.editText);
         etInput.setOnEditorActionListener(new EditText.OnEditorActionListener() {
@@ -254,22 +265,22 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // set up slide up interface
-        config = new SlidrConfig.Builder()
-                                .position(SlidrPosition.BOTTOM)
-                                .sensitivity(0.75f)
-                                .scrimColor(Color.TRANSPARENT)
-                                .scrimStartAlpha(1f)
-                                .scrimEndAlpha(0f)
-                                .velocityThreshold(2400)
-                                .distanceThreshold(0.25f)
-                                .edge(true)
-                                .edgeSize(0.18f) // The % of the screen that counts as the edge, default 18%
-                                .build();
-        slidrInterface = Slidr.attach(this, config);
+//        // set up slide up interface
+//        config = new SlidrConfig.Builder()
+//                                .position(SlidrPosition.BOTTOM)
+//                                .sensitivity(0.75f)
+//                                .scrimColor(Color.TRANSPARENT)
+//                                .scrimStartAlpha(1f)
+//                                .scrimEndAlpha(0f)
+//                                .velocityThreshold(2400)
+//                                .distanceThreshold(0.25f)
+//                                .edge(true)
+//                                .edgeSize(0.18f) // The % of the screen that counts as the edge, default 18%
+//                                .build();
+//        slidrInterface = Slidr.attach(this, config);
 
         // facebook shimmer effect for slide up text
-        ShimmerFrameLayout slideUpShimmer = (ShimmerFrameLayout) findViewById(R.id.slide_up_shimmer);
+        ShimmerFrameLayout slideUpShimmer = (ShimmerFrameLayout) slideUpView;
         slideUpShimmer.setDuration(1500);
         slideUpShimmer.startShimmerAnimation();
 
@@ -325,7 +336,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("todochild", "onChildAdded:" + dataSnapshot.getKey());
                 // A new todo item has been added, add it to the displayed list
                 userItemsList.add(0, dataSnapshot.getValue(UserItem.class));
-                itemsAdapter.notifyDataSetChanged();
+                //itemsAdapter.notifyDataSetChanged();
             }
 
             @Override
@@ -333,14 +344,14 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("todochild", "onChildChanged:" + dataSnapshot.getKey());
                 UserItem newItem = dataSnapshot.getValue(UserItem.class);
                 changeToDoItem(newItem.getKey(), newItem.getName(), newItem.isSelected());
-                itemsAdapter.notifyDataSetChanged();
+                //itemsAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
                 Log.d("todochild", "onChildRemoved:" + dataSnapshot.getKey());
                 removeToDoItem(dataSnapshot.getValue(UserItem.class).getKey());
-                itemsAdapter.notifyDataSetChanged();
+                //itemsAdapter.notifyDataSetChanged();
             }
 
             @Override
@@ -389,7 +400,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("completedchild", "onChildAdded:" + dataSnapshot.getKey());
                 // A new todo item has been added, add it to the displayed list
                 completedItemsList.add(0, dataSnapshot.getValue(UserItem.class));
-                itemsAdapter.notifyDataSetChanged();
+                //itemsAdapter.notifyDataSetChanged();
             }
 
             @Override
@@ -397,14 +408,14 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("completedchild", "onChildChanged:" + dataSnapshot.getKey());
                 UserItem newItem = dataSnapshot.getValue(UserItem.class);
                 changeCompletedItem(newItem.getKey(), newItem.getName(), newItem.isSelected());
-                itemsAdapter.notifyDataSetChanged();
+                //itemsAdapter.notifyDataSetChanged();
             }
 
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
                 Log.d("completedchild", "onChildRemoved:" + dataSnapshot.getKey());
                 removeCompletedItem(dataSnapshot.getValue(UserItem.class).getKey());
-                itemsAdapter.notifyDataSetChanged();
+                //itemsAdapter.notifyDataSetChanged();
             }
 
             @Override
@@ -553,22 +564,22 @@ public class MainActivity extends AppCompatActivity {
         completedItemsList =new LinkedList<UserItem>();
         calendarItemArr = new LinkedList<CalendarItem>();
         beginTime = Calendar.getInstance();
-        getCalendarEvents(calendarItemArr);
+        //getCalendarEvents(calendarItemArr);
         itemsArray = new LinkedList<LinkedList<?>>();
         itemsArray.add(calendarItemArr);
         itemsArray.add(userItemsList);
         itemsArray.add(completedItemsList);
-        itemsAdapter = new ItemsAdapter(this,itemsArray);
-        expandableListView=(ExpandableListView) findViewById(R.id.exlvItems);
-        expandableListView.setAdapter(itemsAdapter);
-        expandableListView.expandGroup(itemsAdapter.CALENDAR);
-        expandableListView.expandGroup(itemsAdapter.NOT_COMPLETED);
+//        itemsAdapter = new ItemsAdapter(this,itemsArray);
+//        expandableListView=(ExpandableListView) findViewById(R.id.exlvItems);
+//        expandableListView.setAdapter(itemsAdapter);
+//        expandableListView.expandGroup(itemsAdapter.CALENDAR);
+//        expandableListView.expandGroup(itemsAdapter.NOT_COMPLETED);
         if (firstLogIn) {
-            expandableListView.expandGroup(itemsAdapter.COMPLETED);
+//            expandableListView.expandGroup(itemsAdapter.COMPLETED);
             Firebase.writeNewToDoItem("Check me to move me to the Completed list.", true);
             Firebase.writeNewCompletedItem("Uncheck me to move me to the To do list or press the \"X\" to permanently delete me.",true);
         }
-        itemsAdapter.notifyDataSetChanged();
+//        itemsAdapter.notifyDataSetChanged();
     }
 
     public static ImageView getDarkTint(){
@@ -600,41 +611,39 @@ public class MainActivity extends AppCompatActivity {
     }
 
     protected void onResume() {
-        Log.d("onResume", "should be visible");
-        (findViewById(R.id.slidable_content)).setAlpha(1f);
+        super.onResume();
         fullScreencall();
         hideKeyboard();
-        if (userEmail != null && calendarItemArr != null) {
-            if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(SettingsActivity.PREF_KEY_CALENDAR, false)
-                    && checkCallingOrSelfPermission("android.permission.READ_CALENDAR") == PackageManager.PERMISSION_GRANTED
-                    && checkCallingOrSelfPermission("android.permission.WRITE_CALENDAR") == PackageManager.PERMISSION_GRANTED) {
-                if (calendarItemArr.size() == 0) {
-                    getCalendarEvents(calendarItemArr);
-                    itemsAdapter.notifyDataSetChanged();
-                    expandableListView.expandGroup(itemsAdapter.CALENDAR);
-                } else {
-                    Calendar currentTime = Calendar.getInstance();
-                    currentTime.getTime();
-                    currentTime.set(Calendar.HOUR_OF_DAY, 0);
-                    currentTime.set(Calendar.MINUTE, 0);
-                    currentTime.set(Calendar.SECOND, 0);
-                    currentTime.set(Calendar.MILLISECOND, 1);
-                    if (beginTime.compareTo(currentTime) != 0) {
-                        Log.d("calEvent", String.valueOf(beginTime.compareTo(currentTime)));
-                        calendarItemArr.clear();
-                        getCalendarEvents(calendarItemArr);
-                        itemsAdapter.notifyDataSetChanged();
-                    }
-                }
-                itemsAdapter.notifyDataSetChanged();
-            }
-        }
+//        if (userEmail != null && calendarItemArr != null) {
+//            if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(SettingsActivity.PREF_KEY_CALENDAR, false)
+//                    && checkCallingOrSelfPermission("android.permission.READ_CALENDAR") == PackageManager.PERMISSION_GRANTED
+//                    && checkCallingOrSelfPermission("android.permission.WRITE_CALENDAR") == PackageManager.PERMISSION_GRANTED) {
+//                if (calendarItemArr.size() == 0) {
+//                    //getCalendarEvents(calendarItemArr);
+//                    //itemsAdapter.notifyDataSetChanged();
+//                    //expandableListView.expandGroup(itemsAdapter.CALENDAR);
+//                } else {
+//                    Calendar currentTime = Calendar.getInstance();
+//                    currentTime.getTime();
+//                    currentTime.set(Calendar.HOUR_OF_DAY, 0);
+//                    currentTime.set(Calendar.MINUTE, 0);
+//                    currentTime.set(Calendar.SECOND, 0);
+//                    currentTime.set(Calendar.MILLISECOND, 1);
+//                    if (beginTime.compareTo(currentTime) != 0) {
+//                        Log.d("calEvent", String.valueOf(beginTime.compareTo(currentTime)));
+//                        calendarItemArr.clear();
+//                        //getCalendarEvents(calendarItemArr);
+//                        //itemsAdapter.notifyDataSetChanged();
+//                    }
+//                }
+//                //itemsAdapter.notifyDataSetChanged();
+//            }
+//        }
         ((EditText) findViewById(R.id.editText)).setText("");
         startService(new Intent(this, UpdateService.class));
-        super.onResume();
     }
 
-    public static RelativeLayout getBackground(){
+    public static ViewGroup getBackground(){
         return rl;
     }
 
@@ -729,6 +738,29 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
         }
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                y1 = event.getY();
+                Log.d("ontouchevent", "y1: " + String.valueOf(y1));
+                break;
+            case MotionEvent.ACTION_UP:
+                y2 = event.getY();
+                Log.d("ontouchevent", "y2: " + String.valueOf(y2));
+                float deltaY = y2 - y1;
+
+                if (Math.abs(deltaY) > MIN_DISTANCE) {
+                    // Left to Right swipe action
+                    if (y2 > y1) {
+                        Toast.makeText(this, "Left to Right swipe [Next]", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                break;
+        }
+        return super.onTouchEvent(event);
     }
 
     @Override
