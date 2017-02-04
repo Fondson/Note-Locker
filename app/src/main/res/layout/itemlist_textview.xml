@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <data>
+        <variable name="itemList" type="com.dev.fondson.NoteLocker.ItemList"/>
+    </data>
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="7dp"
+            android:paddingBottom="7dp"
+            android:textSize="16sp"
+            android:textStyle="bold|italic"
+            android:text="@{itemList.name}"
+            android:paddingLeft="25dp"/>
+    </LinearLayout>
+</layout>

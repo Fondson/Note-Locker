@@ -2,7 +2,7 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <!--android:exitFadeDuration="@android:integer/config_shortAnimTime" -->
 
-    <!-- NOTE: order is important (the first matching state(s) is what is rendered) -->
+    <!-- NOTE: order is important (the first matching itemlist_textview(s) is what is rendered) -->
 
     <item
         android:state_selected="true"

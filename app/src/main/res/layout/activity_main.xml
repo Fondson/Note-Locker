@@ -81,6 +81,15 @@
                         android:scaleType="fitXY"
                         android:tint="#535353" />
                 </LinearLayout>
+                <android.support.v4.widget.SwipeRefreshLayout
+                    xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:id="@+id/swipeContainer"
+                    android:layout_width="match_parent"
+                        <android.support.v7.widget.RecyclerView
+                            android:id="@+id/itemList"
+                            android:layout_width="match_parent"
+                            android:requiresFadingEdge = "vertical"/>
+                </android.support.v4.widget.SwipeRefreshLayout>
             </LinearLayout>
             <com.facebook.shimmer.ShimmerFrameLayout
                 android:id="@+id/slide_up_shimmer"

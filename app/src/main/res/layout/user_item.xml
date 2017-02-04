@@ -5,11 +5,11 @@
     </data>
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="3dp">
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -23,12 +23,12 @@
                 android:orientation="horizontal"
                 android:padding="10dp">
                 <CheckBox
-                    android:id="@+id/checkBox1"
+                    android:id="@+id/checkBox"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:clickable="true"
                     android:text=""/>
-                <LinearLayout
+               <!-- <LinearLayout
                     android:id="@+id/llTime"
                     android:layout_width="80dp"
                     android:layout_height="wrap_content"
@@ -48,7 +48,7 @@
                         android:textIsSelectable="true"/>
                 </LinearLayout>
 
-                <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                <LinearLayout
                     android:id="@+id/llEvent"
                     android:layout_width="80dp"
                     android:layout_height="wrap_content"
@@ -68,12 +68,13 @@
                         android:layout_width="wrap_content"
                         android:textSize="16sp"
                         android:textIsSelectable="true"/>
-                </LinearLayout>
+                </LinearLayout>-->
                 <EditText
-                    android:id="@+id/editText1"
+                    android:id="@+id/itemName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textSize="16sp"
+                    android:text="@{item.name}"
                     android:longClickable="true"
                     android:clickable="false"
                     android:focusable="true"
@@ -86,7 +87,6 @@
                     android:textIsSelectable="true"/>
 
                 <ImageButton
-                    android:id="@+id/imageButton1"
                     android:layout_width="wrap_content"
                     android:layout_height="35dp"
                     android:layout_weight="2"

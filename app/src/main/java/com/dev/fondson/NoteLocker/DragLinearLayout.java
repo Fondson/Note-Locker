@@ -88,7 +88,7 @@ public class DragLinearLayout extends LinearLayout {
     }
 
     /**
-     * Holds state information about the currently dragged item.
+     * Holds itemlist_textview information about the currently dragged item.
      * <p/>
      * Rough lifecycle:
      * <li>#startDetectingOnPossibleDrag - #detecting == true</li>
@@ -245,7 +245,7 @@ public class DragLinearLayout extends LinearLayout {
     /**
      * Calls {@link #addView(android.view.View, int)} followed by
      * {@link #setViewDraggable(android.view.View, android.view.View)} and correctly updates the
-     * drag-ability state of all existing views.
+     * drag-ability itemlist_textview of all existing views.
      */
     public void addDragView(View child, View dragHandle, int index) {
         addView(child, index);
@@ -275,7 +275,7 @@ public class DragLinearLayout extends LinearLayout {
     }
 
     /**
-     * Calls {@link #removeView(android.view.View)} and correctly updates the drag-ability state of
+     * Calls {@link #removeView(android.view.View)} and correctly updates the drag-ability itemlist_textview of
      * all remaining views.
      */
     @SuppressWarnings("UnusedDeclaration")

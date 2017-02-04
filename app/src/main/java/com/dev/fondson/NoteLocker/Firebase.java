@@ -107,7 +107,7 @@ public class Firebase {
                         Toast.makeText(context, "Log in successful.",
                                 Toast.LENGTH_SHORT).show();
                         // If sign in fails, display a message to the user. If sign in succeeds
-                        // the auth state listener will be notified and logic to handle the
+                        // the auth itemlist_textview listener will be notified and logic to handle the
                         // signed in user can be handled in the listener.
                         if (!task.isSuccessful()) {
                             Log.w("firebasetag", "signInWithCredential", task.getException());

@@ -88,7 +88,7 @@ public class DBAdapter {
 
     // Add a new set of values to the database.
     public long insertRow(String item) {
-        // Create row's data:
+        // Create user_item's data:
         ContentValues initialValues = new ContentValues();
         initialValues.put(KEY_ITEM,item);
         initialValues.put(KEY_SELECTED,0);
@@ -99,7 +99,7 @@ public class DBAdapter {
 
     // Add a new set of values to the database.
     public long insertRow(String item,int selected) {
-        // Create row's data:
+        // Create user_item's data:
         ContentValues initialValues = new ContentValues();
         initialValues.put(KEY_ITEM,item);
         initialValues.put(KEY_SELECTED,selected);
@@ -108,7 +108,7 @@ public class DBAdapter {
         return db.insert(DATABASE_TABLE, null, initialValues);
     }
 
-    // Delete a row from the database, by rowId (primary key)
+    // Delete a user_item from the database, by rowId (primary key)
     public boolean deleteRow(long rowId) {
         String where = KEY_ROWID + "=" + rowId;
         return db.delete(DATABASE_TABLE, where, null) != 0;
@@ -136,7 +136,7 @@ public class DBAdapter {
         return c;
     }
 
-    // Get a specific row (by rowId)
+    // Get a specific user_item (by rowId)
     public Cursor getRow(long rowId) {
         String where = KEY_ROWID + "=" + rowId;
         Cursor c = 	db.query(true, DATABASE_TABLE, ALL_KEYS,
@@ -147,7 +147,7 @@ public class DBAdapter {
         return c;
     }
 
-    // Get a specific row (by item)
+    // Get a specific user_item (by item)
     public Cursor getRow(String item){
         String where=String.format(KEY_ITEM + "= %s",item);
         Cursor c=db.query(DATABASE_TABLE,ALL_KEYS,where,null,null,null,null);
@@ -167,11 +167,11 @@ public class DBAdapter {
         return false;
     }
 
-    // Change an existing row to be equal to new data.
+    // Change an existing user_item to be equal to new data.
     public boolean updateRow(long rowId, String item) {
         String where = KEY_ROWID + "=" + rowId;
 
-        // Create row's data:
+        // Create user_item's data:
         ContentValues newValues = new ContentValues();
         newValues.put(KEY_ITEM,item);
 
@@ -179,11 +179,11 @@ public class DBAdapter {
         return db.update(DATABASE_TABLE, newValues, where, null) != 0;
     }
 
-    // Change an existing row to be equal to new data.
+    // Change an existing user_item to be equal to new data.
     public boolean updateRowID(long rowId, String item, long newRowId) {
         String where = KEY_ROWID + "=" + rowId;
 
-        // Create row's data:
+        // Create user_item's data:
         ContentValues newValues = new ContentValues();
         newValues.put(KEY_ITEM,item);
         newValues.put(KEY_ROWID,newRowId);
@@ -192,11 +192,11 @@ public class DBAdapter {
         return db.update(DATABASE_TABLE, newValues, where, null) != 0;
     }
 
-    // Change an existing row to be equal to new data.
+    // Change an existing user_item to be equal to new data.
     public boolean updateRowSelected(long rowId, String item, int newSelected) {
         String where = KEY_ROWID + "=" + rowId;
 
-        // Create row's data:
+        // Create user_item's data:
         ContentValues newValues = new ContentValues();
         newValues.put(KEY_ITEM,item);
         newValues.put(KEY_SELECTED,newSelected);

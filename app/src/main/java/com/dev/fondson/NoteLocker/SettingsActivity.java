@@ -281,7 +281,7 @@ public class SettingsActivity extends AppCompatActivity {
                             // Signed in successfully, show authenticated UI.
                             GoogleSignInAccount acct = result.getSignInAccount();
                             Firebase.authWithGoogle(acct, MainActivity.mAuth, getActivity());
-                            MainActivity.userEmail=acct.getEmail();
+                            MainActivity.userEmail = acct.getEmail();
                             googleAccountPref.setSummary(MainActivity.userEmail);
                         }
                         else {

@@ -28,8 +28,11 @@ import android.preference.PreferenceManager;
 import android.provider.CalendarContract;
 import android.support.annotation.NonNull;
 import android.support.v4.view.MotionEventCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.Layout;
 import android.text.method.KeyListener;
 import android.util.Log;
@@ -96,16 +99,17 @@ public class MainActivity extends AppCompatActivity {
     private View slideUpView;
     public static boolean loggingOut;
     private static DragLinearLayout dragll;
-    //public static ItemsAdapter itemsAdapter;
+    public static ItemListAdapter itemsAdapter;
     private FirebaseAuth.AuthStateListener mAuthListener;
     private EditText etInput;
     private boolean firstLogIn = false;
-    private float y1, y2;
-    private LinkedList<LinkedList<?>> itemsArray;
+    private LinkedList<ItemList> itemsList;
     private LinkedList<CalendarItem> calendarItemArr;
     private LinkedList<UserItem> userItemsList;
     private LinkedList<UserItem> completedItemsList;
     //private ExpandableListView expandableListView;
+    private RecyclerView recyclerView;
+    private SwipeRefreshLayout swipeContainer;
     private Calendar beginTime;
     private String pastUser;
 
@@ -164,9 +168,9 @@ public class MainActivity extends AppCompatActivity {
                             }
                             userItemsList.clear();
                             completedItemsList.clear();
+                            itemsAdapter.notifyParentDataSetChanged(true);
                             setUpToDoListener();
                             setUpCompletedListener();
-                            //itemsAdapter.notifyDataSetChanged();
                         } catch (Exception e) {
                             Log.d("exception", e.getMessage());
                         }
@@ -189,6 +193,22 @@ public class MainActivity extends AppCompatActivity {
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
+
+        swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
+        // Setup refresh listener which triggers new data loading
+        swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                onStart();
+                swipeContainer.setRefreshing(false);
+            }
+        });
+
+        // Configure the refreshing colors
+        swipeContainer.setColorSchemeResources(android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light);
 
         rl = (RelativeLayout) findViewById(R.id.rl);
 
@@ -225,9 +245,6 @@ public class MainActivity extends AppCompatActivity {
         darkTint=(ImageView)findViewById(R.id.ivDarkTint);
         ((View)darkTint).setAlpha((float)PreferenceManager.getDefaultSharedPreferences(MainActivity.this).getInt("pref_key_darkTint", 50)/100);
         float scale = getResources().getDisplayMetrics().density;
-
-
-
 
         //****************************************************************************************************
         int dpAsPixels = (int) (16 * scale + 0.5f); //standard padding by Android Design Guidelines
@@ -336,7 +353,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("todochild", "onChildAdded:" + dataSnapshot.getKey());
                 // A new todo item has been added, add it to the displayed list
                 userItemsList.add(0, dataSnapshot.getValue(UserItem.class));
-                //itemsAdapter.notifyDataSetChanged();
+                itemsAdapter.notifyChildInserted(ItemList.TODO, 0);
             }
 
             @Override
@@ -344,7 +361,6 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("todochild", "onChildChanged:" + dataSnapshot.getKey());
                 UserItem newItem = dataSnapshot.getValue(UserItem.class);
                 changeToDoItem(newItem.getKey(), newItem.getName(), newItem.isSelected());
-                //itemsAdapter.notifyDataSetChanged();
             }
 
             @Override
@@ -372,7 +388,9 @@ public class MainActivity extends AppCompatActivity {
                 ListIterator<UserItem> iterator = userItemsList.listIterator();
                 while (iterator.hasNext()){
                     if (key.equals(iterator.next().getKey())){
+                        final int index = iterator.nextIndex() - 1;
                         iterator.remove();
+                        itemsAdapter.notifyChildRemoved(ItemList.TODO, index);
                         break;
                     }
                 }
@@ -385,6 +403,7 @@ public class MainActivity extends AppCompatActivity {
                     if (key.equals(item.getKey())){
                         item.setName(name);
                         item.setSelected(selected);
+                        itemsAdapter.notifyChildChanged(ItemList.TODO, iterator.nextIndex() - 1);
                         break;
                     }
                 }
@@ -400,7 +419,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("completedchild", "onChildAdded:" + dataSnapshot.getKey());
                 // A new todo item has been added, add it to the displayed list
                 completedItemsList.add(0, dataSnapshot.getValue(UserItem.class));
-                //itemsAdapter.notifyDataSetChanged();
+                itemsAdapter.notifyChildInserted(ItemList.COMPLETED, 0);
             }
 
             @Override
@@ -436,7 +455,9 @@ public class MainActivity extends AppCompatActivity {
                 ListIterator<UserItem> iterator = completedItemsList.listIterator();
                 while (iterator.hasNext()){
                     if (key.equals(iterator.next().getKey())){
+                        final int index = iterator.nextIndex() - 1;
                         iterator.remove();
+                        itemsAdapter.notifyChildRemoved(ItemList.COMPLETED, index);
                         break;
                     }
                 }
@@ -449,6 +470,7 @@ public class MainActivity extends AppCompatActivity {
                     if (key.equals(item.getKey())){
                         item.setName(name);
                         item.setSelected(selected);
+                        itemsAdapter.notifyChildChanged(ItemList.COMPLETED, iterator.nextIndex() - 1);
                         break;
                     }
                 }
@@ -562,13 +584,17 @@ public class MainActivity extends AppCompatActivity {
         Log.d("setupitem", "setUpItemList: " + String.valueOf(firstLogIn));
         userItemsList = new LinkedList<UserItem>();
         completedItemsList =new LinkedList<UserItem>();
-        calendarItemArr = new LinkedList<CalendarItem>();
-        beginTime = Calendar.getInstance();
+        //calendarItemArr = new LinkedList<CalendarItem>();
+        //beginTime = Calendar.getInstance();
         //getCalendarEvents(calendarItemArr);
-        itemsArray = new LinkedList<LinkedList<?>>();
-        itemsArray.add(calendarItemArr);
-        itemsArray.add(userItemsList);
-        itemsArray.add(completedItemsList);
+        itemsList = new LinkedList<ItemList>();
+        //itemsArray.add(calendarItemArr);
+        itemsList.add(new ItemList("To Do", userItemsList));
+        itemsList.add(new ItemList("Completed", completedItemsList));
+        recyclerView = (RecyclerView) findViewById(R.id.itemList);
+        itemsAdapter = new ItemListAdapter(this, itemsList);
+        recyclerView.setAdapter(itemsAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
 //        itemsAdapter = new ItemsAdapter(this,itemsArray);
 //        expandableListView=(ExpandableListView) findViewById(R.id.exlvItems);
 //        expandableListView.setAdapter(itemsAdapter);
@@ -738,29 +764,6 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
         }
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                y1 = event.getY();
-                Log.d("ontouchevent", "y1: " + String.valueOf(y1));
-                break;
-            case MotionEvent.ACTION_UP:
-                y2 = event.getY();
-                Log.d("ontouchevent", "y2: " + String.valueOf(y2));
-                float deltaY = y2 - y1;
-
-                if (Math.abs(deltaY) > MIN_DISTANCE) {
-                    // Left to Right swipe action
-                    if (y2 > y1) {
-                        Toast.makeText(this, "Left to Right swipe [Next]", Toast.LENGTH_SHORT).show();
-                    }
-                }
-                break;
-        }
-        return super.onTouchEvent(event);
     }
 
     @Override

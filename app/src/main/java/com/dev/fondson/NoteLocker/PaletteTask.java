@@ -1,20 +1,19 @@
 package com.dev.fondson.NoteLocker;
 
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.support.v7.graphics.Palette;
 import android.support.v7.graphics.Target;
-import android.widget.ImageView;
-
-import java.util.List;
 
 /**
  * Created by Fondson on 2017-02-01.
  */
 
 public class PaletteTask extends AsyncTask<Bitmap, Integer, Integer>{
-    public static int mutedColour = 0;
-    public static int vibrantColour = 0;
+    public static ColorDrawable mutedColour = new ColorDrawable();
+    public static ColorDrawable  vibrantColour = new ColorDrawable();
 
     // Do the long-running work in here
     protected Integer doInBackground(Bitmap... bitmaps) {
@@ -23,8 +22,8 @@ public class PaletteTask extends AsyncTask<Bitmap, Integer, Integer>{
                 .addTarget(Target.DARK_MUTED)
                 .addTarget(Target.DARK_VIBRANT)
                 .generate();
-        mutedColour = p.getDarkMutedColor(0);
-        vibrantColour = p.getDarkVibrantColor(0);
+        mutedColour.setColor(p.getDarkMutedColor(Color.BLACK));
+        vibrantColour.setColor(p.getDarkVibrantColor(Color.BLACK));
         return 0;
     }
 

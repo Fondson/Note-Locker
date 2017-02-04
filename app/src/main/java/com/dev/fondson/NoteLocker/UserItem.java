@@ -1,5 +1,6 @@
 package com.dev.fondson.NoteLocker;
 
+import android.graphics.drawable.ColorDrawable;
 import android.util.Log;
 
 import java.util.HashMap;
@@ -13,7 +14,7 @@ public class UserItem {
     private String key = null;
     private String name = null;
     private boolean selected = false;
-    private int colour = 0;
+    private ColorDrawable colour;
 
     // constructor used by Firebase
     public UserItem(){}
@@ -46,18 +47,16 @@ public class UserItem {
     public boolean isSelected() {
         return this.selected;
     }
-    public int getColour(){
+    public ColorDrawable  getColour(){
         return colour;
     }
-    public void setColour(int colour) {
+    public void setColour(ColorDrawable  colour) {
         this.colour = colour;
         Log.d("COLOUR", "setColour: " + String.valueOf(colour));
     }
     public void setColour(){
-        int intColour;
-        if (selected) intColour = PaletteTask.vibrantColour;
-        else intColour = PaletteTask.mutedColour;
-        setColour(intColour);
+        if (selected) setColour(PaletteTask.vibrantColour);
+        else setColour(PaletteTask.mutedColour);
     }
     public void setSelected(boolean selected) {
         this.selected = selected;
