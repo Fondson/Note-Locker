@@ -39,7 +39,6 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
     public static int CALENDAR = 0;
     public static int NOT_COMPLETED = 1;
     public static int COMPLETED = 2;
-    public static int darkColour = 0;
     private static String[] HEADERS = {"Agenda", "To do", "Completed"};
     private Context context;
     private LinkedList<LinkedList<?>> state;
@@ -50,7 +49,7 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
     public ItemsAdapter(Context context, LinkedList<LinkedList<?>> state){
         this.context=context;
         this.state=state;
-        calendarItems=(LinkedList<UserItem>)state.get(CALENDAR);
+        calendarItems = (LinkedList<UserItem>)state.get(CALENDAR);
         notCompletedItems=(LinkedList<UserItem>)state.get(NOT_COMPLETED);
         completedItems=(LinkedList<UserItem>)state.get(COMPLETED);
     }
@@ -183,7 +182,6 @@ public class ItemsAdapter extends BaseExpandableListAdapter{
                     if (!isChecked) {
                         arg0.setChecked(true);
                         enableDisableViewGroupClickable(parent, false);
-
 
                         Animation fadeout = new AlphaAnimation(1.f, 0.f);
                         fadeout.setDuration(300);

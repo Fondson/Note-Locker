@@ -4,8 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
     tools:context="com.dev.fondson.NoteLocker.MainActivity"
     android:id="@+id/rl">
 
@@ -16,100 +14,90 @@
         android:background="#000000"
         android:alpha=".5" />
 
-    <LinearLayout
-        android:orientation="vertical"
+    <com.dev.fondson.NoteLocker.DragLinearLayout
+        android:id="@+id/dragll"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/llMain"
-        android:paddingBottom="@dimen/activity_vertical_margin">
-
-        <TextClock
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/textClock"
-            android:layout_gravity="center_horizontal"
-            android:textSize="95sp"
-            android:format12Hour="h:mm"
-            android:format24Hour="k:mm"
-            android:typeface="normal"
-            android:enabled="true"
-            android:paddingBottom="10dp"
-            android:paddingTop="15dp" />
-
+        android:orientation="vertical">
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="10dp"
-            android:layout_weight="1"
-            android:id="@+id/llEditItems"
-            android:clickable="false"
-            android:weightSum="1">
-
+            android:layout_height="match_parent"
+            android:paddingTop="@dimen/activity_vertical_margin"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingRight="@dimen/activity_horizontal_margin"
+            android:id="@+id/llMain">
+            <TextClock
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/textClock"
+                android:layout_gravity="center_horizontal"
+                android:textSize="95sp"
+                android:format12Hour="h:mm"
+                android:format24Hour="k:mm"
+                android:typeface="normal"
+                android:enabled="true"
+                android:paddingBottom="10dp"
+                android:paddingTop="15dp" />
             <LinearLayout
-                android:orientation="horizontal"
+                android:orientation="vertical"
                 android:layout_width="match_parent"
-                android:layout_height="40dp"
-                android:id="@+id/llAddAndSettings"
-                android:longClickable="false">
-
-                <EditText
+                android:layout_height="wrap_content"
+                android:paddingTop="10dp"
+                android:layout_weight="1"
+                android:id="@+id/llEditItems"
+                android:clickable="false"
+                android:weightSum="1">
+                <LinearLayout
+                    android:orientation="horizontal"
                     android:layout_width="match_parent"
-                    android:layout_height="45dp"
-                    android:id="@+id/editText"
-                    android:imeOptions="actionDone"
-                    android:inputType="text|textCapSentences"
-                    android:hint="@string/editText"
-                    android:theme="@android:style/Widget.Material.Light.EditText"
-                    android:background="#6afdfdfd"
-                    android:padding="10dp"
-                    android:editable="false"
-                    android:layout_weight=".25"
-                    android:maxLines="1"
-                    android:textIsSelectable="true"
-                    android:layout_gravity="center"/>
-
-                <ImageButton
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:id="@+id/btnSettings"
-                    android:src="@drawable/settings"
-                    android:visibility="visible"
-                    android:cropToPadding="false"
-                    android:background="#6afdfdfd"
-                    android:layout_weight="2"
-                    android:scaleType="fitXY"
-                    android:tint="#535353" />
+                    android:layout_height="40dp"
+                    android:id="@+id/llAddAndSettings"
+                    android:longClickable="false">
+                    <EditText
+                        android:layout_width="match_parent"
+                        android:layout_height="45dp"
+                        android:id="@+id/editText"
+                        android:imeOptions="actionDone"
+                        android:inputType="text|textCapSentences"
+                        android:hint="@string/editText"
+                        android:theme="@android:style/Widget.Material.Light.EditText"
+                        android:background="#6afdfdfd"
+                        android:padding="10dp"
+                        android:editable="false"
+                        android:layout_weight=".25"
+                        android:maxLines="1"
+                        android:textIsSelectable="true"
+                        android:layout_gravity="center"/>
+                    <ImageButton
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:id="@+id/btnSettings"
+                        android:src="@drawable/settings"
+                        android:visibility="visible"
+                        android:cropToPadding="false"
+                        android:background="#6afdfdfd"
+                        android:layout_weight="2"
+                        android:scaleType="fitXY"
+                        android:tint="#535353" />
+                </LinearLayout>
             </LinearLayout>
-
-            <ExpandableListView
+            <com.facebook.shimmer.ShimmerFrameLayout
+                android:id="@+id/slide_up_shimmer"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:requiresFadingEdge = "vertical"
-                android:groupIndicator="@null"
-                android:id="@+id/exlvItems"
-                android:visibility="visible"
-                android:divider="@null"
-                android:dividerHeight="4dp"/>
-
-        </LinearLayout>
-
-        <com.facebook.shimmer.ShimmerFrameLayout
-            android:id="@+id/slide_up_shimmer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+                android:layout_height="wrap_content">
                 <TextView
                     android:id="@+id/text_label"
                     android:layout_height="50dp"
                     android:layout_width="match_parent"
+                    android:layout_marginBottom="@dimen/activity_vertical_margin"
                     android:layout_centerInParent="true"
                     android:gravity="center"
                     android:text="@string/slide_up"
                     android:textColor="@android:color/white"
                     android:textSize="18sp"
                     android:textStyle="italic"/>
-        </com.facebook.shimmer.ShimmerFrameLayout>
-
-    </LinearLayout>
-
+            </com.facebook.shimmer.ShimmerFrameLayout>
+        </LinearLayout>
+    </com.dev.fondson.NoteLocker.DragLinearLayout>
 </RelativeLayout>
