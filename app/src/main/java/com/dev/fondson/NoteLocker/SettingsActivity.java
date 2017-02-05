@@ -88,6 +88,7 @@ public class SettingsActivity extends AppCompatActivity {
                             e.printStackTrace();
                         }
                         new PaletteTask().execute(bitmap);
+                        MainActivity.itemsAdapter.notifyParentDataSetChanged(true);
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
                     }

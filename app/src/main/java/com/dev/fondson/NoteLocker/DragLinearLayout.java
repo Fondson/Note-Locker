@@ -29,6 +29,8 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 
 /**
+ * THIS IS A MODIFIED VERSION OF 'com.jmedeisis:draglinearlayout:1.1.0'
+ *
  * A LinearLayout that supports children Views that can be dragged and swapped around.
  * See {@link #addDragView(android.view.View, android.view.View)},
  * {@link #addDragView(android.view.View, android.view.View, int)},

@@ -2,6 +2,7 @@ package com.dev.fondson.NoteLocker;
 
 import android.graphics.drawable.ColorDrawable;
 import android.util.Log;
+import android.util.MutableInt;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,7 +15,7 @@ public class UserItem {
     private String key = null;
     private String name = null;
     private boolean selected = false;
-    private ColorDrawable colour;
+    private MutableInt colour;
 
     // constructor used by Firebase
     public UserItem(){}
@@ -47,10 +48,10 @@ public class UserItem {
     public boolean isSelected() {
         return this.selected;
     }
-    public ColorDrawable  getColour(){
-        return colour;
+    public int getColour(){
+        return colour.value;
     }
-    public void setColour(ColorDrawable  colour) {
+    public void setColour(MutableInt  colour) {
         this.colour = colour;
         Log.d("COLOUR", "setColour: " + String.valueOf(colour));
     }

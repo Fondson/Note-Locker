@@ -7,15 +7,20 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginBottom="3dp">
+        android:layout_marginBottom="2dp"
+        android:clipToPadding="false"
+        android:paddingBottom="2dp">
         <RelativeLayout
             android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:outlineProvider="bounds"
+            android:elevation="2dp">
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:id="@+id/itemDarkTint"
                 android:background="@{item.colour}"
-                android:alpha="0.75" />
+                android:alpha="0.75"/>
             <LinearLayout
                 android:id="@+id/llItem"
                 android:layout_width="match_parent"
@@ -87,6 +92,7 @@
                     android:textIsSelectable="true"/>
 
                 <ImageButton
+                    android:id="@+id/imageButton"
                     android:layout_width="wrap_content"
                     android:layout_height="35dp"
                     android:layout_weight="2"

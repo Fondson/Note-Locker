@@ -6,14 +6,16 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.support.v7.graphics.Palette;
 import android.support.v7.graphics.Target;
+import android.util.MutableInt;
 
 /**
  * Created by Fondson on 2017-02-01.
  */
 
 public class PaletteTask extends AsyncTask<Bitmap, Integer, Integer>{
-    public static ColorDrawable mutedColour = new ColorDrawable();
-    public static ColorDrawable  vibrantColour = new ColorDrawable();
+    public static MutableInt mutedColour = new MutableInt(0);
+    public static MutableInt vibrantColour = new MutableInt(0);
+    final static int alphaValue = 191;
 
     // Do the long-running work in here
     protected Integer doInBackground(Bitmap... bitmaps) {
@@ -22,8 +24,8 @@ public class PaletteTask extends AsyncTask<Bitmap, Integer, Integer>{
                 .addTarget(Target.DARK_MUTED)
                 .addTarget(Target.DARK_VIBRANT)
                 .generate();
-        mutedColour.setColor(p.getDarkMutedColor(Color.BLACK));
-        vibrantColour.setColor(p.getDarkVibrantColor(Color.BLACK));
+        mutedColour.value = p.getDarkMutedColor(Color.BLACK);
+        vibrantColour.value = p.getDarkVibrantColor(Color.BLACK);
         return 0;
     }
 

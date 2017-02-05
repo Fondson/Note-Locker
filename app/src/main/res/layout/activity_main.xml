@@ -53,7 +53,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
                     android:id="@+id/llAddAndSettings"
-                    android:longClickable="false">
+                    android:longClickable="false"
+                    android:outlineProvider="bounds"
+                    android:elevation="1dp">
                     <EditText
                         android:layout_width="match_parent"
                         android:layout_height="45dp"
@@ -64,7 +66,6 @@
                         android:theme="@android:style/Widget.Material.Light.EditText"
                         android:background="#6afdfdfd"
                         android:padding="10dp"
-                        android:editable="false"
                         android:layout_weight=".25"
                         android:maxLines="1"
                         android:textIsSelectable="true"
@@ -85,9 +86,11 @@
                     xmlns:android="http://schemas.android.com/apk/res/android"
                     android:id="@+id/swipeContainer"
                     android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
                         <android.support.v7.widget.RecyclerView
                             android:id="@+id/itemList"
                             android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
                             android:requiresFadingEdge = "vertical"/>
                 </android.support.v4.widget.SwipeRefreshLayout>
             </LinearLayout>

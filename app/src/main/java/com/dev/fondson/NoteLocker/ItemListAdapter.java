@@ -73,7 +73,6 @@ public class ItemListAdapter extends ExpandableRecyclerAdapter<ItemList, UserIte
                 @Override
                 public void onCheckedChanged(final CompoundButton arg0, boolean isChecked) {
                     if (isChecked) {
-                        arg0.setChecked(false);
                         Firebase.removeToDoItem(item.getKey());
                         Firebase.writeNewCompletedItem(item.getName(),item.isSelected());
                     }
@@ -166,7 +165,6 @@ public class ItemListAdapter extends ExpandableRecyclerAdapter<ItemList, UserIte
                 @Override
                 public void onCheckedChanged(final CompoundButton arg0, boolean isChecked) {
                     if (!isChecked) {
-                        arg0.setChecked(true);
                         Firebase.removeCompletedItem(item.getKey());
                         Firebase.writeNewToDoItem(item.getName(),item.isSelected());
                     }

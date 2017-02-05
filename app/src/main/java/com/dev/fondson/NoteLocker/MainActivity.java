@@ -77,9 +77,6 @@ public class MainActivity extends AppCompatActivity {
     public static final int WALLPAPER_CODE = 10;
     public static final int GOOGLE_ACCOUNT_SIGN_IN_CODE = 9;
     public static final int FIREBASE_MESSAGE_CODE = 1;
-    static final int MIN_DISTANCE = 150;
-    public static boolean transfer = false;
-    public static DBAdapter db;
     public static String userEmail;
     public static KeyListener listener;
     public static String WALLPAPER_PATH;
@@ -107,7 +104,6 @@ public class MainActivity extends AppCompatActivity {
     private LinkedList<CalendarItem> calendarItemArr;
     private LinkedList<UserItem> userItemsList;
     private LinkedList<UserItem> completedItemsList;
-    //private ExpandableListView expandableListView;
     private RecyclerView recyclerView;
     private SwipeRefreshLayout swipeContainer;
     private Calendar beginTime;
@@ -200,6 +196,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onRefresh() {
                 onStart();
+                if (itemsAdapter != null) itemsAdapter.notifyParentDataSetChanged(true);
                 swipeContainer.setRefreshing(false);
             }
         });
@@ -247,8 +244,9 @@ public class MainActivity extends AppCompatActivity {
         float scale = getResources().getDisplayMetrics().density;
 
         //****************************************************************************************************
-        int dpAsPixels = (int) (16 * scale + 0.5f); //standard padding by Android Design Guidelines
-        ll.setPadding(dpAsPixels, dpAsPixels + getStatusBarHeight(), dpAsPixels, 0);
+        int dpAsPixelsVert = (int) (16 * scale + 0.5f);
+        int dpAsPixelsHor = (int) (8 * scale + 0.5f);
+        ll.setPadding(dpAsPixelsHor, dpAsPixelsVert + getStatusBarHeight(), dpAsPixelsHor, 0);
         //****************************************************************************************************
 
         etInput = (EditText) findViewById(R.id.editText);
