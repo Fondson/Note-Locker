@@ -20,7 +20,7 @@ be reminded everytime you open your phone.
 
 #Screenshots
 <img src="https://dl2.pushbulletusercontent.com/OXMWDrdecJJ1gP9UdTK1jk9bXiib2dA5/Screenshot_20160625-221131.png" width="270px" height="480px" />
-<img src="https://dl2.pushbulletusercontent.com/PvX42XaQyCLQZqn2ToaFV3zUEekuKb5s/Screenshot_20170207-160827.png" width="270px" height="480px" />
+<img src="https://dl2.pushbulletusercontent.com/0IJzYO2ws0EbAhiHvDcmMH2tKMNKwHbp/Screenshot_20170207-161354.png" width="270px" height="480px" />
 <img src="https://dl2.pushbulletusercontent.com/Ge2eStuVt06Wofvi5SjK3FWEjiBjcMkM/Screenshot_20170207-161001.png" width="270px" height="480px" />
 
 <!--
