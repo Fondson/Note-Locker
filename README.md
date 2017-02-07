@@ -11,11 +11,12 @@ be reminded everytime you open your phone.
 - Easily add and dismiss items
 - Receive daily events from <b>Google Calendar</b>
 - Takes the wallpaper of the current home launcher <b>OR</b> select your own
-- Slide UP to unlock (using modified <a href ="https://github.com/r0adkll/Slidr">Slidr</a> library)
+- item card colour adapts and changes dynamically with your wallpaper
+- Slide UP to unlock (using modified library)
 - <a href ="https://github.com/PaoloRotolo/AppIntro"> App intro</a>
 - Long-click to edit an item
 - Star important items
-- Collapsable completed items list
+- Collapsable items list
 
 #Screenshots
 <img src="https://dl2.pushbulletusercontent.com/OXMWDrdecJJ1gP9UdTK1jk9bXiib2dA5/Screenshot_20160625-221131.png" width="270px" height="480px" />
