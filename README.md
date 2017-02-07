@@ -11,7 +11,7 @@ be reminded everytime you open your phone.
 - Easily add and dismiss items
 - Receive daily events from <b>Google Calendar</b>
 - Takes the wallpaper of the current home launcher <b>OR</b> select your own
-- item card colour adapts and changes dynamically with your wallpaper
+- Item cards' colour adapts and changes dynamically with your wallpaper
 - Slide UP to unlock (using modified library)
 - <a href ="https://github.com/PaoloRotolo/AppIntro"> App intro</a>
 - Long-click to edit an item
