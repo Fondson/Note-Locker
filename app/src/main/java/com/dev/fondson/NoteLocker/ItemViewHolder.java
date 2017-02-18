@@ -19,6 +19,7 @@ public class ItemViewHolder extends ChildViewHolder {
 
     public void bind(Context context, UserItem item) {
         binding.setItem(item);
+        binding.setNotif(item.notification);
         binding.executePendingBindings();
     }
 }

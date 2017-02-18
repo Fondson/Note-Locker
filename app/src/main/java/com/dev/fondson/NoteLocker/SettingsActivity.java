@@ -50,7 +50,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 
 public class SettingsActivity extends AppCompatActivity {
     public static final String PREF_KEY_OFF="pref_key_off";
-    public static final String PREF_KEY_CALENDAR="pref_key_calendar";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -109,7 +108,6 @@ public class SettingsActivity extends AppCompatActivity {
         private SeekBarPreference darkTintSeekBar;
         private SharedPreferences sharedPreferences;
         private Preference googleAccountPref;
-        private SwitchPreference calendarPref;
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
@@ -119,7 +117,6 @@ public class SettingsActivity extends AppCompatActivity {
 
             Preference wallpaperPref = findPreference("pref_key_wallpaper");
             Preference tutorialPref = findPreference("pref_tutorial");
-            calendarPref = (SwitchPreference) findPreference("pref_key_calendar");
             googleAccountPref = findPreference("pref_key_google_account");
             darkTintSeekBar = (SeekBarPreference)findPreference("pref_key_darkTint");
             //Preference transferPref = findPreference("pref_key_transfer_data");
@@ -137,7 +134,6 @@ public class SettingsActivity extends AppCompatActivity {
             wallpaperPref.setOnPreferenceClickListener(this);
             googleAccountPref.setOnPreferenceClickListener(this);
             tutorialPref.setOnPreferenceClickListener(this);
-            calendarPref.setOnPreferenceClickListener(this);
             //transferPref.setOnPreferenceClickListener(this);
             betaLinkPref.setOnPreferenceClickListener(this);
         }
@@ -178,33 +174,6 @@ public class SettingsActivity extends AppCompatActivity {
                     Intent i = new Intent(getActivity(), Intro.class);
                     startActivity(i);
                     break;
-                case "pref_key_calendar":
-                    if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.M
-                            && getContext().checkCallingOrSelfPermission("android.permission.READ_CALENDAR")!= PackageManager.PERMISSION_GRANTED
-                            && getContext().checkCallingOrSelfPermission("android.permission.WRITE_CALENDAR")!= PackageManager.PERMISSION_GRANTED){
-                        requestPermissions(MainActivity.calendarPerms, MainActivity.CALENDAR_PERMS);
-                    }
-                    break;
-//                case "pref_key_transfer_data":
-//                    Log.d("transfer", "onPreferenceClick: transfer");
-//                    if (MainActivity.userEmail != null) {
-//                        if (!PreferenceManager
-//                                .getDefaultSharedPreferences(getActivity()).getBoolean("transfer", false)) {
-//                            PreferenceManager
-//                                    .getDefaultSharedPreferences(getActivity()).edit().putBoolean("transfer", true).apply();
-//                            MainActivity.transfer = true;
-//                            Toast.makeText(getActivity(), "Please exit to the main screen and wait until process is complete.",
-//                                    Toast.LENGTH_SHORT).show();
-//                        } else {
-//                            Toast.makeText(getActivity(), "Already transferred data once.",
-//                                    Toast.LENGTH_SHORT).show();
-//                        }
-//                    }
-//                    else{
-//                        Toast.makeText(getActivity(), "Please ensure you're logged in.",
-//                                Toast.LENGTH_SHORT).show();
-//                    }
-//                    break;
                 case "pref_key_beta_link":
                     if(android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB) {
                         android.text.ClipboardManager clipboard = (android.text.ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
@@ -242,13 +211,13 @@ public class SettingsActivity extends AppCompatActivity {
                         launchGalleryPicker();
                     }
                     break;
-                case MainActivity.CALENDAR_PERMS:
-                    if (grantResults.length>=0
-                            && grantResults[0]==PackageManager.PERMISSION_DENIED) {
-                        calendarPref.getEditor().putBoolean(PREF_KEY_CALENDAR,false).apply();
-                        calendarPref.setChecked(false);
-                    }
-                    break;
+//                case MainActivity.CALENDAR_PERMS:
+//                    if (grantResults.length>=0
+//                            && grantResults[0]==PackageManager.PERMISSION_DENIED) {
+//                        calendarPref.getEditor().putBoolean(PREF_KEY_CALENDAR,false).apply();
+//                        calendarPref.setChecked(false);
+//                    }
+//                    break;
             }
         }
 

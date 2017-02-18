@@ -1,6 +1,5 @@
 package com.dev.fondson.NoteLocker;
 
-import android.graphics.drawable.ColorDrawable;
 import android.util.Log;
 import android.util.MutableInt;
 
@@ -15,7 +14,9 @@ public class UserItem {
     private String key = null;
     private String name = null;
     private boolean selected = false;
-    private MutableInt colour;
+    private transient MutableInt colour;
+    private transient MutableInt textColour;
+    public UserItemNotification notification = new UserItemNotification();
 
     // constructor used by Firebase
     public UserItem(){}
@@ -24,7 +25,9 @@ public class UserItem {
         this.key = key;
         this.name = name;
         this.selected = selected;
+
         setColour();
+        setTextColour();
     }
 
     public long getId(){
@@ -56,18 +59,32 @@ public class UserItem {
         Log.d("COLOUR", "setColour: " + String.valueOf(colour));
     }
     public void setColour(){
-        if (selected) setColour(PaletteTask.vibrantColour);
-        else setColour(PaletteTask.mutedColour);
+        if (selected) setColour(PaletteTask.secondDominantColour);
+        else setColour(PaletteTask.dominantColour);
+    }
+    public int getTextColour(){
+        return textColour.value;
+    }
+    public void setTextColour(MutableInt  textColour) {
+        this.textColour = textColour;
+    }
+    public void setTextColour(){
+        if (selected) setTextColour(PaletteTask.secondDominantTextColour);
+        else setTextColour(PaletteTask.dominantTextColour);
     }
     public void setSelected(boolean selected) {
         this.selected = selected;
         setColour();
+        setTextColour();
     }
     public Map<String, Object> toMap(){
         HashMap<String, Object> item = new HashMap<>();
         item.put("key", key);
         item.put("name", name);
         item.put("selected", selected);
+        HashMap<String, Object> notificationMap = new HashMap<>();
+        notificationMap.put("time", notification.getTime());
+        item.put("notification", notificationMap);
 
         return item;
     }

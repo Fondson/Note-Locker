@@ -2,6 +2,7 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android">
     <data>
         <variable name="item" type="com.dev.fondson.NoteLocker.UserItem"/>
+        <variable name="notif" type="com.dev.fondson.NoteLocker.UserItemNotification"/>
     </data>
     <LinearLayout
         android:layout_width="match_parent"
@@ -21,63 +22,68 @@
                 android:id="@+id/itemDarkTint"
                 android:background="@{item.colour}"
                 android:alpha="0.75"/>
+            <RelativeLayout
+                android:id="@+id/rlToolbar"
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:orientation="horizontal"
+                android:layout_marginTop="7dp"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="3dp">
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="match_parent"
+                    android:id="@+id/notifClock"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/clock"
+                    android:layout_alignParentLeft="true"
+                    android:tint="@{item.textColour}"
+                    android:tintMode="src_in"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_toEndOf="@id/notifClock"
+                    android:layout_centerVertical="true"
+                    android:paddingStart="3dp"
+                    android:paddingBottom="3dp"
+                    android:textStyle="italic"
+                    android:text="@{notif.dateTimeString}"
+                    android:textColor="@{item.textColour}"
+                    android:textSize="14sp"/>
+                <ImageButton
+                    android:id="@+id/itemSettings"
+                    android:layout_width="20dp"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/settings"
+                    android:background="#00ffffff"
+                    android:scaleType="fitCenter"
+                    android:layout_alignParentRight="true"
+                    android:tint="@{item.textColour}"
+                    android:tintMode="src_in"/>
+            </RelativeLayout>
             <LinearLayout
                 android:id="@+id/llItem"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="horizontal"
-                android:padding="10dp">
+                android:layout_below="@id/rlToolbar"
+                android:paddingStart="5dp"
+                android:paddingEnd="5dp"
+                android:paddingTop="5dp"
+                android:paddingBottom="4dp">
                 <CheckBox
                     android:id="@+id/checkBox"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:clickable="true"
-                    android:text=""/>
-               <!-- <LinearLayout
-                    android:id="@+id/llTime"
-                    android:layout_width="80dp"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:layout_marginLeft="10dp">
-                    <TextView
-                        android:id="@+id/txtTimeBegin"
-                        android:layout_height="wrap_content"
-                        android:layout_width="wrap_content"
-                        android:textSize="16sp"
-                        android:textIsSelectable="true"/>
-                    <TextView
-                        android:id="@+id/txtTimeEnd"
-                        android:layout_height="wrap_content"
-                        android:layout_width="wrap_content"
-                        android:textSize="16sp"
-                        android:textIsSelectable="true"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/llEvent"
-                    android:layout_width="80dp"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:layout_weight="1"
-                    android:paddingLeft="15dp">
-                    <TextView
-                        android:id="@+id/txtTitle"
-                        android:layout_height="wrap_content"
-                        android:layout_width="wrap_content"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textIsSelectable="true"/>
-                    <TextView
-                        android:id="@+id/txtLocation"
-                        android:layout_height="wrap_content"
-                        android:layout_width="wrap_content"
-                        android:textSize="16sp"
-                        android:textIsSelectable="true"/>
-                </LinearLayout>-->
+                    android:text=""
+                    android:buttonTint="@{item.textColour}"
+                    android:buttonTintMode="src_in"/>
                 <EditText
                     android:id="@+id/itemName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:textColor="@{item.textColour}"
                     android:textSize="16sp"
                     android:text="@{item.name}"
                     android:longClickable="true"
@@ -86,18 +92,17 @@
                     android:focusableInTouchMode="true"
                     android:imeOptions="actionNext"
                     android:background="@android:color/transparent"
-                    android:paddingBottom="2.5dp"
+                    android:paddingBottom="4dp"
                     android:paddingTop="2.5dp"
                     android:layout_weight="1"
                     android:textIsSelectable="true"/>
-
                 <ImageButton
                     android:id="@+id/imageButton"
                     android:layout_width="wrap_content"
                     android:layout_height="35dp"
                     android:layout_weight="2"
                     android:background="#00ffffff"
-                    android:scaleType="fitCenter" />
+                    android:scaleType="fitCenter"/>
             </LinearLayout>
         </RelativeLayout>
     </LinearLayout>

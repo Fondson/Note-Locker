@@ -60,7 +60,11 @@ dependencies {
     compile 'com.google.firebase:firebase-crash:9.6.1'
     compile 'com.android.support:design:24.2.1'
     compile 'com.android.support:palette-v7:24.2.1'
-    //compile 'com.jmedeisis:draglinearlayout:1.1.0'
+    compile 'com.joestelmach:natty:0.11'
+    compile 'com.wdullaer:materialdatetimepicker:3.1.1'
+    compile ('com.h6ah4i.android.widget.advrecyclerview:advrecyclerview:0.10.3@aar'){
+        transitive=true
+    }
 }
 
 apply plugin: 'com.google.gms.google-services'

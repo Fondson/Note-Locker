@@ -47,7 +47,7 @@ public class Firebase {
         return completedDatabase;
     }
 
-    static public void writeNewToDoItem(String name, boolean selected){
+    static public String writeNewToDoItem(String name, boolean selected){
         if (toDoDatabase != null) {
             String key = toDoDatabase.push().getKey();
             UserItem item = new UserItem(key, name, selected);
@@ -55,7 +55,9 @@ public class Firebase {
             Map<String, Object> childUpdates = new HashMap<>();
             childUpdates.put(key, itemValues);
             toDoDatabase.updateChildren(childUpdates);
+            return key;
         }
+        return null;
     }
 
     static public void removeToDoItem(String key){

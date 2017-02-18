@@ -1,25 +1,22 @@
 package com.dev.fondson.NoteLocker;
 
+import com.joestelmach.natty.*;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.app.WallpaperManager;
 import android.app.backup.BackupManager;
-import android.content.ContentResolver;
-import android.content.ContentUris;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -27,22 +24,21 @@ import android.os.Message;
 import android.preference.PreferenceManager;
 import android.provider.CalendarContract;
 import android.support.annotation.NonNull;
-import android.support.v4.view.MotionEventCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.Layout;
 import android.text.method.KeyListener;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
-//import android.widget.ExpandableListView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -68,12 +64,14 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.ListIterator;
-import java.util.TimeZone;
+import java.util.Locale;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ItemPickerDialogFragment.OnItemSelectedListener{
     public static final int WALLPAPER_CODE = 10;
     public static final int GOOGLE_ACCOUNT_SIGN_IN_CODE = 9;
     public static final int FIREBASE_MESSAGE_CODE = 1;
@@ -100,10 +98,9 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth.AuthStateListener mAuthListener;
     private EditText etInput;
     private boolean firstLogIn = false;
-    private LinkedList<ItemList> itemsList;
-    private LinkedList<CalendarItem> calendarItemArr;
-    private LinkedList<UserItem> userItemsList;
-    private LinkedList<UserItem> completedItemsList;
+    public static LinkedList<ItemList> itemsList;
+    public static LinkedList<UserItem> userItemsList;
+    public static LinkedList<UserItem> completedItemsList;
     private RecyclerView recyclerView;
     private SwipeRefreshLayout swipeContainer;
     private Calendar beginTime;
@@ -253,8 +250,9 @@ public class MainActivity extends AppCompatActivity {
         etInput.setOnEditorActionListener(new EditText.OnEditorActionListener() {
                                               @Override
                                               public boolean onEditorAction(TextView arg0, int arg1, KeyEvent event) {
-                                                  if (!(etInput.getText().toString().trim().matches(""))) {
-                                                      Firebase.writeNewToDoItem(etInput.getText().toString().trim(), false);
+                                                  if (!(etInput.getText().toString().trim().equals(""))) {
+                                                      String text = etInput.getText().toString().trim();
+                                                      String key = Firebase.writeNewToDoItem(text, false);
                                                       etInput.setText("");
                                                   }
                                                   return true;
@@ -279,20 +277,6 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-
-//        // set up slide up interface
-//        config = new SlidrConfig.Builder()
-//                                .position(SlidrPosition.BOTTOM)
-//                                .sensitivity(0.75f)
-//                                .scrimColor(Color.TRANSPARENT)
-//                                .scrimStartAlpha(1f)
-//                                .scrimEndAlpha(0f)
-//                                .velocityThreshold(2400)
-//                                .distanceThreshold(0.25f)
-//                                .edge(true)
-//                                .edgeSize(0.18f) // The % of the screen that counts as the edge, default 18%
-//                                .build();
-//        slidrInterface = Slidr.attach(this, config);
 
         // facebook shimmer effect for slide up text
         ShimmerFrameLayout slideUpShimmer = (ShimmerFrameLayout) slideUpView;
@@ -348,24 +332,42 @@ public class MainActivity extends AppCompatActivity {
         ChildEventListener childEventListener = new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
+                UserItem item = dataSnapshot.getValue(UserItem.class);
                 Log.d("todochild", "onChildAdded:" + dataSnapshot.getKey());
                 // A new todo item has been added, add it to the displayed list
-                userItemsList.add(0, dataSnapshot.getValue(UserItem.class));
-                itemsAdapter.notifyChildInserted(ItemList.TODO, 0);
+                userItemsList.add(0, item);
+                try {
+                    itemsAdapter.notifyChildInserted(ItemList.TODO, 0);
+                }catch (Exception e){
+                    itemsAdapter.notifyParentChanged(ItemList.TODO);
+                }
+                long diff = item.notification.getTime() - Calendar.getInstance().getTime().getTime();
+                if (diff > 0){
+                    item.notification.scheduleNotification(getApplicationContext(), item,
+                            item.notification.getNotification(getApplicationContext(), item), diff);
+                    item.notification.setDateTimeString(
+                            new SimpleDateFormat("EEE, MMM d, yyyy", Locale.getDefault()).format(item.notification.getTime())
+                                    + " - " + DateFormat.getTimeInstance(DateFormat.SHORT).format(item.notification.getTime()));
+                    changeToDoItem(item.getKey());
+                }else if (item.notification.getTime() != -1) {
+                    Log.d("todochildtime", "onChildAdded:" + String.valueOf(item.notification.getTime()));
+                    checkNotif(item);
+                }
             }
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String previousChildName) {
                 Log.d("todochild", "onChildChanged:" + dataSnapshot.getKey());
                 UserItem newItem = dataSnapshot.getValue(UserItem.class);
-                changeToDoItem(newItem.getKey(), newItem.getName(), newItem.isSelected());
+                changeToDoItem(newItem.getKey());
+                //checkNotif(newItem);
             }
 
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
                 Log.d("todochild", "onChildRemoved:" + dataSnapshot.getKey());
-                removeToDoItem(dataSnapshot.getValue(UserItem.class).getKey());
-                //itemsAdapter.notifyDataSetChanged();
+                UserItem item = dataSnapshot.getValue(UserItem.class);
+                removeToDoItem(item.getKey());
             }
 
             @Override
@@ -388,22 +390,57 @@ public class MainActivity extends AppCompatActivity {
                     if (key.equals(iterator.next().getKey())){
                         final int index = iterator.nextIndex() - 1;
                         iterator.remove();
-                        itemsAdapter.notifyChildRemoved(ItemList.TODO, index);
+                        try {
+                            itemsAdapter.notifyChildRemoved(ItemList.TODO, index);
+                        }catch (Exception e){
+                            itemsAdapter.notifyParentChanged(ItemList.TODO);
+                        }
                         break;
                     }
                 }
             }
 
-            private void changeToDoItem(String key, String name, Boolean selected){
+            private void changeToDoItem(String key){
                 ListIterator<UserItem> iterator = userItemsList.listIterator();
                 while (iterator.hasNext()){
                     UserItem item = iterator.next();
                     if (key.equals(item.getKey())){
-                        item.setName(name);
-                        item.setSelected(selected);
-                        itemsAdapter.notifyChildChanged(ItemList.TODO, iterator.nextIndex() - 1);
+                        long diff = item.notification.getTime() - Calendar.getInstance().getTime().getTime();
+                        if (diff > 0){
+                            item.notification.setDateTimeString(
+                                    new SimpleDateFormat("EEE, MMM d, yyyy", Locale.getDefault()).format(item.notification.getTime())
+                                            + " - " + DateFormat.getTimeInstance(DateFormat.SHORT).format(item.notification.getTime()));
+                        }
+                        try {
+                            itemsAdapter.notifyChildChanged(ItemList.TODO, iterator.nextIndex() - 1);
+                            Log.d("changeToDoItemdebug", "changeToDoItem: " + String.valueOf(iterator.nextIndex() - 1)
+                            + " " + item.getName() + " " + item.notification.getTime());
+                        }catch (Exception e){
+                            itemsAdapter.notifyParentChanged(ItemList.TODO);
+                        }
                         break;
                     }
+                }
+            }
+
+            private void checkNotif(UserItem item){
+                Parser parser = new Parser();
+                String text = item.getName();
+                String key = item.getKey();
+                List<DateGroup> groups = parser.parse(text);
+                for(DateGroup group : groups) {
+                    List<Date> dates = group.getDates();
+                    Log.d("natty", "dategroup exists");
+                    Date date = dates.get(0);
+                    Log.d("natty", date.toString());
+                    NattyDetectDialog dialog = new NattyDetectDialog();
+                    Bundle bundle = new Bundle();
+                    bundle.putString("key", item.getKey());
+                    bundle.putLong("time", date.getTime());
+
+                    dialog.setArguments(bundle);
+
+                    dialog.show(getSupportFragmentManager(), "tag");
                 }
             }
         };
@@ -417,14 +454,18 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("completedchild", "onChildAdded:" + dataSnapshot.getKey());
                 // A new todo item has been added, add it to the displayed list
                 completedItemsList.add(0, dataSnapshot.getValue(UserItem.class));
-                itemsAdapter.notifyChildInserted(ItemList.COMPLETED, 0);
+                try {
+                    itemsAdapter.notifyChildInserted(ItemList.COMPLETED, 0);
+                }catch (Exception e){
+                    itemsAdapter.notifyParentChanged(ItemList.COMPLETED);
+                }
             }
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String previousChildName) {
                 Log.d("completedchild", "onChildChanged:" + dataSnapshot.getKey());
                 UserItem newItem = dataSnapshot.getValue(UserItem.class);
-                changeCompletedItem(newItem.getKey(), newItem.getName(), newItem.isSelected());
+                changeCompletedItem(newItem.getKey());
                 //itemsAdapter.notifyDataSetChanged();
             }
 
@@ -455,20 +496,26 @@ public class MainActivity extends AppCompatActivity {
                     if (key.equals(iterator.next().getKey())){
                         final int index = iterator.nextIndex() - 1;
                         iterator.remove();
-                        itemsAdapter.notifyChildRemoved(ItemList.COMPLETED, index);
+                        try {
+                            itemsAdapter.notifyChildRemoved(ItemList.COMPLETED, index);
+                        }catch (Exception e){
+                            itemsAdapter.notifyParentChanged(ItemList.COMPLETED);
+                        }
                         break;
                     }
                 }
             }
 
-            private void changeCompletedItem(String key, String name, Boolean selected){
+            private void changeCompletedItem(String key){
                 ListIterator<UserItem> iterator = completedItemsList.listIterator();
                 while (iterator.hasNext()){
                     UserItem item = iterator.next();
                     if (key.equals(item.getKey())){
-                        item.setName(name);
-                        item.setSelected(selected);
-                        itemsAdapter.notifyChildChanged(ItemList.COMPLETED, iterator.nextIndex() - 1);
+                        try {
+                            itemsAdapter.notifyChildChanged(ItemList.COMPLETED, iterator.nextIndex() - 1);
+                        }catch (Exception e){
+                            itemsAdapter.notifyParentChanged(ItemList.COMPLETED);
+                        }
                         break;
                     }
                 }
@@ -477,133 +524,21 @@ public class MainActivity extends AppCompatActivity {
         completedDatabase.addChildEventListener(childEventListener);
     }
 
-    private void getCalendarEvents(LinkedList<CalendarItem> calendarItems){
-        if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(SettingsActivity.PREF_KEY_CALENDAR,false)
-                && checkCallingOrSelfPermission("android.permission.READ_CALENDAR")== PackageManager.PERMISSION_GRANTED
-                && checkCallingOrSelfPermission("android.permission.WRITE_CALENDAR")== PackageManager.PERMISSION_GRANTED) {
-            try {
-                Cursor cur = null;
-                ContentResolver cr = getContentResolver();
-
-                // Specify the date range you want to search for recurring
-                // event instances
-                beginTime = Calendar.getInstance();
-                beginTime.set(Calendar.HOUR_OF_DAY, 0);
-                beginTime.set(Calendar.MINUTE, 0);
-                beginTime.set(Calendar.SECOND, 0);
-                beginTime.set(Calendar.MILLISECOND, 1);
-                beginTime.setTimeZone(TimeZone.getTimeZone("UTC"));
-
-                long startMillis = beginTime.getTimeInMillis();
-                Calendar endTime = Calendar.getInstance();
-                endTime.set(Calendar.HOUR_OF_DAY, 23);
-                endTime.set(Calendar.MINUTE, 59);
-                endTime.set(Calendar.SECOND, 59);
-                endTime.set(Calendar.MILLISECOND, 1);
-                endTime.setTimeZone(TimeZone.getTimeZone("UTC"));
-                long endMillis = endTime.getTimeInMillis();
-
-                Uri.Builder builder = CalendarContract.Instances.CONTENT_URI.buildUpon();
-                ContentUris.appendId(builder, startMillis);
-                ContentUris.appendId(builder, endMillis);
-
-
-                // Submit the query
-                cur = cr.query(builder.build(),
-                        INSTANCE_PROJECTION,
-                        null,
-                        null,
-                        CalendarContract.Instances.BEGIN + " DESC");
-
-                while (cur.moveToNext()) {
-                    String title = null;
-                    String location = null;
-                    long eventID = 0;
-                    long beginVal = 0;
-                    long endVal = 0;
-
-                    // Get the field values
-                    eventID = cur.getLong(PROJECTION_ID_INDEX);
-                    beginVal = cur.getLong(PROJECTION_BEGIN_INDEX);
-                    title = cur.getString(PROJECTION_TITLE_INDEX);
-                    endVal = cur.getLong(PROJECTION_END_INDEX);
-
-                    try {
-                        Cursor cursor = cr.query(
-                                CalendarContract.Events.CONTENT_URI,
-                                EVENT_PROJECTION,
-                                CalendarContract.Events._ID + " = ? ",
-                                new String[]{Long.toString(eventID)},
-                                null);
-                        if (cursor.moveToFirst()) {
-                            location = cursor.getString(PROJECTION_LOCATION_INDEX);
-                        }
-                        cursor.close();
-                    } catch (SecurityException e) {
-                        Toast.makeText(this, "Cannot get calendar event start time.\nError: " + e.getMessage(),
-                                Toast.LENGTH_LONG).show();
-                        Log.d("calEvent", "Event ID Error " + e.getMessage());
-                    }
-
-                    // add to calendarItems
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.setTimeInMillis(beginVal);
-                    DateFormat formatter = new SimpleDateFormat("E-MMM dd");
-                    String date = formatter.format(calendar.getTime());
-                    formatter = new SimpleDateFormat("h:mm a");
-                    String timeBegin = formatter.format(calendar.getTime());
-                    calendar.setTimeInMillis(endVal);
-                    String timeEnd = formatter.format(calendar.getTime());
-                    if (timeBegin.equals(timeEnd)) {
-                        timeBegin = "All day";
-                        timeEnd = null;
-                    }
-                    if (location.isEmpty()) location = null;
-                String item = formatter.format(calendar.getTime()) + "\n" + title + "\nat " + location;
-                Log.d("calEvent",item);
-                    calendarItems.add(0, new CalendarItem(date, timeBegin, timeEnd, title, location));
-                }
-                Log.d("calEvent", "cursor done");
-                beginTime=Calendar.getInstance();
-                beginTime.set(Calendar.HOUR_OF_DAY, 0);
-                beginTime.set(Calendar.MINUTE, 0);
-                beginTime.set(Calendar.SECOND, 0);
-                beginTime.set(Calendar.MILLISECOND, 1);
-                cur.close();
-            } catch (Exception e) {
-                Toast.makeText(this, "Cannot get calendar events.\nError: " + e.getMessage(),
-                        Toast.LENGTH_LONG).show();
-                Log.d("calEvent", e.getMessage());
-            }
-        }
-    }
-
     private void setUpItemList(){
         Log.d("setupitem", "setUpItemList: " + String.valueOf(firstLogIn));
         userItemsList = new LinkedList<UserItem>();
         completedItemsList =new LinkedList<UserItem>();
-        //calendarItemArr = new LinkedList<CalendarItem>();
-        //beginTime = Calendar.getInstance();
-        //getCalendarEvents(calendarItemArr);
         itemsList = new LinkedList<ItemList>();
-        //itemsArray.add(calendarItemArr);
         itemsList.add(new ItemList("To Do", userItemsList));
         itemsList.add(new ItemList("Completed", completedItemsList));
         recyclerView = (RecyclerView) findViewById(R.id.itemList);
         itemsAdapter = new ItemListAdapter(this, itemsList);
         recyclerView.setAdapter(itemsAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-//        itemsAdapter = new ItemsAdapter(this,itemsArray);
-//        expandableListView=(ExpandableListView) findViewById(R.id.exlvItems);
-//        expandableListView.setAdapter(itemsAdapter);
-//        expandableListView.expandGroup(itemsAdapter.CALENDAR);
-//        expandableListView.expandGroup(itemsAdapter.NOT_COMPLETED);
         if (firstLogIn) {
-//            expandableListView.expandGroup(itemsAdapter.COMPLETED);
             Firebase.writeNewToDoItem("Check me to move me to the Completed list.", true);
             Firebase.writeNewCompletedItem("Uncheck me to move me to the To do list or press the \"X\" to permanently delete me.",true);
         }
-//        itemsAdapter.notifyDataSetChanged();
     }
 
     public static ImageView getDarkTint(){
@@ -638,31 +573,6 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         fullScreencall();
         hideKeyboard();
-//        if (userEmail != null && calendarItemArr != null) {
-//            if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(SettingsActivity.PREF_KEY_CALENDAR, false)
-//                    && checkCallingOrSelfPermission("android.permission.READ_CALENDAR") == PackageManager.PERMISSION_GRANTED
-//                    && checkCallingOrSelfPermission("android.permission.WRITE_CALENDAR") == PackageManager.PERMISSION_GRANTED) {
-//                if (calendarItemArr.size() == 0) {
-//                    //getCalendarEvents(calendarItemArr);
-//                    //itemsAdapter.notifyDataSetChanged();
-//                    //expandableListView.expandGroup(itemsAdapter.CALENDAR);
-//                } else {
-//                    Calendar currentTime = Calendar.getInstance();
-//                    currentTime.getTime();
-//                    currentTime.set(Calendar.HOUR_OF_DAY, 0);
-//                    currentTime.set(Calendar.MINUTE, 0);
-//                    currentTime.set(Calendar.SECOND, 0);
-//                    currentTime.set(Calendar.MILLISECOND, 1);
-//                    if (beginTime.compareTo(currentTime) != 0) {
-//                        Log.d("calEvent", String.valueOf(beginTime.compareTo(currentTime)));
-//                        calendarItemArr.clear();
-//                        //getCalendarEvents(calendarItemArr);
-//                        //itemsAdapter.notifyDataSetChanged();
-//                    }
-//                }
-//                //itemsAdapter.notifyDataSetChanged();
-//            }
-//        }
         ((EditText) findViewById(R.id.editText)).setText("");
         startService(new Intent(this, UpdateService.class));
     }
@@ -762,6 +672,76 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
         }
+    }
+
+    @Override
+    public void onItemSelected(ItemPickerDialogFragment fragment, ItemPickerDialogFragment.Item item, int index) {
+        String selectedValue = item.getStringValue();
+        Log.d("itempickerdialog", "onItemSelected: " + selectedValue);
+
+        Bundle bund = fragment.getArguments();
+        String key = bund.getString("key");
+        bund.putLong("time", Calendar.getInstance().getTime().getTime());
+
+        UserItem userItem = null;
+        ListIterator<UserItem> iterator = userItemsList.listIterator();
+        while (iterator.hasNext()){
+            userItem = iterator.next();
+            if (key.equals(userItem.getKey())){
+                break;
+            }
+        }
+        switch (selectedValue){
+            case "Edit":
+                showTextDialog(userItem);
+                break;
+            case "Notif":
+                Intent pickTime = new Intent(this, TimePickerActivity.class);
+                pickTime.putExtras(bund);
+                startActivity(pickTime);
+                break;
+        }
+    }
+
+    private void showTextDialog(final UserItem item){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        String oldItem = item.getName();
+
+        builder.setTitle("Change item:");
+        // Inflate new view
+        View viewInflated = LayoutInflater.from(this).inflate(R.layout.edit_item, null);
+        // Set up the input
+        final EditText input = (EditText) viewInflated.findViewById(R.id.newItemInput);
+        // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+        input.setText(oldItem);
+        input.setSelection(oldItem.length());
+        builder.setView(viewInflated);
+
+        // Set up the buttons
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                //Pattern.quote is used to escape special regex characters if present
+                if (!(input.getText().toString().trim()).isEmpty()) {
+                    String newItemName = input.getText().toString().trim();
+                    item.setName(newItemName);
+                    Firebase.updateToDoItem(item);
+                }else{
+                    Toast.makeText(getBaseContext(), "Invalid item.",
+                            Toast.LENGTH_SHORT).show();
+                }
+                fullScreencall();
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+                fullScreencall();
+            }
+        });
+
+        builder.show();
     }
 
     @Override

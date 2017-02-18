@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Paint;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
@@ -20,6 +21,7 @@ import com.bignerdranch.expandablerecyclerview.ExpandableRecyclerAdapter;
 import com.dev.fondson.NoteLocker.databinding.ItemlistTextviewBinding;
 import com.dev.fondson.NoteLocker.databinding.UserItemBinding;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 /**
@@ -61,11 +63,12 @@ public class ItemListAdapter extends ExpandableRecyclerAdapter<ItemList, UserIte
         UserItemBinding binding = itemViewHolder.binding;
         binding.itemName.setPaintFlags(0);
 
+        binding.rlToolbar.setVisibility(View.GONE);
         binding.checkBox.setOnCheckedChangeListener(null);
-        binding.itemName.setOnLongClickListener(null);
         binding.imageButton.setOnClickListener(null);
 
         if (parentPosition == ItemList.TODO) {
+            binding.rlToolbar.setVisibility(View.VISIBLE);
             binding.imageButton.setImageDrawable(context.getResources().getDrawable(R.drawable.star_selector));
             binding.imageButton.setSelected(item.isSelected());
             binding.checkBox.setChecked(false);
@@ -73,76 +76,14 @@ public class ItemListAdapter extends ExpandableRecyclerAdapter<ItemList, UserIte
                 @Override
                 public void onCheckedChanged(final CompoundButton arg0, boolean isChecked) {
                     if (isChecked) {
+                        Log.d("testingtheory", "adapter: " + item.notification.toString());
+                        item.notification.cancelNotif();
                         Firebase.removeToDoItem(item.getKey());
                         Firebase.writeNewCompletedItem(item.getName(),item.isSelected());
                     }
                 }
             });
-
-            binding.itemName.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View view) {
-                    final EditText editText = (EditText) view;
-                    showTextDialog(editText);
-                    return true;
-                }
-
-                private void showTextDialog(final EditText editText){
-                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                    String oldItem = editText.getText().toString();
-
-                    builder.setTitle("Change item:");
-                    // Inflate new view
-                    View viewInflated = LayoutInflater.from(context).inflate(R.layout.edit_item, null);
-                    // Set up the input
-                    final EditText input = (EditText) viewInflated.findViewById(R.id.newItemInput);
-                    // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
-                    input.setText(oldItem);
-                    input.setSelection(editText.getText().length());
-                    builder.setView(viewInflated);
-
-                    // Set up the buttons
-                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            //Pattern.quote is used to escape special regex characters if present
-                            if (!(input.getText().toString().trim()).isEmpty()) {
-                                String newItemName = input.getText().toString().trim();
-                                item.setName(newItemName);
-                                Firebase.updateToDoItem(item);
-                                editText.setText(newItemName);
-                            }else{
-                                Toast.makeText(context, "Invalid item.",
-                                        Toast.LENGTH_SHORT).show();
-                            }
-                            fullScreencall();
-                        }
-                    });
-                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.cancel();
-                            fullScreencall();
-                        }
-                    });
-
-                    builder.show();
-                }
-
-                private void fullScreencall() {
-                    if(Build.VERSION.SDK_INT < 19){ //19 or above api
-                        View v = ((Activity)context).getWindow().getDecorView();
-                        v.setSystemUiVisibility(View.GONE);
-                    } else {
-                        //for lower api versions.
-                        View decorView = ((Activity)context).getWindow().getDecorView();
-                        int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-                        decorView.setSystemUiVisibility(uiOptions);
-                    }
-                }
-            });
             binding.imageButton.setOnClickListener(new View.OnClickListener() {
-
                 public void onClick(View button) {
                     //Set the button's appearance
                     boolean selected =!button.isSelected();
@@ -152,9 +93,23 @@ public class ItemListAdapter extends ExpandableRecyclerAdapter<ItemList, UserIte
                         item.setSelected(true);
                     }
                     Firebase.updateToDoItem(item);
-
                 }
+            });
+            binding.itemSettings.setOnClickListener(new View.OnClickListener(){
+                public void onClick(View button) {
+                    ArrayList<ItemPickerDialogFragment.Item> pickerItems = new ArrayList<>();
+                    pickerItems.add(new ItemPickerDialogFragment.Item("Edit item", "Edit"));
+                    pickerItems.add(new ItemPickerDialogFragment.Item("Set notification", "Notif"));
 
+                    ItemPickerDialogFragment dialog = ItemPickerDialogFragment.newInstance(
+                            "Choose action",
+                            pickerItems,
+                            -1
+                    );
+                    Bundle bund = dialog.getArguments();
+                    bund.putString("key", item.getKey());
+                    dialog.show(((Activity)context).getFragmentManager(), "ItemPicker");
+                }
             });
         }
         else if (parentPosition == ItemList.COMPLETED) {
