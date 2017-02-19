@@ -9,14 +9,11 @@ be reminded everytime you open your phone.
 
 #Features
 - Easily add and dismiss items
-- Receive daily events from <b>Google Calendar</b>
 - Takes the wallpaper of the current home launcher <b>OR</b> select your own
-- Item cards' colour adapts and changes dynamically with your wallpaper
+- Set scheduled notifications for each note
+- Note cards' colour adapts and changes dynamically with your wallpaper
 - Slide UP to unlock (using modified library)
 - <a href ="https://github.com/PaoloRotolo/AppIntro"> App intro</a>
-- Long-click to edit an item
-- Star important items
-- Collapsable items list
 
 #Screenshots
 <img src="https://dl2.pushbulletusercontent.com/ZOu0yRK0TZTDu5Kl2EmCEmyqBDseGO2Z/UZDeviceArtGeneratorImg2017-02-19-15-22-21.jpg" width="270px" height="420px" />
