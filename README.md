@@ -19,6 +19,7 @@ be reminded everytime you open your phone.
 - Collapsable items list
 
 #Screenshots
-<img src="https://dl2.pushbulletusercontent.com/OXMWDrdecJJ1gP9UdTK1jk9bXiib2dA5/Screenshot_20160625-221131.png" width="270px" height="480px" />
-<img src="https://dl2.pushbulletusercontent.com/0IJzYO2ws0EbAhiHvDcmMH2tKMNKwHbp/Screenshot_20170207-161354.png" width="270px" height="480px" />
-<img src="https://dl2.pushbulletusercontent.com/Ge2eStuVt06Wofvi5SjK3FWEjiBjcMkM/Screenshot_20170207-161001.png" width="270px" height="480px" />
+<img src="https://dl2.pushbulletusercontent.com/ZOu0yRK0TZTDu5Kl2EmCEmyqBDseGO2Z/UZDeviceArtGeneratorImg2017-02-19-15-22-21.jpg" width="270px" height="420px" />
+<img src="https://dl2.pushbulletusercontent.com/5u6NaGoUpx2xlNu8l4UsPKS3QwQKhu0T/UZDeviceArtGeneratorImg2017-02-19-15-22-56.jpg" width="270px" height="420px" />
+<img src="https://dl2.pushbulletusercontent.com/AA1t3qiqKI3V7zueQ5BnI0VKQCzEOUhj/UZDeviceArtGeneratorImg2017-02-19-15-24-03.jpg" width="270px" height="420px" />
+<img src="https://dl2.pushbulletusercontent.com/4jS1JrpizAG9eAgyzt7Xw8GYAgwtejF3/UZDeviceArtGeneratorImg2017-02-19-16-30-27.jpg" width="270px" height="420px" />
