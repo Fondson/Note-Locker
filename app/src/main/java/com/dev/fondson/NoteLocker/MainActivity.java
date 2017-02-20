@@ -30,6 +30,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.method.KeyListener;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -359,7 +360,7 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
             public void onChildChanged(DataSnapshot dataSnapshot, String previousChildName) {
                 Log.d("todochild", "onChildChanged:" + dataSnapshot.getKey());
                 UserItem newItem = dataSnapshot.getValue(UserItem.class);
-                changeToDoItem(newItem.getKey());
+                if (!ItemListAdapter.MOVING) changeToDoItem(newItem.getKey());
                 //checkNotif(newItem);
             }
 
@@ -451,7 +452,7 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
         ChildEventListener childEventListener = new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
-                Log.d("completedchild", "onChildAdded:" + dataSnapshot.getKey());
+                Log.d("completedchild", "onChildAdded:" + dataSnapshot.getKey() + " " + dataSnapshot.getValue(UserItem.class).getKey());
                 // A new todo item has been added, add it to the displayed list
                 completedItemsList.add(0, dataSnapshot.getValue(UserItem.class));
                 try {
@@ -465,7 +466,7 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
             public void onChildChanged(DataSnapshot dataSnapshot, String previousChildName) {
                 Log.d("completedchild", "onChildChanged:" + dataSnapshot.getKey());
                 UserItem newItem = dataSnapshot.getValue(UserItem.class);
-                changeCompletedItem(newItem.getKey());
+                if (!ItemListAdapter.MOVING) changeCompletedItem(newItem.getKey());
                 //itemsAdapter.notifyDataSetChanged();
             }
 
@@ -535,6 +536,10 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
         itemsAdapter = new ItemListAdapter(this, itemsList);
         recyclerView.setAdapter(itemsAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        ItemTouchHelper.Callback callback =
+                new SimpleItemTouchHelperCallback(itemsAdapter);
+        ItemTouchHelper touchHelper = new ItemTouchHelper(callback);
+        touchHelper.attachToRecyclerView(recyclerView);
         if (firstLogIn) {
             Firebase.writeNewToDoItem("Check me to move me to the Completed list.", true);
             Firebase.writeNewCompletedItem("Uncheck me to move me to the To do list or press the \"X\" to permanently delete me.",true);

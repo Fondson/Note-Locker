@@ -14,40 +14,13 @@
         android:layout_weight="2"
         android:layout_gravity="center">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:paddingLeft="32dp"
-            android:fontFamily="sans-serif-thin"
-            android:textColor="#ffffff"
-            android:paddingRight="32dp"
-            android:textSize="28sp"
-            android:text="Tutorial"
-            android:paddingTop="32dp" />
-
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
-            android:src="@drawable/tutorial_completed_and_edit"
+            android:src="@drawable/intro_3"
             android:padding="16dp" />
     </LinearLayout>
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:textColor="#ffffff"
-        android:paddingLeft="64dp"
-        android:paddingRight="64dp"
-        android:paddingBottom="16dp"
-        android:textSize="16sp"
-        android:text="Tap &quot;Completed&quot; to show/hide the Completed list.\nLong-click a To do item to edit it." />
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="64dp" />
 </LinearLayout>

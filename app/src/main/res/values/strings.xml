@@ -4,6 +4,6 @@
     <string name="setting_turn_off">Turn off Note Locker</string>
     <string name="slide_up">Slide UP to unlock</string>
     <string name="setting_signed_in_as">Signed in as</string>
-    <string name="setting_view_tutorial">View tutorial</string>
+    <string name="setting_view_tutorial">View intro</string>
     <string name="setting_view_notifs">View notifications</string>
 </resources>

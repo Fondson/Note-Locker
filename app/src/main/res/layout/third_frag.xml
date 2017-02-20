@@ -14,40 +14,13 @@
         android:layout_weight="2"
         android:layout_gravity="center">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:gravity="center"
-            android:paddingLeft="32dp"
-            android:fontFamily="sans-serif-thin"
-            android:textColor="#ffffff"
-            android:paddingRight="32dp"
-            android:textSize="28sp"
-            android:text="Tutorial"
-            android:paddingTop="32dp" />
-
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
-            android:src="@drawable/tutorial_settings"
+            android:src="@drawable/intro_2"
             android:padding="16dp" />
     </LinearLayout>
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:textColor="#ffffff"
-        android:paddingLeft="64dp"
-        android:paddingRight="64dp"
-        android:paddingBottom="16dp"
-        android:textSize="16sp"
-        android:text="Access app settings (such as changing background wallpaper) by pressing the three dots."/>
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="64dp" />
 </LinearLayout>

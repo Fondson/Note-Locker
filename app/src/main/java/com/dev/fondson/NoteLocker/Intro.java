@@ -13,7 +13,7 @@ import com.github.paolorotolo.appintro.AppIntro;
 import com.github.paolorotolo.appintro.AppIntro2;
 import com.github.paolorotolo.appintro.AppIntroFragment;
 
-public class Intro extends AppIntro {
+public class Intro extends AppIntro2 {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,7 +25,6 @@ public class Intro extends AppIntro {
         addSlide(IntroSlide.newInstance(R.layout.second_frag));
         addSlide(IntroSlide.newInstance(R.layout.third_frag));
         addSlide(IntroSlide.newInstance(R.layout.fourth_frag));
-        addSlide(IntroSlide.newInstance(R.layout.fifth_frag));
 
         setProgressButtonEnabled(true);
 
@@ -40,27 +39,29 @@ public class Intro extends AppIntro {
             decorView.setSystemUiVisibility(uiOptions);
         }
 
-        setSeparatorColor(921515);
-        showSkipButton(false);
-        //skipButton.setEnabled(false);
-        //skipButton.setAlpha(0);
-
         // Turn vibration on and set intensity.
         setVibrate(true);
         setVibrateIntensity(30);
     }
 
     @Override
-    public void onDonePressed(Fragment currentFragment) {
-        super.onDonePressed(currentFragment);
-
+    public void onBackPressed(){
+        super.onBackPressed();
         loadMainActivity();
     }
-    // Don't finish Activity on Back press
+
     @Override
-    public void onBackPressed() {
-        return;
+    public void onDonePressed(Fragment currentFragment) {
+        super.onDonePressed(currentFragment);
+        loadMainActivity();
     }
+
+    @Override
+    public void onSkipPressed(Fragment currentFragment) {
+        super.onSkipPressed(currentFragment);
+        loadMainActivity();
+    }
+
     private void loadMainActivity(){
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);

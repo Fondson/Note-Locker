@@ -18,17 +18,21 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.bignerdranch.expandablerecyclerview.ExpandableRecyclerAdapter;
+import com.bignerdranch.expandablerecyclerview.model.ExpandableWrapper;
 import com.dev.fondson.NoteLocker.databinding.ItemlistTextviewBinding;
 import com.dev.fondson.NoteLocker.databinding.UserItemBinding;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 
 /**
  * Created by Fondson on 2017-02-04.
  */
 
-public class ItemListAdapter extends ExpandableRecyclerAdapter<ItemList, UserItem, ItemListViewHolder, ItemViewHolder> {
+public class ItemListAdapter extends ExpandableRecyclerAdapter<ItemList, UserItem, ItemListViewHolder, ItemViewHolder>
+        implements ItemTouchHelperAdapter{
+    public static boolean MOVING = false;
     private LayoutInflater inflater;
     private Context context;
 
@@ -133,5 +137,91 @@ public class ItemListAdapter extends ExpandableRecyclerAdapter<ItemList, UserIte
             });
         }
         Log.d("onBindChild", "onBindChildViewHolder: binded to " + item.getName());
+    }
+
+    @Override
+    public boolean onItemMove(int fromPosition, int toPosition) {
+        Log.d("itemMoving", "onItemMove: " + String.valueOf(fromPosition) + " to " + String.valueOf(toPosition));
+
+        ExpandableWrapper<ItemList, UserItem> fromWrapper = mFlatItemList.get(fromPosition);
+        ExpandableWrapper<ItemList, UserItem> toWrapper = mFlatItemList.get(toPosition);
+
+        int fromFlatParentPos = getFlatParentPositionReverse(fromPosition);
+        fromPosition = fromPosition - (fromFlatParentPos + 1);
+        int toFlatParentPos = getFlatParentPositionReverse(toPosition);
+        toPosition = toPosition - (toFlatParentPos + 1);
+
+        ItemList fromParent = mFlatItemList.get(fromFlatParentPos).getParent();
+        int parentPos;
+        if (fromParent.getName().equals("To Do")){
+            parentPos = ItemList.TODO;
+        }else{
+            parentPos = ItemList.COMPLETED;
+        }
+
+        if (fromFlatParentPos == toFlatParentPos && toPosition >= 0 && fromPosition >= 0) {
+            Log.d("itemMoving", "onItemMove: fromFlatParentPos == toFlatParentPos" );
+
+            LinkedList<UserItem> list = fromParent.getChildList();
+            if (fromPosition < toPosition) {
+                for (int i = fromPosition; i < toPosition; i++) {
+                    Log.d("itemMoving", "onItemMove: " + String.valueOf(i));
+                    Collections.swap(list, i, i + 1);
+                    UserItem a = list.get(i);
+                    UserItem b = list.get(i + 1);
+                    Log.d("itemMoving", "onItemMove: " + a.getKey());
+                    swapKey(a, b);
+                    Log.d("itemMoving", "onItemMove: " + a.getKey());
+                    if (parentPos == ItemList.TODO) {
+                        Firebase.updateToDoItem(a);
+                        Firebase.updateToDoItem(b);
+                    }else{
+                        Firebase.updateCompletedItem(a);
+                        Firebase.updateCompletedItem(b);
+                    }
+                }
+            } else {
+                for (int i = fromPosition; i > toPosition; i--) {
+                    Log.d("itemMoving", "onItemMove: " + String.valueOf(i));
+                    Collections.swap(list, i, i - 1);
+                    UserItem a = list.get(i);
+                    UserItem b = list.get(i -1);
+                    Log.d("itemMoving", "onItemMove: " + a.getKey());
+                    swapKey(a, b);
+                    Log.d("itemMoving", "onItemMove: " + a.getKey());
+                    if (parentPos == ItemList.TODO) {
+                        Firebase.updateToDoItem(a);
+                        Firebase.updateToDoItem(b);
+                    }else{
+                        Firebase.updateCompletedItem(a);
+                        Firebase.updateCompletedItem(b);
+                    }
+                }
+            }
+            notifyChildMoved(parentPos, fromPosition, toPosition);
+            return true;
+        }
+        return false;
+    }
+
+    private void swapKey(UserItem a, UserItem b){
+        String temp = a.getKey();
+        a.setKey(b.getKey());
+        b.setKey(temp);
+    }
+
+    @Override
+    public void onItemDismiss(int position) {
+
+    }
+
+    private int getFlatParentPositionReverse(int childPosition) {
+        for (int i = childPosition; i >= 0; --i) {
+            if (mFlatItemList.get(i).isParent()) {
+                return i;
+            }
+        }
+
+        return -1;
     }
 }

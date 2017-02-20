@@ -3,6 +3,7 @@ package com.dev.fondson.NoteLocker;
 import com.bignerdranch.expandablerecyclerview.model.Parent;
 
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by Fondson on 2017-02-04.

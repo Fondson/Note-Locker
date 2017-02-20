@@ -80,7 +80,7 @@
                         android:background="#6afdfdfd"
                         android:layout_weight="2"
                         android:scaleType="fitCenter"
-                        android:tint="#535353"
+                        android:tint="#000000"
                         android:paddingTop="5dp"
                         android:paddingBottom="5dp"/>
                 </LinearLayout>

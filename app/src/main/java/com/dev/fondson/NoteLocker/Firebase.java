@@ -96,6 +96,15 @@ public class Firebase {
         }
     }
 
+    static public void updateCompletedItem(UserItem item) {
+        if (completedDatabase != null) {
+            Map<String, Object> itemValues = item.toMap();
+            Map<String, Object> childUpdates = new HashMap<>();
+            childUpdates.put(item.getKey(), itemValues);
+            completedDatabase.updateChildren(childUpdates);
+        }
+    }
+
     static public void authWithGoogle(GoogleSignInAccount acct, FirebaseAuth mAuth, final Context context) {
         Log.d("firebasetag", "firebaseAuthWithGoogle:" + acct.getId());
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);

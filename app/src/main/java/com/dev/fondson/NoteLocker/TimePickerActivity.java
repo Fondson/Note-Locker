@@ -22,19 +22,15 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.dev.fondson.NoteLocker.databinding.ActivityTimePickerBinding;
-import com.google.gson.Gson;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
-import com.wdullaer.materialdatetimepicker.time.Timepoint;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.ListIterator;
 import java.util.Locale;
 
@@ -142,44 +138,52 @@ public class TimePickerActivity extends AppCompatActivity implements View.OnClic
                 userItem.notification.setTime(dateTime.getTime().getTime());
                 Firebase.updateToDoItem(userItem);
 
-                // get time diff
-                long diff = userItem.notification.getTime() - Calendar.getInstance().getTime().getTime();
-                long timeInSeconds = diff / 1000;
-                long hours, minutes, seconds, days;
-                days = timeInSeconds / (3600 * 24);
-                timeInSeconds = timeInSeconds - (days * (3600 * 24));
-                hours = timeInSeconds / 3600;
-                timeInSeconds = timeInSeconds - (hours * 3600);
-                minutes = timeInSeconds / 60;
-                timeInSeconds = timeInSeconds - (minutes * 60);
-                seconds = timeInSeconds;
-
-                // configure notif
                 String itemName = userItem.getName();
-                userItem.notification.scheduleNotification(this, userItem, userItem.notification.getNotification(this, userItem), diff);
-
-                Log.d("diffdebug", String.valueOf(dateTime.getTime().toString()));
-
-                // build the output string
                 StringBuilder sb = new StringBuilder();
                 sb.append("\"" + itemName + "\" " + "set for ");
-                if (days != 0) {
-                    if (Math.abs(days) > 1) sb.append(String.valueOf(Math.abs(days)) + " days ");
-                    else sb.append(String.valueOf(Math.abs(days)) + " day ");
+                // get time diff
+                long diff = userItem.notification.getTime() - Calendar.getInstance().getTime().getTime();
+                if (diff > 0) {
+                    long timeInSeconds = diff / 1000;
+                    long hours, minutes, seconds, days;
+                    days = timeInSeconds / (3600 * 24);
+                    timeInSeconds = timeInSeconds - (days * (3600 * 24));
+                    hours = timeInSeconds / 3600;
+                    timeInSeconds = timeInSeconds - (hours * 3600);
+                    minutes = timeInSeconds / 60;
+                    timeInSeconds = timeInSeconds - (minutes * 60);
+                    seconds = timeInSeconds;
+
+                    // configure notif
+                    userItem.notification.scheduleNotification(this, userItem, userItem.notification.getNotification(this, userItem), diff);
+
+                    Log.d("diffdebug", String.valueOf(dateTime.getTime().toString()));
+
+                    // build the output string
+                    if (days != 0) {
+                        if (days > 1) sb.append(String.valueOf(days) + " days ");
+                        else sb.append(String.valueOf(Math.abs(days)) + " day ");
+                    }
+                    if (hours != 0) {
+                        if (hours > 1) sb.append(String.valueOf(hours) + " hrs ");
+                        else sb.append(String.valueOf(Math.abs(hours)) + " hr ");
+                    }
+                    if (minutes != 0) {
+                        if (minutes > 0) sb.append(String.valueOf(minutes) + " mins ");
+                        else sb.append(String.valueOf(Math.abs(minutes)) + " min ");
+                    }
+                    if (seconds != 0) {
+                        if (seconds > 1) sb.append(String.valueOf(seconds) + " seconds ");
+                        else sb.append(String.valueOf(Math.abs(seconds)) + " second ");
+                    }
+                    sb.append("from now.");
+                }else{
+                    // configure notif
+                    userItem.notification.scheduleNotification(this, userItem, userItem.notification.getNotification(this, userItem), diff);
+
+                    // build output string
+                    sb.append("now.");
                 }
-                if (hours != 0) {
-                    if (Math.abs(hours) > 1) sb.append(String.valueOf(Math.abs(hours)) + " hrs ");
-                    else sb.append(String.valueOf(Math.abs(hours)) + " hr ");
-                }
-                if (minutes != 0) {
-                    if (Math.abs(minutes) > 0) sb.append(String.valueOf(Math.abs(minutes)) + " mins ");
-                    else sb.append(String.valueOf(Math.abs(minutes)) + " min ");
-                }
-                if (seconds != 0) {
-                    if (Math.abs(seconds) > 1) sb.append(String.valueOf(Math.abs(seconds)) + " seconds ");
-                    else sb.append(String.valueOf(Math.abs(seconds)) + " second ");
-                }
-                sb.append("from now.");
 
                 Toast.makeText(this, sb.toString()
                         , Toast.LENGTH_LONG).show();
