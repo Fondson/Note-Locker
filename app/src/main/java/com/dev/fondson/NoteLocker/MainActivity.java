@@ -15,6 +15,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.media.Image;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
@@ -225,20 +226,21 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
         WALLPAPER_FULL_PATH = WALLPAPER_PATH + "/wallpaper.jpg";
         File wallpaperFile= new File(WALLPAPER_FULL_PATH);
         Drawable wallpaper;
+        darkTint=(ImageView)findViewById(R.id.ivDarkTint);
         if(wallpaperFile.exists()
                 && this.checkCallingOrSelfPermission("android.permission.READ_EXTERNAL_STORAGE") == PackageManager.PERMISSION_GRANTED) {
             wallpaper=Drawable.createFromPath(WALLPAPER_FULL_PATH);
-            getBackground().setBackground(wallpaper);
+            darkTint.setImageDrawable(wallpaper);
         }
         //set default wallpaper
         else{
             WallpaperManager wallpaperManager = WallpaperManager.getInstance(this);
             wallpaper = wallpaperManager.getDrawable();
-            rl.setBackground(wallpaper);
+            darkTint.setImageDrawable(wallpaper);
         }
         new PaletteTask().execute(drawableToBitmap(wallpaper));
-        darkTint=(ImageView)findViewById(R.id.ivDarkTint);
-        ((View)darkTint).setAlpha((float)PreferenceManager.getDefaultSharedPreferences(MainActivity.this).getInt("pref_key_darkTint", 50)/100);
+        darkTint.setAlpha(1f - (float)PreferenceManager.getDefaultSharedPreferences(MainActivity.this).getInt("pref_key_darkTint", 50)/100);
+
         float scale = getResources().getDisplayMetrics().density;
 
         //****************************************************************************************************
@@ -582,8 +584,8 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
         startService(new Intent(this, UpdateService.class));
     }
 
-    public static ViewGroup getBackground(){
-        return rl;
+    public static ImageView getBackground(){
+        return darkTint;
     }
 
     public void hideKeyboard() {

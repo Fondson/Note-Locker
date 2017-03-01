@@ -75,7 +75,7 @@ public class SettingsActivity extends AppCompatActivity {
                         Bitmap bitmap = BitmapFactory.decodeStream(bufferedInputStream);
                         bitmap = Bitmap.createScaledBitmap(bitmap, 2048, 2048, true);
                         Drawable wallpaper= new BitmapDrawable(getResources(), bitmap);
-                        MainActivity.getBackground().setBackground(wallpaper);
+                        MainActivity.getBackground().setImageDrawable(wallpaper);
                         if (wallpaperFile.exists())
                             wallpaperFile.delete();
                         try {
@@ -196,7 +196,7 @@ public class SettingsActivity extends AppCompatActivity {
                 // Set seekbar summary :
                 int alphaValue = sharedPreferences.getInt("pref_key_darkTint", 50);
                 darkTintSeekBar.setSummary(("$%").replace("$", "" + alphaValue));
-                ((View)MainActivity.getDarkTint()).setAlpha((float)alphaValue/100);
+                ((View)MainActivity.getDarkTint()).setAlpha(1f - (float)alphaValue/100);
             }
         }
 

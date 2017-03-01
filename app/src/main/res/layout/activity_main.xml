@@ -12,6 +12,7 @@
         android:layout_height="match_parent"
         android:id="@+id/ivDarkTint"
         android:background="#000000"
+        android:scaleType="fitXY"
         android:alpha=".5" />
 
     <com.dev.fondson.NoteLocker.DragLinearLayout
@@ -35,7 +36,6 @@
                 android:textSize="95sp"
                 android:format12Hour="h:mm"
                 android:format24Hour="k:mm"
-                android:typeface="normal"
                 android:enabled="true"
                 android:paddingBottom="10dp"
                 android:paddingTop="15dp"
@@ -63,9 +63,10 @@
                         android:id="@+id/editText"
                         android:imeOptions="actionDone"
                         android:inputType="text|textCapSentences"
+                        android:textColor="@android:color/black"
+                        android:textColorHint="@android:color/darker_gray"
                         android:hint="@string/editText"
-                        android:theme="@android:style/Widget.Material.Light.EditText"
-                        android:background="#6afdfdfd"
+                        android:background="@color/mdtp_white"
                         android:padding="10dp"
                         android:layout_weight=".25"
                         android:maxLines="1"
@@ -77,10 +78,10 @@
                         android:id="@+id/btnSettings"
                         android:src="@drawable/settings"
                         android:visibility="visible"
-                        android:background="#6afdfdfd"
+                        android:background="@color/mdtp_white"
                         android:layout_weight="2"
                         android:scaleType="fitCenter"
-                        android:tint="#000000"
+                        android:tint="@android:color/black"
                         android:paddingTop="5dp"
                         android:paddingBottom="5dp"/>
                 </LinearLayout>
