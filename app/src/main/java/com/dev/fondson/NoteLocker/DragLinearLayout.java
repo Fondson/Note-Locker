@@ -30,7 +30,7 @@ import android.widget.ScrollView;
 
 /**
  * THIS IS A MODIFIED VERSION OF 'com.jmedeisis:draglinearlayout:1.1.0'
- * https://bignerdranch.github.io/expandable-recycler-view/
+ *
  *
  * A LinearLayout that supports children Views that can be dragged and swapped around.
  * See {@link #addDragView(android.view.View, android.view.View)},
@@ -366,7 +366,7 @@ public class DragLinearLayout extends LinearLayout {
      * Animates the dragged item to its final resting position.
      */
     private void onDragStop() {
-        if (alpha < 5) ((Activity)getContext()).moveTaskToBack(true);
+        if (alpha < 3) ((Activity)getContext()).moveTaskToBack(true);
 
         draggedItem.settleAnimation = ValueAnimator.ofFloat(draggedItem.totalDragOffset,
                 draggedItem.totalDragOffset - draggedItem.targetTopOffset)
@@ -376,7 +376,7 @@ public class DragLinearLayout extends LinearLayout {
             public void onAnimationUpdate(ValueAnimator animation) {
                 if (!draggedItem.detecting) return; // already stopped
 
-                int backAlpha = Math.round(alpha + (animation.getAnimatedFraction()) * 255);
+                int backAlpha = Math.round(alpha + animation.getAnimatedFraction() * 255);
                 draggedItem.setTotalOffset(((Float) animation.getAnimatedValue()).intValue());
                 Log.d("draggeranim", "onAnimationUpdate: " +
                         String.valueOf(backAlpha > 255? 255: backAlpha));
@@ -570,10 +570,10 @@ public class DragLinearLayout extends LinearLayout {
             canvas.translate(0, draggedItem.totalDragOffset);
             draggedItem.viewDrawable.draw(canvas);
 
-            final int left = draggedItem.viewDrawable.getBounds().left;
-            final int right = draggedItem.viewDrawable.getBounds().right;
-            final int top = draggedItem.viewDrawable.getBounds().top;
-            final int bottom = draggedItem.viewDrawable.getBounds().bottom;
+//            final int left = draggedItem.viewDrawable.getBounds().left;
+//            final int right = draggedItem.viewDrawable.getBounds().right;
+//            final int top = draggedItem.viewDrawable.getBounds().top;
+//            final int bottom = draggedItem.viewDrawable.getBounds().bottom;
 
             //dragBottomShadowDrawable.setBounds(left, bottom, right, bottom + dragShadowHeight);
             //dragBottomShadowDrawable.draw(canvas);
@@ -669,7 +669,7 @@ public class DragLinearLayout extends LinearLayout {
                 int lastEventY = (int) MotionEventCompat.getY(event, pointerIndex);
                 int deltaY = lastEventY - downY;
 
-                alpha = Math.round((1f - (Math.min(Math.abs(deltaY) * 4, screenHeight) / screenHeight)) * 255);
+                alpha = Math.round((1f - (Math.min(Math.abs(deltaY) * 5.5f, screenHeight) / screenHeight)) * 255);
 
                 draggedItem.viewDrawable.setAlpha(alpha);
                 Log.d("draggeditemalpha", String.valueOf(alpha));

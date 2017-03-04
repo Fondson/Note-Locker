@@ -9,6 +9,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.DrawableContainer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -64,18 +65,26 @@ public class SettingsActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (data!=null) {
             switch (requestCode) {
+                // handles cropped image results
                 case CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE:
                     CropImage.ActivityResult result = CropImage.getActivityResult(data);
                     InputStream inputStream;
                     File wallpaperFile = new File(MainActivity.WALLPAPER_FULL_PATH);
                     try {
+                        DisplayMetrics widthMetrics = new DisplayMetrics();
+                        ((WindowManager)this.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(widthMetrics);
+                        int width = widthMetrics.widthPixels;
+
+                        DisplayMetrics heightMetrics = new DisplayMetrics();
+                        ((WindowManager)this.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(heightMetrics);
+                        int height = heightMetrics.heightPixels;
+
                         inputStream = this.getContentResolver().openInputStream(result.getUri());
                         BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
 
                         Bitmap bitmap = BitmapFactory.decodeStream(bufferedInputStream);
-                        bitmap = Bitmap.createScaledBitmap(bitmap, 2048, 2048, true);
-                        Drawable wallpaper= new BitmapDrawable(getResources(), bitmap);
-                        MainActivity.getBackground().setImageDrawable(wallpaper);
+                        bitmap = Bitmap.createScaledBitmap(bitmap, width, height, true);
+                        // write wallpaper file
                         if (wallpaperFile.exists())
                             wallpaperFile.delete();
                         try {
@@ -86,7 +95,10 @@ public class SettingsActivity extends AppCompatActivity {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-                        new PaletteTask().execute(bitmap);
+
+                        Drawable wallpaperDrawable= DrawableContainer.createFromPath(wallpaperFile.getAbsolutePath());
+                        MainActivity.getBackground().setImageDrawable(wallpaperDrawable);
+                        new PaletteTask().execute(MainActivity.drawableToBitmap(wallpaperDrawable));
                         MainActivity.itemsAdapter.notifyParentDataSetChanged(true);
                     } catch (FileNotFoundException e) {
                         e.printStackTrace();
@@ -108,6 +120,7 @@ public class SettingsActivity extends AppCompatActivity {
         private SeekBarPreference darkTintSeekBar;
         private SharedPreferences sharedPreferences;
         private Preference googleAccountPref;
+        private Preference quickUnlockPref;
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
@@ -116,11 +129,12 @@ public class SettingsActivity extends AppCompatActivity {
             addPreferencesFromResource(R.xml.settings);
 
             Preference wallpaperPref = findPreference("pref_key_wallpaper");
-            Preference tutorialPref = findPreference("pref_tutorial");
+            Preference tutorialPref = findPreference("pref_key_tutorial");
             googleAccountPref = findPreference("pref_key_google_account");
             darkTintSeekBar = (SeekBarPreference)findPreference("pref_key_darkTint");
             //Preference transferPref = findPreference("pref_key_transfer_data");
             Preference betaLinkPref = findPreference("pref_key_beta_link");
+            quickUnlockPref = findPreference("pref_key_quick_unlock");
 
 
             // Set listener :
@@ -140,12 +154,14 @@ public class SettingsActivity extends AppCompatActivity {
 
         @Override
         public void onStart() {
-            if (MainActivity.userEmail!=null && MainActivity.mGoogleApiClient.isConnected() ) {
+            if (MainActivity.userEmail!=null) {
                 googleAccountPref.setSummary(MainActivity.userEmail);
             }
             else{
                 googleAccountPref.setSummary("None");
             }
+
+            setQuickUnlockPrefText();
             super.onStart();
         }
 
@@ -160,6 +176,14 @@ public class SettingsActivity extends AppCompatActivity {
                         //MainActivity.mAuth = FirebaseAuth.getInstance();
                         startActivityForResult(signInIntent, MainActivity.GOOGLE_ACCOUNT_SIGN_IN_CODE);
                     }
+                    else if (isOnline()){
+                        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(MainActivity.mGoogleApiClient);
+                        //MainActivity.mAuth = FirebaseAuth.getInstance();
+                        startActivityForResult(signInIntent, MainActivity.GOOGLE_ACCOUNT_SIGN_IN_CODE);
+                    }else{
+                        Toast.makeText(getActivity(), "Cannot access Google accounts without internet connection.",
+                                Toast.LENGTH_SHORT).show();
+                    }
                     break;
                 case "pref_key_wallpaper":
                     //requests permissions needed for users to select background image on M or above
@@ -169,7 +193,7 @@ public class SettingsActivity extends AppCompatActivity {
                     }
                     else{launchGalleryPicker();}
                     break;
-                case "pref_tutorial":
+                case "pref_key_tutorial":
                     //  Launch app intro
                     Intent i = new Intent(getActivity(), Intro.class);
                     startActivity(i);
@@ -186,20 +210,32 @@ public class SettingsActivity extends AppCompatActivity {
                     Toast.makeText(getActivity(), "Copied beta link to clipboard.",
                             Toast.LENGTH_SHORT).show();
                     break;
+
             }
             return true;
         }
 
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-            if (key.equals("pref_key_darkTint")) {
-                // Set seekbar summary :
-                int alphaValue = sharedPreferences.getInt("pref_key_darkTint", 50);
-                darkTintSeekBar.setSummary(("$%").replace("$", "" + alphaValue));
-                ((View)MainActivity.getDarkTint()).setAlpha(1f - (float)alphaValue/100);
+            switch (key) {
+                case "pref_key_darkTint":
+                    // Set seekbar summary :
+                    int alphaValue = sharedPreferences.getInt("pref_key_darkTint", 50);
+                    darkTintSeekBar.setSummary(("$%").replace("$", "" + alphaValue));
+                    MainActivity.getDarkTint().setAlpha(1f - (float) alphaValue / 100);
+                    break;
+                case "pref_key_quick_unlock":
+                    setQuickUnlockPrefText();
             }
         }
 
+        private void setQuickUnlockPrefText(){
+            if (!sharedPreferences.getBoolean("pref_key_quick_unlock", true)){
+                quickUnlockPref.setSummary("Swipe to unlock");
+            }else{
+                quickUnlockPref.setSummary("Tap to unlock");
+            }
+        }
 
         //handles permission requests
         @Override
@@ -233,7 +269,7 @@ public class SettingsActivity extends AppCompatActivity {
             super.onActivityResult(requestCode, resultCode, data);
             if (data!=null) {
                 switch (requestCode) {
-                    //handles picture-cropping results
+                    //initiates image-cropping activity
                     case MainActivity.WALLPAPER_CODE:
                         DisplayMetrics widthMetrics = new DisplayMetrics();
                         ((WindowManager)getActivity().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(widthMetrics);
@@ -248,6 +284,10 @@ public class SettingsActivity extends AppCompatActivity {
                     case MainActivity.GOOGLE_ACCOUNT_SIGN_IN_CODE:
                         GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
                         if (result.isSuccess()) {
+                            if (!MainActivity.mGoogleApiClient.isConnected()) {
+                                MainActivity.mGoogleApiClient.connect();
+                            }
+
                             // Signed in successfully, show authenticated UI.
                             GoogleSignInAccount acct = result.getSignInAccount();
                             Firebase.authWithGoogle(acct, MainActivity.mAuth, getActivity());

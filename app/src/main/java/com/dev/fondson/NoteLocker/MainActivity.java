@@ -103,10 +103,11 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
     public static LinkedList<ItemList> itemsList;
     public static LinkedList<UserItem> userItemsList;
     public static LinkedList<UserItem> completedItemsList;
-    private RecyclerView recyclerView;
+    private ItemRecyclerView recyclerView;
     private SwipeRefreshLayout swipeContainer;
     private Calendar beginTime;
     private String pastUser;
+    private SharedPreferences sharedPreferences;
 
     public static final String[] INSTANCE_PROJECTION = new String[] {
             CalendarContract.Instances.EVENT_ID,      // 0
@@ -126,11 +127,12 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
                     CalendarContract.Events.EVENT_LOCATION};
 
     private static final int PROJECTION_LOCATION_INDEX = 0;
+    private boolean quickUnlock = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
-                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+//        getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
+//                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         getWindow().getDecorView().setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -139,6 +141,9 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
         //getWindow().setStatusBarColor(Color.TRANSPARENT);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        sharedPreferences = PreferenceManager
+                .getDefaultSharedPreferences(getBaseContext());
 
         // set up firebase authentication
         firebaseDatabase = Firebase.getDatabaseInstance();
@@ -217,9 +222,11 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
                 return false;
             }
         });
+
         slideUpView = findViewById(R.id.slide_up_shimmer);
+        quickUnlock = sharedPreferences.getBoolean("pref_key_quick_unlock", false);
         dragll = (DragLinearLayout) findViewById(R.id.dragll);
-        dragll.setViewDraggable(ll, slideUpView);
+        setUpUnlock();
 
         // get existing wallpaper
         WALLPAPER_PATH = getFilesDir().getAbsolutePath();
@@ -239,14 +246,14 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
             darkTint.setImageDrawable(wallpaper);
         }
         new PaletteTask().execute(drawableToBitmap(wallpaper));
-        darkTint.setAlpha(1f - (float)PreferenceManager.getDefaultSharedPreferences(MainActivity.this).getInt("pref_key_darkTint", 50)/100);
+        darkTint.setAlpha(1f - (float)sharedPreferences.getInt("pref_key_darkTint", 50)/100);
 
-        float scale = getResources().getDisplayMetrics().density;
 
         //****************************************************************************************************
-        int dpAsPixelsVert = (int) (16 * scale + 0.5f);
-        int dpAsPixelsHor = (int) (8 * scale + 0.5f);
-        ll.setPadding(dpAsPixelsHor, dpAsPixelsVert + getStatusBarHeight(), dpAsPixelsHor, 0);
+//        float scale = getResources().getDisplayMetrics().density;
+//        int dpAsPixelsVert = (int) (16 * scale + 0.5f);
+//        int dpAsPixelsHor = (int) (8 * scale + 0.5f);
+//        ll.setPadding(dpAsPixelsHor, dpAsPixelsVert + getStatusBarHeight(), dpAsPixelsHor, 0);
         //****************************************************************************************************
 
         etInput = (EditText) findViewById(R.id.editText);
@@ -534,7 +541,7 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
         itemsList = new LinkedList<ItemList>();
         itemsList.add(new ItemList("To Do", userItemsList));
         itemsList.add(new ItemList("Completed", completedItemsList));
-        recyclerView = (RecyclerView) findViewById(R.id.itemList);
+        recyclerView = (ItemRecyclerView) findViewById(R.id.itemList);
         itemsAdapter = new ItemListAdapter(this, itemsList);
         recyclerView.setAdapter(itemsAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -546,6 +553,25 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
             Firebase.writeNewToDoItem("Check me to move me to the Completed list.", true);
             Firebase.writeNewCompletedItem("Uncheck me to move me to the To do list or press the \"X\" to permanently delete me.",true);
         }
+    }
+
+    private void setUpUnlock(){
+        TextView unlockView = (TextView) findViewById(R.id.slide_up_label);
+        if (!quickUnlock){
+            unlockView.setText(R.string.slide_up);
+            slideUpView.setOnClickListener(null);
+            dragll.setViewDraggable(ll, slideUpView);
+        }else{
+            unlockView.setText(R.string.tap_unlock);
+            slideUpView.setOnTouchListener(null);
+            slideUpView.setOnClickListener(new View.OnClickListener(){
+                @Override
+                public void onClick(View view) {
+                    moveTaskToBack(true);
+                }
+            });
+        }
+        if (itemsAdapter != null) itemsAdapter.notifyParentDataSetChanged(true);
     }
 
     public static ImageView getDarkTint(){
@@ -580,7 +606,6 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
         super.onResume();
         fullScreencall();
         hideKeyboard();
-        ((EditText) findViewById(R.id.editText)).setText("");
         startService(new Intent(this, UpdateService.class));
     }
 
@@ -606,7 +631,7 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
         return result;
     }
 
-    public Bitmap drawableToBitmap (Drawable drawable) {
+    public static Bitmap drawableToBitmap (Drawable drawable) {
         Bitmap bitmap = null;
 
         if (drawable instanceof BitmapDrawable) {
@@ -641,8 +666,6 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
             switch (requestCode) {
                 case GOOGLE_ACCOUNT_SIGN_IN_CODE:
                     GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
-                    SharedPreferences getPrefs = PreferenceManager
-                            .getDefaultSharedPreferences(getBaseContext());
                     Log.d("mainActivityResult", "result :" + String.valueOf(result.isSuccess()));
                     if (result.isSuccess()) {
                         // Signed in successfully, show authenticated UI.
@@ -650,9 +673,9 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
                         Firebase.authWithGoogle(acct, mAuth, MainActivity.this);
                         userEmail=acct.getEmail();
 
-                        if (!userEmail.equals(getPrefs.getString("userEmail", ""))){
+                        if (!userEmail.equals(sharedPreferences.getString("userEmail", ""))){
                             //  Make a new preferences editor
-                            SharedPreferences.Editor e = getPrefs.edit();
+                            SharedPreferences.Editor e = sharedPreferences.edit();
                             //  Edit preference to make it false because we don't want this to run again
                             e.putString("userEmail", userEmail);
                             //  Apply changes
@@ -753,11 +776,9 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
 
     @Override
     public void onStart() {
-        SharedPreferences getPrefs = PreferenceManager
-                .getDefaultSharedPreferences(getBaseContext());
-        boolean isFirstStart = getPrefs.getBoolean("firstStart", true);
+        boolean isFirstStart = sharedPreferences.getBoolean("firstStart", true);
         if (isFirstStart && !firstLogIn) {
-            doIntro(getPrefs);
+            doIntro(sharedPreferences);
         }
         else {
             if (userEmail == null && isOnline()) {
@@ -769,13 +790,18 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
                 startActivityForResult(signInIntent, GOOGLE_ACCOUNT_SIGN_IN_CODE);
             } else if (userEmail == null) {
                 Log.d("onStart", "not online");
-                userEmail = PreferenceManager
-                        .getDefaultSharedPreferences(getBaseContext()).getString("userEmail", null);
+                userEmail = sharedPreferences.getString("userEmail", null);
                 Log.d("setupitem", "start ");
                 setUpItemList();
             }
             mAuth.addAuthStateListener(mAuthListener);
+
+            if (sharedPreferences.getBoolean("pref_key_quick_unlock",true) != quickUnlock){
+                quickUnlock = sharedPreferences.getBoolean("pref_key_quick_unlock",true);
+                setUpUnlock();
+            }
         }
+        etInput.setText("");
         hideKeyboard();
         super.onStart();
     }

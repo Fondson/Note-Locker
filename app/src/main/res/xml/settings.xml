@@ -7,6 +7,11 @@
             android:title = "@string/setting_turn_off"
             android:summary="Stop Note Locker from auto-starting"
             android:defaultValue ="true"/>
+        <SwitchPreference
+            android:key = "pref_key_quick_unlock"
+            android:title = "Enable quick unlock"
+            android:id="@+id/quick_unlock"
+            android:defaultValue ="false"/>
         <PreferenceScreen
             android:key="pref_key_wallpaper"
             android:title = "Change wallpaper"
@@ -26,7 +31,7 @@
             android:title = "@string/setting_signed_in_as"
             android:id="@+id/googleAccountSetting"/>
         <PreferenceScreen
-            android:key = "pref_tutorial"
+            android:key = "pref_key_tutorial"
             android:title = "@string/setting_view_tutorial"
             android:id="@+id/tutorial"/>
         <!--<PreferenceScreen
