@@ -15,7 +15,7 @@ be reminded everytime you open your phone.
 - Slide UP to unlock (using modified library)
 - <a href ="https://github.com/PaoloRotolo/AppIntro"> App intro</a>
 
-#Screenshots
-<img src="https://dl2.pushbulletusercontent.com/ZOu0yRK0TZTDu5Kl2EmCEmyqBDseGO2Z/UZDeviceArtGeneratorImg2017-02-19-15-22-21.jpg" width="270px" height="420px" />
-<img src="https://dl2.pushbulletusercontent.com/5u6NaGoUpx2xlNu8l4UsPKS3QwQKhu0T/UZDeviceArtGeneratorImg2017-02-19-15-22-56.jpg" width="270px" height="420px" />
-<img src="https://dl2.pushbulletusercontent.com/AA1t3qiqKI3V7zueQ5BnI0VKQCzEOUhj/UZDeviceArtGeneratorImg2017-02-19-15-24-03.jpg" width="270px" height="420px" />
+#Pictures
+<img src="https://dl2.pushbulletusercontent.com/kR6kKLBdaRvw53IgqWRjf4GltDhnqbLC/UZDeviceArtGeneratorImg2017-03-04-11-50-49.jpg" width="270px" height="420px" />
+<img src="https://dl2.pushbulletusercontent.com/oPlYQElljCejymwGMR2kYAC39baJudyl/UZDeviceArtGeneratorImg2017-03-04-11-52-36.jpg" width="270px" height="420px" />
+<img src="https://dl2.pushbulletusercontent.com/dRp3X2Hsyw9MQlUkLJ22yNFW0kKvDuCO/UZDeviceArtGeneratorImg2017-03-04-11-53-15.jpg" width="270px" height="420px" />
