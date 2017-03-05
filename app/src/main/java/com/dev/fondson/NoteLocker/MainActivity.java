@@ -11,6 +11,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.BitmapDrawable;
@@ -128,6 +129,7 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
 
     private static final int PROJECTION_LOCATION_INDEX = 0;
     private boolean quickUnlock = false;
+    private Resources resources;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -144,6 +146,7 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
 
         sharedPreferences = PreferenceManager
                 .getDefaultSharedPreferences(getBaseContext());
+        resources = getResources();
 
         // set up firebase authentication
         firebaseDatabase = Firebase.getDatabaseInstance();
@@ -246,15 +249,7 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
             darkTint.setImageDrawable(wallpaper);
         }
         new PaletteTask().execute(drawableToBitmap(wallpaper));
-        darkTint.setAlpha(1f - (float)sharedPreferences.getInt("pref_key_darkTint", 50)/100);
-
-
-        //****************************************************************************************************
-//        float scale = getResources().getDisplayMetrics().density;
-//        int dpAsPixelsVert = (int) (16 * scale + 0.5f);
-//        int dpAsPixelsHor = (int) (8 * scale + 0.5f);
-//        ll.setPadding(dpAsPixelsHor, dpAsPixelsVert + getStatusBarHeight(), dpAsPixelsHor, 0);
-        //****************************************************************************************************
+        darkTint.setAlpha(1f - (float)sharedPreferences.getInt("pref_key_darkTint", resources.getInteger(R.integer.DARK_TINT_DEFAULT))/100);
 
         etInput = (EditText) findViewById(R.id.editText);
         etInput.setOnEditorActionListener(new EditText.OnEditorActionListener() {
@@ -796,8 +791,8 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
             }
             mAuth.addAuthStateListener(mAuthListener);
 
-            if (sharedPreferences.getBoolean("pref_key_quick_unlock",true) != quickUnlock){
-                quickUnlock = sharedPreferences.getBoolean("pref_key_quick_unlock",true);
+            if (sharedPreferences.getBoolean("pref_key_quick_unlock",false) != quickUnlock){
+                quickUnlock = sharedPreferences.getBoolean("pref_key_quick_unlock",false);
                 setUpUnlock();
             }
         }

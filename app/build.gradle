@@ -27,7 +27,7 @@ android {
         applicationId "com.dev.fondson.NoteLocker"
         minSdkVersion 22
         targetSdkVersion 23
-        versionCode 40
+        versionCode 41
         versionName "2.1"
     }
     buildTypes {

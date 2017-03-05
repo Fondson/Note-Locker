@@ -17,7 +17,7 @@
             android:title = "Change wallpaper"
             android:id="@+id/wallpaperSetting"/>
         <com.dev.fondson.NoteLocker.SeekBarPreference
-            android:defaultValue="50"
+            android:defaultValue="@integer/DARK_TINT_DEFAULT"
             android:dialogMessage="Set percentage: "
             android:key="pref_key_darkTint"
             android:max="100"

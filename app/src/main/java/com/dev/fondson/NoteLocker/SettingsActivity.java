@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Rect;
@@ -121,6 +122,7 @@ public class SettingsActivity extends AppCompatActivity {
         private SharedPreferences sharedPreferences;
         private Preference googleAccountPref;
         private Preference quickUnlockPref;
+        private Resources resources;
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
@@ -136,13 +138,14 @@ public class SettingsActivity extends AppCompatActivity {
             Preference betaLinkPref = findPreference("pref_key_beta_link");
             quickUnlockPref = findPreference("pref_key_quick_unlock");
 
+            resources = getResources();
 
             // Set listener :
             getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
 
             sharedPreferences=PreferenceManager.getDefaultSharedPreferences(this.getActivity());
             // Set seekbar summary :
-            int alphaValue = sharedPreferences.getInt("pref_key_darkTint", 50);
+            int alphaValue = sharedPreferences.getInt("pref_key_darkTint", resources.getInteger(R.integer.DARK_TINT_DEFAULT));
             darkTintSeekBar.setSummary(("$%").replace("$", ""+alphaValue));
 
             wallpaperPref.setOnPreferenceClickListener(this);
@@ -220,7 +223,7 @@ public class SettingsActivity extends AppCompatActivity {
             switch (key) {
                 case "pref_key_darkTint":
                     // Set seekbar summary :
-                    int alphaValue = sharedPreferences.getInt("pref_key_darkTint", 50);
+                    int alphaValue = sharedPreferences.getInt("pref_key_darkTint", resources.getInteger(R.integer.DARK_TINT_DEFAULT));
                     darkTintSeekBar.setSummary(("$%").replace("$", "" + alphaValue));
                     MainActivity.getDarkTint().setAlpha(1f - (float) alphaValue / 100);
                     break;

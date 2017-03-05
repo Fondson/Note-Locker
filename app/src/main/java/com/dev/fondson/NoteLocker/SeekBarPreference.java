@@ -12,6 +12,7 @@ package com.dev.fondson.NoteLocker;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.preference.DialogPreference;
 import android.util.AttributeSet;
@@ -34,6 +35,7 @@ public class SeekBarPreference extends DialogPreference implements SeekBar.OnSee
     private TextView mSplashText;
     private TextView mValueText;
     private Context mContext;
+    private Resources resources;
 
     //private String mDialogMessage;
     private String mSuffix;
@@ -48,6 +50,7 @@ public class SeekBarPreference extends DialogPreference implements SeekBar.OnSee
 
         super(context,attrs);
         mContext = context;
+        resources = context.getResources();
 
 //        // Get string value for dialogMessage :
 //        int mDialogMessageId = attrs.getAttributeResourceValue(androidns, "dialogMessage", 0);
@@ -60,7 +63,7 @@ public class SeekBarPreference extends DialogPreference implements SeekBar.OnSee
         else mSuffix = mContext.getString(mSuffixId);
 
         // Get default and max seekbar values :
-        mDefault = attrs.getAttributeIntValue(androidns, "defaultValue", 0);
+        mDefault = attrs.getAttributeIntValue(androidns, "defaultValue", resources.getInteger(R.integer.DARK_TINT_DEFAULT));
         mMax = attrs.getAttributeIntValue(androidns, "max", 100);
     }
     // ------------------------------------------------------------------------------------------
