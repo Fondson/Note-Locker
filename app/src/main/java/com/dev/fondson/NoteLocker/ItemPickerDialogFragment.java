@@ -142,7 +142,6 @@ public class ItemPickerDialogFragment extends DialogFragment {
         void onItemSelected(ItemPickerDialogFragment fragment, Item item, int index);
     }
 
-    private static final String ARG_TITLE = "ARG_TITLE";
     private static final String ARG_ITEMS = "ARG_ITEMS";
     private static final String ARG_SELECTED_INDEX = "ARG_SELECTED_INDEX";
 
@@ -156,7 +155,6 @@ public class ItemPickerDialogFragment extends DialogFragment {
      */
     public static ItemPickerDialogFragment newInstance(String title, ArrayList<Item> items, int selectedIndex) {
         Bundle args = new Bundle();
-        args.putString(ARG_TITLE, title);
         args.putBundle(ARG_ITEMS, Item.bundleOfItems(items));
         args.putInt(ARG_SELECTED_INDEX, selectedIndex);
 
@@ -186,7 +184,6 @@ public class ItemPickerDialogFragment extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Bundle args = getArguments();
         if (args != null) {
-            title = args.getString(ARG_TITLE, "Dialog");
             items = Item.itemsFromBundle(args.getBundle(ARG_ITEMS));
             selectedIndex = args.getInt(ARG_SELECTED_INDEX, -1);
         }
@@ -198,12 +195,11 @@ public class ItemPickerDialogFragment extends DialogFragment {
         String[] itemTitles = getItemTitlesArray();
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setTitle(title)
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        builder.setItems(itemTitles, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Log.d(LOGTAG, "OK button clicked");
-
+                        Log.d(LOGTAG, "User clicked item with index " + which);
+                        selectedIndex = which;
                         Activity activity = getActivity();
                         if (activity instanceof OnItemSelectedListener) {
                             if (0 <= selectedIndex && selectedIndex < items.size()) {
@@ -212,21 +208,6 @@ public class ItemPickerDialogFragment extends DialogFragment {
                                 listener.onItemSelected(ItemPickerDialogFragment.this, item, selectedIndex);
                             }
                         }
-                    }
-                })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Log.d(LOGTAG, "Cancel button clicked");
-
-                        // OK, just let the dialog be closed
-                    }
-                })
-                .setSingleChoiceItems(itemTitles, selectedIndex, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Log.d(LOGTAG, "User clicked item with index " + which);
-                        selectedIndex = which;
                     }
                 });
 
