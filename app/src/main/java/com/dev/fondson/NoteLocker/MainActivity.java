@@ -130,6 +130,10 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
     private static final int PROJECTION_LOCATION_INDEX = 0;
     private boolean quickUnlock = false;
     private Resources resources;
+    private ChildEventListener toDoChildEventListener;
+    private ChildEventListener completedChildEventListener;
+    private ItemTouchHelper touchHelper;
+    private ItemTouchHelper.Callback callback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -160,24 +164,10 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
                     pastUser=userEmail;
                     // User is signed in
                     Log.d("firebasetag", "onAuthStateChanged:signed_in:" + user.getUid());
-                    if (userEmail != null) {
-                        try {
-                            // firebase database
-                            toDoDatabase = Firebase.getToDoRef();
-                            completedDatabase = Firebase.getCompletedRef();
-                            if (userItemsList == null || completedItemsList == null) {
-                                Log.d("setupitem", "auth ");
-                                setUpItemList();
-                            }
-                            userItemsList.clear();
-                            completedItemsList.clear();
-                            itemsAdapter.notifyParentDataSetChanged(true);
-                            setUpToDoListener();
-                            setUpCompletedListener();
-                        } catch (Exception e) {
-                            Log.d("exception", e.getMessage());
-                        }
-                    }
+                    // firebase database
+                    toDoDatabase = Firebase.getToDoRef();
+                    completedDatabase = Firebase.getCompletedRef();
+                    initialDataLoad();
                 } else {
                     // User is signed out
                     Log.d("firebasetag", "onAuthStateChanged:signed_out");
@@ -197,11 +187,16 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
 
+        recyclerView = (ItemRecyclerView) findViewById(R.id.itemList);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
         swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipeContainer);
         // Setup refresh listener which triggers new data loading
         swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+                setUpItemList();
+                initialDataLoad();
                 onStart();
                 if (itemsAdapter != null) itemsAdapter.notifyParentDataSetChanged(true);
                 swipeContainer.setRefreshing(false);
@@ -307,6 +302,24 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
         };
     }
 
+    private void initialDataLoad(){
+        if (userEmail != null) {
+            try {
+                if (userItemsList == null || completedItemsList == null) {
+                    Log.d("setupitem", "auth ");
+                    setUpItemList();
+                }
+                userItemsList.clear();
+                completedItemsList.clear();
+                itemsAdapter.notifyParentDataSetChanged(true);
+                setUpToDoListener();
+                setUpCompletedListener();
+            } catch (Exception e) {
+                Log.d("exception", e.getMessage());
+            }
+        }
+    }
+
     private void doIntro(final SharedPreferences getPrefs){
         //  Declare a new thread to do a preference check
         Thread t = new Thread(new Runnable() {
@@ -334,7 +347,8 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
     }
 
     private void setUpToDoListener(){
-        ChildEventListener childEventListener = new ChildEventListener() {
+        if (toDoChildEventListener != null) toDoDatabase.removeEventListener(toDoChildEventListener);
+        toDoChildEventListener = new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
                 UserItem item = dataSnapshot.getValue(UserItem.class);
@@ -449,11 +463,12 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
                 }
             }
         };
-        toDoDatabase.addChildEventListener(childEventListener);
+        toDoDatabase.addChildEventListener(toDoChildEventListener);
     }
 
     private void setUpCompletedListener(){
-        ChildEventListener childEventListener = new ChildEventListener() {
+        if (completedChildEventListener != null) completedDatabase.removeEventListener(completedChildEventListener);
+        completedChildEventListener = new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String previousChildName) {
                 Log.d("completedchild", "onChildAdded:" + dataSnapshot.getKey() + " " + dataSnapshot.getValue(UserItem.class).getKey());
@@ -526,7 +541,7 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
                 }
             }
         };
-        completedDatabase.addChildEventListener(childEventListener);
+        completedDatabase.addChildEventListener(completedChildEventListener);
     }
 
     private void setUpItemList(){
@@ -536,15 +551,13 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
         itemsList = new LinkedList<ItemList>();
         itemsList.add(new ItemList("To Do", userItemsList));
         itemsList.add(new ItemList("Completed", completedItemsList));
-        recyclerView = (ItemRecyclerView) findViewById(R.id.itemList);
         itemsAdapter = new ItemListAdapter(this, itemsList);
         recyclerView.setAdapter(itemsAdapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        ItemTouchHelper.Callback callback =
-                new SimpleItemTouchHelperCallback(itemsAdapter);
-        ItemTouchHelper touchHelper = new ItemTouchHelper(callback);
+        callback = new SimpleItemTouchHelperCallback(itemsAdapter);
+        if (touchHelper != null) touchHelper.attachToRecyclerView(null);
+        touchHelper = new ItemTouchHelper(callback);
         touchHelper.attachToRecyclerView(recyclerView);
-        if (firstLogIn) {
+        if (firstLogIn && sharedPreferences.getBoolean("firstStart", true)) {
             Firebase.writeNewToDoItem("Check me to move me to the Completed list.", true);
             Firebase.writeNewCompletedItem("Uncheck me to move me to the To do list or press the \"X\" to permanently delete me.",true);
         }
