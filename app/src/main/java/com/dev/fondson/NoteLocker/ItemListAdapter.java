@@ -102,7 +102,7 @@ public class ItemListAdapter extends ExpandableRecyclerAdapter<ItemList, UserIte
             binding.itemSettings.setOnClickListener(new View.OnClickListener(){
                 public void onClick(View button) {
                     ArrayList<ItemPickerDialogFragment.Item> pickerItems = new ArrayList<>();
-                    pickerItems.add(new ItemPickerDialogFragment.Item("Edit item", "Edit"));
+                    pickerItems.add(new ItemPickerDialogFragment.Item("Edit", "Edit"));
                     pickerItems.add(new ItemPickerDialogFragment.Item("Set notification", "Notif"));
 
                     ItemPickerDialogFragment dialog = ItemPickerDialogFragment.newInstance(
@@ -221,7 +221,6 @@ public class ItemListAdapter extends ExpandableRecyclerAdapter<ItemList, UserIte
                 return i;
             }
         }
-
         return -1;
     }
 }

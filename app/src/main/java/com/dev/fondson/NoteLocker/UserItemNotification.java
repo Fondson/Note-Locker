@@ -67,12 +67,12 @@ public class UserItemNotification {
     }
 
     public void scheduleNotification(Context context, UserItem item, Notification notification, long delay) {
+        int notificationId = item.getKey().hashCode();
         intent = new Intent(context, NotificationPublisher.class);
-        intent.putExtra(NotificationPublisher.NOTIFICATION_ID, NotificationPublisher.ID);
+        intent.putExtra(NotificationPublisher.NOTIFICATION_ID, notificationId);
         intent.putExtra(NotificationPublisher.NOTIFICATION, notification);
         intent.putExtra("key", item.getKey());
-        pendingIntent = PendingIntent.getBroadcast(context, NotificationPublisher.ID, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        NotificationPublisher.ID += 1;
+        pendingIntent = PendingIntent.getBroadcast(context, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         Log.d("testingtheory", "scheduleNotification: " + this.toString());
         long futureInMillis = SystemClock.elapsedRealtime() + delay;

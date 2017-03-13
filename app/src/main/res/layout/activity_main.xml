@@ -43,7 +43,7 @@
             <LinearLayout
                 android:orientation="vertical"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:paddingTop="10dp"
                 android:layout_weight="1"
                 android:id="@+id/llEditItems"
@@ -92,11 +92,11 @@
                     xmlns:android="http://schemas.android.com/apk/res/android"
                     android:id="@+id/swipeContainer"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="match_parent">
                         <com.dev.fondson.NoteLocker.ItemRecyclerView
                             android:id="@+id/itemList"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
+                            android:layout_height="match_parent"
                             android:requiresFadingEdge = "vertical"/>
                 </android.support.v4.widget.SwipeRefreshLayout>
             </LinearLayout>

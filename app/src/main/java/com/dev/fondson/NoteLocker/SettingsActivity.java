@@ -288,6 +288,10 @@ public class SettingsActivity extends AppCompatActivity {
                             GoogleSignInAccount acct = result.getSignInAccount();
                             Firebase.authWithGoogle(acct, MainActivity.mAuth, getActivity());
                             MainActivity.userEmail = acct.getEmail();
+                            SharedPreferences.Editor e = sharedPreferences.edit();
+                            e.putString("userEmail", MainActivity.userEmail);
+                            //  Apply changes
+                            e.apply();
                             googleAccountPref.setSummary(MainActivity.userEmail);
                         }
                         else {

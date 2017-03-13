@@ -79,7 +79,6 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
     public static final int GOOGLE_ACCOUNT_SIGN_IN_CODE = 9;
     public static final int FIREBASE_MESSAGE_CODE = 1;
     public static String userEmail;
-    public static KeyListener listener;
     public static String WALLPAPER_PATH;
     public static String WALLPAPER_FULL_PATH;
     public static String[] wallpaperPerms={"android.permission.READ_EXTERNAL_STORAGE"};//,"android.permission.WRITE_EXTERNAL_STORAGE","android.permision.READ_INTERNAL_STORAGE","android.permission.WRITE_INTERNAL_STORAGE"};
@@ -106,8 +105,7 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
     public static LinkedList<UserItem> completedItemsList;
     private ItemRecyclerView recyclerView;
     private SwipeRefreshLayout swipeContainer;
-    private Calendar beginTime;
-    private String pastUser;
+    private String pastUser = null;
     private SharedPreferences sharedPreferences;
 
     public static final String[] INSTANCE_PROJECTION = new String[] {
@@ -168,6 +166,7 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
                     toDoDatabase = Firebase.getToDoRef();
                     completedDatabase = Firebase.getCompletedRef();
                     initialDataLoad();
+                    if (itemsAdapter != null) itemsAdapter.notifyParentDataSetChanged(true);
                 } else {
                     // User is signed out
                     Log.d("firebasetag", "onAuthStateChanged:signed_out");
@@ -198,7 +197,6 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
                 setUpItemList();
                 initialDataLoad();
                 onStart();
-                if (itemsAdapter != null) itemsAdapter.notifyParentDataSetChanged(true);
                 swipeContainer.setRefreshing(false);
             }
         });
@@ -267,7 +265,6 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
                 imm.showSoftInput(etInput, InputMethodManager.SHOW_FORCED);
             }
         });
-        listener = etInput.getKeyListener();
 
         //settings button
         ImageButton btnSettings=(ImageButton) findViewById(R.id.btnSettings);
@@ -311,9 +308,13 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
                 }
                 userItemsList.clear();
                 completedItemsList.clear();
-                itemsAdapter.notifyParentDataSetChanged(true);
                 setUpToDoListener();
                 setUpCompletedListener();
+
+                if (firstLogIn && sharedPreferences.getBoolean("firstStart", true)) {
+                    Firebase.writeNewToDoItem("Check me to move me to the Completed list.", true);
+                    Firebase.writeNewCompletedItem("Uncheck me to move me to the To do list or press the \"X\" to permanently delete me.",true);
+                }
             } catch (Exception e) {
                 Log.d("exception", e.getMessage());
             }
@@ -557,10 +558,6 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
         if (touchHelper != null) touchHelper.attachToRecyclerView(null);
         touchHelper = new ItemTouchHelper(callback);
         touchHelper.attachToRecyclerView(recyclerView);
-        if (firstLogIn && sharedPreferences.getBoolean("firstStart", true)) {
-            Firebase.writeNewToDoItem("Check me to move me to the Completed list.", true);
-            Firebase.writeNewCompletedItem("Uncheck me to move me to the To do list or press the \"X\" to permanently delete me.",true);
-        }
     }
 
     private void setUpUnlock(){
@@ -612,6 +609,7 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
 
     protected void onResume() {
         super.onResume();
+        Log.d("OnResume", "onResume: ");
         fullScreencall();
         hideKeyboard();
         startService(new Intent(this, UpdateService.class));
@@ -670,6 +668,7 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        Log.d("onActivityResult", "onActivityResult: " + String.valueOf(requestCode));
         if (data!=null) {
             switch (requestCode) {
                 case GOOGLE_ACCOUNT_SIGN_IN_CODE:
@@ -696,6 +695,13 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
                     }
                     break;
             }
+        }
+        else if (requestCode == GOOGLE_ACCOUNT_SIGN_IN_CODE){
+            if (userEmail == null) {
+                userEmail = sharedPreferences.getString("userEmail", null);
+                mAuth.addAuthStateListener(mAuthListener);
+            }
+            Log.d("onActivityResult", "null intent");
         }
     }
 
@@ -732,6 +738,7 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
         switch (selectedValue){
             case "Edit":
                 showTextDialog(userItem);
+
                 break;
             case "Notif":
                 Intent pickTime = new Intent(this, TimePickerActivity.class);
@@ -745,7 +752,7 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         String oldItem = item.getName();
 
-        builder.setTitle("Change item:");
+        builder.setTitle("Edit:");
         // Inflate new view
         View viewInflated = LayoutInflater.from(this).inflate(R.layout.edit_item, null);
         // Set up the input
@@ -753,6 +760,7 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
         // Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
         input.setText(oldItem);
         input.setSelection(oldItem.length());
+
         builder.setView(viewInflated);
 
         // Set up the buttons
@@ -784,23 +792,28 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
 
     @Override
     public void onStart() {
+        super.onStart();
         boolean isFirstStart = sharedPreferences.getBoolean("firstStart", true);
         if (isFirstStart && !firstLogIn) {
             doIntro(sharedPreferences);
         }
         else {
-            if (userEmail == null && isOnline()) {
-                Log.d("onStart", "online");
-                if (!mGoogleApiClient.isConnected()) {
-                    mGoogleApiClient.connect();
+            if (userEmail == null) {
+                Log.d("onStart", "userEmail = null");
+                if (isOnline()) {
+                    Log.d("onStart", "online");
+                    if (!mGoogleApiClient.isConnected()) {
+                        Log.d("onStart", "onStart: connect googleAPI");
+                        mGoogleApiClient.connect();
+                    }
+                    Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+                    if (signInIntent == null)
+                        Log.d("onStart", "null intent");
+                    startActivityForResult(signInIntent, GOOGLE_ACCOUNT_SIGN_IN_CODE);
                 }
-                Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
-                startActivityForResult(signInIntent, GOOGLE_ACCOUNT_SIGN_IN_CODE);
-            } else if (userEmail == null) {
-                Log.d("onStart", "not online");
-                userEmail = sharedPreferences.getString("userEmail", null);
-                Log.d("setupitem", "start ");
-                setUpItemList();
+                else if (userEmail == null) {
+                    userEmail = sharedPreferences.getString("userEmail", null);
+                }
             }
             mAuth.addAuthStateListener(mAuthListener);
 
@@ -811,7 +824,6 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
         }
         etInput.setText("");
         hideKeyboard();
-        super.onStart();
     }
 
     @Override
@@ -825,8 +837,8 @@ public class MainActivity extends AppCompatActivity implements ItemPickerDialogF
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         mGoogleApiClient.disconnect();
+        super.onDestroy();
         startService(new Intent(this, UpdateService.class));
     }
 }
