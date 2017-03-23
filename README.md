@@ -17,6 +17,4 @@ be reminded everytime you open your phone.
 
 
 # Pictures
-<img src="https://dl2.pushbulletusercontent.com/kR6kKLBdaRvw53IgqWRjf4GltDhnqbLC/UZDeviceArtGeneratorImg2017-03-04-11-50-49.jpg" width="270px" height="420px" />
-<img src="https://dl2.pushbulletusercontent.com/oPlYQElljCejymwGMR2kYAC39baJudyl/UZDeviceArtGeneratorImg2017-03-04-11-52-36.jpg" width="270px" height="420px" />
-<img src="https://dl2.pushbulletusercontent.com/dRp3X2Hsyw9MQlUkLJ22yNFW0kKvDuCO/UZDeviceArtGeneratorImg2017-03-04-11-53-15.jpg" width="270px" height="420px" />
+<img src="https://dl2.pushbulletusercontent.com/kR6kKLBdaRvw53IgqWRjf4GltDhnqbLC/UZDeviceArtGeneratorImg2017-03-04-11-50-49.jpg" width="270px" height="420px" /><img src="https://dl2.pushbulletusercontent.com/oPlYQElljCejymwGMR2kYAC39baJudyl/UZDeviceArtGeneratorImg2017-03-04-11-52-36.jpg" width="270px" height="420px" /><img src="https://dl2.pushbulletusercontent.com/dRp3X2Hsyw9MQlUkLJ22yNFW0kKvDuCO/UZDeviceArtGeneratorImg2017-03-04-11-53-15.jpg" width="270px" height="420px" />
