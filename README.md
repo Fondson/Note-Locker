@@ -11,6 +11,7 @@ be reminded everytime you open your phone.
 - Easily add and dismiss items
 - Takes the wallpaper of the current home launcher <b>OR</b> select your own
 - Set scheduled notifications for each note
+  - Integrated with <a href="http://natty.joestelmach.com/">Natty Date Parser</a>
 - Note cards' colour adapts and changes dynamically with your wallpaper
 - Slide UP to unlock (using modified library)
 - <a href ="https://github.com/PaoloRotolo/AppIntro"> App intro</a>
