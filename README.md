@@ -1,3 +1,4 @@
+# This project is deprecated and no longer receiving support!
 # Note Locker
 An Android lockscreen to help users stay organized.
 
